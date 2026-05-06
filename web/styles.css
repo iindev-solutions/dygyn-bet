@@ -266,6 +266,23 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   border-top: 1px solid var(--line);
 }
 .confidence input { width: 100%; accent-color: var(--accent); }
+.allocation-list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.allocation-row {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, .05);
+}
+.allocation-total {
+  font-size: 24px;
+  font-weight: 950;
+}
+.allocation-total.valid { color: var(--success); }
+.allocation-total.invalid { color: var(--danger); }
 .chips {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

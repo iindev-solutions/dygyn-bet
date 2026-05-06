@@ -17,13 +17,20 @@ def test_pick_and_settle_flow(tmp_path):
         [player1["id"], player2["id"]],
     )
     user = upsert_user(db_path, TelegramUser(id=777, first_name="Test"))
-    picks = set_picks(db_path, event["id"], user["id"], [player1["id"], player2["id"]], 30)
+    picks = set_picks(
+        db_path,
+        event["id"],
+        user["id"],
+        [],
+        allocations={player1["id"]: 60, player2["id"]: 40},
+    )
     assert len(picks) == 2
-    assert picks[0]["confidence_points"] == 30
+    assert picks[0]["confidence_points"] == 60
     detailed = get_event(db_path, event["id"], user_id=user["id"])
-    assert detailed["totals"]["picks"] == 2
+    assert detailed["totals"]["picks"] == 1
     assert len(detailed["my_picks"]) == 2
     admin_settle_event(db_path, event["id"], [{"player_id": player1["id"], "place": 1, "score": 42}])
     settled = get_event(db_path, event["id"], user_id=user["id"])
     assert settled["status"] == "settled"
     assert settled["results"][0]["player_id"] == player1["id"]
+    assert settled["my_picks"][0]["awarded_points"] == 60

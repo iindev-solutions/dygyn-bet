@@ -10,7 +10,7 @@ const appUrl = (path) => `${appBasePath}${path}`;
 const publicAppUrl = () => `${window.location.origin}${appBasePath || ''}/`;
 
 const MAX_PICKS = 3;
-const CONFIDENCE_PRESETS = [25, 50, 75, 100];
+const TOTAL_CONFIDENCE_POINTS = 100;
 
 const state = {
   me: null,
@@ -18,8 +18,7 @@ const state = {
   selectedEvent: null,
   selectedPlayer: null,
   players: [],
-  confidence: 25,
-  draftPicksByEvent: {},
+  draftAllocationsByEvent: {},
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -87,20 +86,42 @@ async function loadEvents() {
 async function loadEvent(id) {
   const data = await api(`/api/events/${id}`);
   state.selectedEvent = data.event;
-  state.draftPicksByEvent[data.event.id] = (data.event.my_picks || []).map(p => Number(p.player_id));
+  state.draftAllocationsByEvent[data.event.id] = allocationsFromPicks(data.event.my_picks || []);
   renderEventsList();
 }
 
+function allocationsFromPicks(picks) {
+  const out = {};
+  for (const pick of picks) out[Number(pick.player_id)] = Number(pick.confidence_points || 0);
+  return out;
+}
+
+function getDraftAllocations(event = state.selectedEvent) {
+  if (!event) return {};
+  if (state.draftAllocationsByEvent[event.id]) return state.draftAllocationsByEvent[event.id];
+  return allocationsFromPicks(event.my_picks || []);
+}
+
 function getDraftPlayerIds(event = state.selectedEvent) {
-  if (!event) return [];
-  if (state.draftPicksByEvent[event.id]) return state.draftPicksByEvent[event.id];
-  return (event.my_picks || []).map(p => Number(p.player_id));
+  return Object.keys(getDraftAllocations(event)).map(Number);
+}
+
+function getAllocationTotal(event = state.selectedEvent) {
+  return Object.values(getDraftAllocations(event)).reduce((sum, points) => sum + Number(points || 0), 0);
+}
+
+function getParticipantById(playerId, event = state.selectedEvent) {
+  return event?.participants?.find(p => Number(p.id) === Number(playerId));
 }
 
 function getPickedNames(event = state.selectedEvent) {
   if (!event) return [];
-  const ids = new Set(getDraftPlayerIds(event));
-  return event.participants.filter(p => ids.has(Number(p.id))).map(p => p.name);
+  return getDraftPlayerIds(event).map(id => getParticipantById(id, event)?.name).filter(Boolean);
+}
+
+function getPickedSummaries(event = state.selectedEvent) {
+  const allocations = getDraftAllocations(event);
+  return getDraftPlayerIds(event).map(id => `${getParticipantById(id, event)?.name || id} — ${allocations[id]} очков`);
 }
 
 function getTotalPoints(event) {
@@ -120,6 +141,18 @@ function topSupport(event, limit = 3) {
     .slice(0, limit);
 }
 
+function evenAllocation(playerIds) {
+  if (!playerIds.length) return {};
+  const base = Math.floor(TOTAL_CONFIDENCE_POINTS / playerIds.length);
+  let remainder = TOTAL_CONFIDENCE_POINTS - base * playerIds.length;
+  const out = {};
+  for (const playerId of playerIds) {
+    out[playerId] = base + (remainder > 0 ? 1 : 0);
+    remainder -= 1;
+  }
+  return out;
+}
+
 function toggleDraftPick(playerId) {
   if (!state.selectedEvent) return;
   const eventId = state.selectedEvent.id;
@@ -134,7 +167,22 @@ function toggleDraftPick(playerId) {
     }
     picks.push(playerId);
   }
-  state.draftPicksByEvent[eventId] = picks;
+  state.draftAllocationsByEvent[eventId] = evenAllocation(picks);
+  renderEventsList();
+}
+
+function setDraftAllocation(playerId, points) {
+  if (!state.selectedEvent) return;
+  const eventId = state.selectedEvent.id;
+  const allocations = { ...getDraftAllocations() };
+  allocations[playerId] = Math.max(1, Math.min(TOTAL_CONFIDENCE_POINTS, Number(points || 1)));
+  state.draftAllocationsByEvent[eventId] = allocations;
+  renderEventsList();
+}
+
+function rebalanceDraftAllocations() {
+  if (!state.selectedEvent) return;
+  state.draftAllocationsByEvent[state.selectedEvent.id] = evenAllocation(getDraftPlayerIds());
   renderEventsList();
 }
 
@@ -161,22 +209,14 @@ function renderEventsList() {
 function bindEventScreenActions(scope) {
   scope.querySelectorAll('[data-event-id]').forEach(btn => btn.addEventListener('click', () => loadEvent(btn.dataset.eventId)));
   scope.querySelectorAll('[data-pick-player]').forEach(btn => btn.addEventListener('click', () => toggleDraftPick(Number(btn.dataset.pickPlayer))));
-  scope.querySelectorAll('[data-confidence-value]').forEach(btn => btn.addEventListener('click', () => {
-    state.confidence = Number(btn.dataset.confidenceValue);
-    renderEventsList();
+  scope.querySelectorAll('[data-allocation-player]').forEach(input => input.addEventListener('change', () => {
+    setDraftAllocation(Number(input.dataset.allocationPlayer), Number(input.value));
   }));
+  $('#rebalanceAllocationsBtn')?.addEventListener('click', rebalanceDraftAllocations);
   $('#savePicksBtn')?.addEventListener('click', sendPicks);
   $('#copyShareBtn')?.addEventListener('click', copyShareText);
   $('#nativeShareBtn')?.addEventListener('click', nativeShare);
   $('#storyCardBtn')?.addEventListener('click', downloadStoryCard);
-  const slider = $('#confidenceRange');
-  if (slider) {
-    slider.value = String(state.confidence);
-    slider.addEventListener('input', () => {
-      state.confidence = Number(slider.value);
-      $('#confidenceValue').textContent = state.confidence;
-    });
-  }
 }
 
 function renderArenaHero(event) {
@@ -233,29 +273,41 @@ function renderParticipantChoice(event, participant, index, draftIdSet, canPick)
   const points = Number(participant.confidence_sum || 0);
   const percent = supportPercent(event, participant);
   const selected = draftIdSet.has(Number(participant.id));
+  const allocation = getDraftAllocations(event)[Number(participant.id)];
   return `
     <button class="participant-card ${selected ? 'selected' : ''}" data-pick-player="${participant.id}" ${canPick ? '' : 'disabled'}>
       <span>
         <strong><span class="rank-dot">${index + 1}</span>${escapeHtml(participant.name)}</strong><br>
-        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ' · выбран' : ''}</small>
+        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ` · мой прогноз ${allocation}` : ''}</small>
         <span class="progress"><span style="width:${percent}%"></span></span>
       </span>
-      <span class="percent">${selected ? '✓' : `${percent}%`}</span>
+      <span class="percent">${selected ? `${allocation}` : `${percent}%`}</span>
     </button>
   `;
 }
 
 function renderConfidenceBlock(draftIds) {
-  const chips = CONFIDENCE_PRESETS.map(value => `
-    <button class="chip ${state.confidence === value ? 'active' : ''}" data-confidence-value="${value}">${value}</button>
-  `).join('');
+  const allocations = getDraftAllocations();
+  const total = getAllocationTotal();
+  const isValid = draftIds.length > 0 && total === TOTAL_CONFIDENCE_POINTS;
+  const rows = draftIds.map(playerId => {
+    const participant = getParticipantById(playerId);
+    const value = allocations[playerId] || 1;
+    return `
+      <div class="allocation-row">
+        <div class="row"><strong>${escapeHtml(participant?.name || playerId)}</strong><span>${value}</span></div>
+        <input type="range" min="1" max="100" value="${value}" data-allocation-player="${playerId}" />
+      </div>
+    `;
+  }).join('') || '<p class="muted">Выберите участника — ему автоматически достанутся 100 очков.</p>';
   return `
     <div class="confidence">
-      <div class="row"><strong>Очки уверенности</strong><span id="confidenceValue">${state.confidence}</span></div>
-      <div class="chips">${chips}</div>
-      <input id="confidenceRange" type="range" min="1" max="100" value="${state.confidence}" />
+      <div class="row"><strong>Распределите 100 очков</strong><span class="allocation-total ${isValid ? 'valid' : 'invalid'}">${total}/${TOTAL_CONFIDENCE_POINTS}</span></div>
+      <p class="muted">Можно выбрать 1–3 участников. Сумма должна быть ровно 100.</p>
+      <div class="allocation-list">${rows}</div>
+      ${draftIds.length > 1 ? '<button id="rebalanceAllocationsBtn" class="ghost wide" type="button">Распределить поровну</button>' : ''}
       <div class="bottom-bar">
-        <button id="savePicksBtn" class="primary wide" ${draftIds.length ? '' : 'disabled'}>Сохранить прогноз</button>
+        <button id="savePicksBtn" class="primary wide" ${isValid ? '' : 'disabled'}>Сохранить прогноз</button>
       </div>
     </div>
   `;
@@ -263,7 +315,7 @@ function renderConfidenceBlock(draftIds) {
 
 function renderShareBlock(event, draftIds) {
   if (!draftIds.length) return '';
-  const names = getPickedNames(event).map(escapeHtml).join(', ');
+  const names = getPickedSummaries(event).map(escapeHtml).join(', ');
   return `
     <div class="share-card">
       <h3>Поделиться выбором</h3>
@@ -280,28 +332,31 @@ function renderShareBlock(event, draftIds) {
 
 async function sendPicks() {
   if (!state.selectedEvent) return;
+  const allocations = getDraftAllocations();
   const playerIds = getDraftPlayerIds();
   if (!playerIds.length) {
     toast('Выберите хотя бы одного участника');
     return;
   }
-  const data = await api('/api/picks', {
+  if (getAllocationTotal() !== TOTAL_CONFIDENCE_POINTS) {
+    toast('Нужно распределить ровно 100 очков');
+    return;
+  }
+  const data = await api(`/api/events/${state.selectedEvent.id}/prediction`, {
     method: 'POST',
     body: JSON.stringify({
-      event_id: state.selectedEvent.id,
-      player_ids: playerIds,
-      confidence_points: state.confidence,
+      items: playerIds.map(playerId => ({ participant_id: playerId, confidence_points: allocations[playerId] })),
     })
   });
   state.selectedEvent = data.event;
-  state.draftPicksByEvent[data.event.id] = (data.event.my_picks || []).map(p => Number(p.player_id));
+  state.draftAllocationsByEvent[data.event.id] = allocationsFromPicks(data.event.my_picks || []);
   toast('Прогноз сохранён');
   await loadEvents();
 }
 
 function buildShareText() {
-  const names = getPickedNames(state.selectedEvent);
-  return `Я выбрал участников Игр Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
+  const names = getPickedSummaries(state.selectedEvent);
+  return `Мой прогноз на Игры Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
 }
 
 async function copyShareText() {
@@ -329,7 +384,7 @@ async function nativeShare() {
 
 function downloadStoryCard() {
   const event = state.selectedEvent;
-  const names = getPickedNames(event);
+  const names = getPickedSummaries(event);
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1920;

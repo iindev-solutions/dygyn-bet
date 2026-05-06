@@ -15,7 +15,7 @@
 
 ## Tabs
 
-- Games — arena hero, event list, event detail, up to three participant choices, confidence controls, share actions.
+- Games — arena hero, event list, event detail, 1–3 participant choices, 100-point allocation controls, share actions.
 - Support — support statistics and fan leaderboard.
 - Players — participant cards, detail view, profile fields, and discipline-result tables.
 - Rules — product rules and no-money notice.
@@ -90,8 +90,8 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 2. Confirm user line loads.
 3. Confirm arena hero card renders.
 4. Select event.
-5. Move confidence slider or use confidence chips.
-6. Pick up to three participants.
+5. Pick 1–3 participants.
+6. Distribute exactly 100 confidence points.
 7. Save the vote through the sticky save action.
 8. Confirm toast and updated statistics.
 9. Copy share text or download the story card.

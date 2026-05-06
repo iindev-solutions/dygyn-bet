@@ -55,29 +55,35 @@ Returns detailed event with:
 - current user's picks;
 - results.
 
-### `POST /api/picks`
+### `POST /api/events/{event_id}/prediction`
 
-Creates or replaces current user's picks for an event.
+Canonical prediction endpoint.
 
 Request:
 
 ```json
 {
-  "event_id": 1,
-  "player_ids": [2, 3, 4],
-  "confidence_points": 25
+  "items": [
+    {"participant_id": 2, "confidence_points": 60},
+    {"participant_id": 3, "confidence_points": 40}
+  ]
 }
 ```
 
 Rules:
 
-- user can choose 1–3 participants per event;
-- confidence points are clamped/validated to 1–100 and applied to each selected participant;
+- one prediction per user/event;
+- prediction contains 1–3 participants;
+- confidence points must be positive and sum to exactly 100;
 - event must exist;
 - event status must be `open`;
-- event `starts_at` must be in the future;
+- current time must be before event `closes_at` or fallback `starts_at`;
 - every selected player must be linked to the event;
 - backend stores one row per selected participant with `UNIQUE(event_id, user_id, player_id)`.
+
+### `POST /api/picks`
+
+Legacy-compatible endpoint. Prefer `/api/events/{event_id}/prediction` for new code. It accepts either `allocations` or old `player_ids/confidence_points`, but still enforces the 100-point total.
 
 ### `GET /api/players`
 

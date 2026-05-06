@@ -14,8 +14,8 @@
 
 ## Backend: `app/`
 
-- `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/leaderboard/admin API endpoints.
-- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, picks, results, sources, disciplines, discipline results, history, leaderboard, demo seed.
+- `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/prediction/leaderboard/admin API endpoints.
+- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point prediction items, results, sources, disciplines, discipline results, history, leaderboard, demo seed.
 - `app/config.py` — environment loading and immutable `Settings` dataclass.
 - `app/import_data.py` — validates/imports `data/import/dygyn_2026/` CSV pack into SQLite sources, disciplines, players, event links, history, and discipline-result tables.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
@@ -25,7 +25,7 @@
 ## Frontend: `web/`
 
 - `web/index.html` — Telegram Mini App shell with tabs: events, stats, players, rules.
-- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, three-pick flow, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
+- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, 100-point allocation prediction flow, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
 - `web/styles.css` — Dygyn Fan Arena dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
 
 ## Scripts

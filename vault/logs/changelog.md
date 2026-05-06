@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-06 — 100-Point Prediction Allocation
+
+- Changed prediction model to enforce exactly 100 confidence points across 1–3 participants per user/event.
+- Added canonical `POST /api/events/{event_id}/prediction` endpoint; kept legacy `/api/picks` with same 100-point validation.
+- Added `closes_at` fallback validation: prediction closes at `closes_at` or `starts_at`.
+- Updated event totals and leaderboard counts to count logical predictions/users instead of pick rows.
+- Updated frontend prediction UI to allocate 100 points, rebalance evenly, and save only when total is 100.
+- Updated tests and vault docs.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; direct 100-point DB flow smoke; `git diff --check`.
+- Not verified: full `python -m pytest` because local environment lacks pytest.
+
 ## 2026-05-06 — Participant Discipline Tables Exposed
 
 - Added `get_player()` DB detail with history, summary, and discipline results joined to discipline metadata.

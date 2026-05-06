@@ -7,7 +7,7 @@ Read this first. Read deep docs only when task needs them.
 - Product: Telegram Mini App fan predictions for Dygyn Games.
 - Public URL: `https://iindiinda.duckdns.org/dygyn-bet/`.
 - Style: `Dygyn Fan Arena` — dark sports cards, gold accent, no casino vibe.
-- User flow: open bot → TMA → choose up to 3 participants → set confidence → save → share story card.
+- User flow: open bot → TMA → choose 1–3 participants → distribute 100 confidence points → save → share story card.
 - Legal line: fan votes only. No money, odds, deposits, withdrawals, payouts, prizes with value.
 
 ## Stack
@@ -23,14 +23,14 @@ Read this first. Read deep docs only when task needs them.
 
 ## Current State
 
-- 3-pick voting works.
+- 100-point allocation voting works locally: one prediction distributes exactly 100 points across 1–3 participants.
 - Story-card sharing works.
 - Dygyn Fan Arena UI deployed.
 - VPS tests passed last deploy.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
-- Target product mechanic: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
+- Product mechanic implemented locally: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
 - Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
 - Dygyn Games are a two-day event; target app must show Day 1, Day 2, overall/final results, provisional/official state, and final winners.
 - Admin panel is mandatory: `ADMIN_IDS`-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and final finish.
@@ -40,9 +40,9 @@ Read this first. Read deep docs only when task needs them.
 
 ## Next Best Tasks
 
-1. Apply import to local/dev DB and QA participant detail tables.
-2. Implement 100-point allocation model and `closes_at` validation.
-3. Implement backend stats/leaderboard/profile and two-day standings APIs.
+1. Apply import to local/dev DB and QA participant detail tables + 100-point prediction flow.
+2. Implement backend stats/leaderboard/profile and two-day standings APIs.
+3. Add mandatory admin-only TMA tab for import/results/finish operations.
 4. Add mandatory admin-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and finish.
 5. Add public frontend screens: Home/Forecast/Stats/Rating/Profile + athlete stat/result tables.
 6. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.

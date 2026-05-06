@@ -67,14 +67,14 @@ Imported metadata:
 
 ## `picks`
 
-User predictions/votes. A user can select up to three participants per event.
+Prediction item rows. One user/event prediction is represented by 1–3 rows.
 
 Fields:
 
 - `event_id`.
 - `user_id`.
 - `player_id`.
-- `confidence_points` — virtual points from 1 to 100.
+- `confidence_points` — virtual points allocated to this participant.
 - `awarded_points` — fan points after settlement.
 - `created_at`, `updated_at`.
 
@@ -82,9 +82,12 @@ Constraint:
 
 - `UNIQUE(event_id, user_id, player_id)` — one row per selected participant.
 
-Application rule:
+Application rules:
 
-- maximum three selected participants per user per event.
+- one logical prediction per user/event;
+- maximum three selected participants per user/event;
+- all selected rows for a user/event must sum to exactly 100 confidence points;
+- prediction can change only before `closes_at`.
 
 ## `results`
 

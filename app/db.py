@@ -166,6 +166,16 @@ def utcnow_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def parse_datetime(value: str) -> datetime:
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError("Missing datetime")
+    parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 @contextmanager
 def connect(db_path: str) -> Iterator[sqlite3.Connection]:
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -306,7 +316,8 @@ def list_events(db_path: str) -> list[dict[str, Any]]:
             """
             SELECT e.*,
                    COUNT(DISTINCT ep.player_id) AS participant_count,
-                   COUNT(DISTINCT p.id) AS pick_count
+                   COUNT(DISTINCT p.user_id) AS pick_count,
+                   COUNT(DISTINCT p.user_id) AS prediction_count
             FROM events e
             LEFT JOIN event_participants ep ON ep.event_id=e.id
             LEFT JOIN picks p ON p.event_id=e.id
@@ -338,7 +349,13 @@ def get_event(db_path: str, event_id: int, user_id: int | None = None) -> dict[s
             (event_id,),
         ).fetchall()
         total = conn.execute(
-            "SELECT COUNT(*) AS picks, COALESCE(SUM(confidence_points),0) AS points FROM picks WHERE event_id=?",
+            """
+            SELECT COUNT(DISTINCT user_id) AS picks,
+                   COUNT(DISTINCT user_id) AS predictions,
+                   COALESCE(SUM(confidence_points),0) AS points
+            FROM picks
+            WHERE event_id=?
+            """,
             (event_id,),
         ).fetchone()
         my_picks: list[dict[str, Any]] = []
@@ -368,23 +385,75 @@ def get_event(db_path: str, event_id: int, user_id: int | None = None) -> dict[s
 
 
 MAX_PICKS_PER_EVENT = 3
+REQUIRED_CONFIDENCE_TOTAL = 100
 
 
-def set_picks(db_path: str, event_id: int, user_id: int, player_ids: list[int], confidence_points: int) -> list[dict[str, Any]]:
-    confidence_points = max(1, min(100, int(confidence_points)))
-    unique_player_ids = list(dict.fromkeys(int(player_id) for player_id in player_ids))
-    if not unique_player_ids:
+def normalize_pick_allocations(
+    player_ids: list[int],
+    confidence_points: int | None = None,
+    allocations: dict[int, int] | list[dict[str, Any]] | list[tuple[int, int]] | None = None,
+) -> list[tuple[int, int]]:
+    if allocations is None:
+        if confidence_points is None:
+            raise ValueError("Укажите очки уверенности")
+        items = [(int(player_id), int(confidence_points)) for player_id in player_ids]
+    elif isinstance(allocations, dict):
+        items = [(int(player_id), int(points)) for player_id, points in allocations.items()]
+    else:
+        items = []
+        for item in allocations:
+            if isinstance(item, dict):
+                raw_player_id = item.get("player_id") or item.get("participant_id")
+                raw_points = item.get("confidence_points")
+                if raw_player_id is None or raw_points is None:
+                    raise ValueError("Некорректное распределение очков")
+                items.append((int(raw_player_id), int(raw_points)))
+            else:
+                player_id, points = item
+                items.append((int(player_id), int(points)))
+
+    if not items:
         raise ValueError("Выберите хотя бы одного участника")
-    if len(unique_player_ids) > MAX_PICKS_PER_EVENT:
+    if len(items) > MAX_PICKS_PER_EVENT:
         raise ValueError("Можно выбрать максимум трёх участников")
+
+    seen: set[int] = set()
+    normalized: list[tuple[int, int]] = []
+    for player_id, points in items:
+        if player_id in seen:
+            raise ValueError("Нельзя выбрать участника дважды")
+        if points <= 0:
+            raise ValueError("Очки уверенности должны быть больше нуля")
+        if points > REQUIRED_CONFIDENCE_TOTAL:
+            raise ValueError("Очки уверенности не могут быть больше 100")
+        seen.add(player_id)
+        normalized.append((player_id, points))
+
+    total = sum(points for _, points in normalized)
+    if total != REQUIRED_CONFIDENCE_TOTAL:
+        raise ValueError("Распределите ровно 100 очков уверенности")
+    return normalized
+
+
+def set_picks(
+    db_path: str,
+    event_id: int,
+    user_id: int,
+    player_ids: list[int],
+    confidence_points: int | None = None,
+    allocations: dict[int, int] | list[dict[str, Any]] | list[tuple[int, int]] | None = None,
+) -> list[dict[str, Any]]:
+    pick_allocations = normalize_pick_allocations(player_ids, confidence_points, allocations)
+    unique_player_ids = [player_id for player_id, _ in pick_allocations]
     with connect(db_path) as conn:
         event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         if not event:
             raise ValueError("Событие не найдено")
         if event["status"] != "open":
             raise ValueError("Прогнозы по этому событию уже закрыты")
-        starts_at = datetime.fromisoformat(str(event["starts_at"]).replace("Z", "+00:00"))
-        if starts_at <= datetime.now(timezone.utc):
+        close_value = event["closes_at"] or event["starts_at"]
+        closes_at = parse_datetime(str(close_value))
+        if closes_at <= datetime.now(timezone.utc):
             conn.execute("UPDATE events SET status='locked' WHERE id=?", (event_id,))
             raise ValueError("Событие уже началось, прогнозы закрыты")
         rows = conn.execute(
@@ -395,13 +464,13 @@ def set_picks(db_path: str, event_id: int, user_id: int, player_ids: list[int], 
         if len(allowed_ids) != len(unique_player_ids):
             raise ValueError("Один или несколько участников не добавлены в событие")
         conn.execute("DELETE FROM picks WHERE event_id=? AND user_id=?", (event_id, user_id))
-        for player_id in unique_player_ids:
+        for player_id, points in pick_allocations:
             conn.execute(
                 """
                 INSERT INTO picks (event_id, user_id, player_id, confidence_points)
                 VALUES (?, ?, ?, ?)
                 """,
-                (event_id, user_id, player_id, confidence_points),
+                (event_id, user_id, player_id, points),
             )
         pick_rows = conn.execute(
             "SELECT * FROM picks WHERE event_id=? AND user_id=? ORDER BY id",
@@ -480,7 +549,7 @@ def leaderboard(db_path: str) -> list[dict[str, Any]]:
         rows = conn.execute(
             """
             SELECT u.telegram_id, u.username, u.first_name, u.last_name,
-                   COUNT(pk.id) AS picks,
+                   COUNT(DISTINCT pk.event_id) AS picks,
                    SUM(CASE WHEN pk.awarded_points > 0 THEN 1 ELSE 0 END) AS correct,
                    COALESCE(SUM(pk.awarded_points), 0) AS score
             FROM users u

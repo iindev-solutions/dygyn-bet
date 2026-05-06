@@ -36,10 +36,26 @@ _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
 _bot_task: asyncio.Task[Any] | None = None
 
 
+class PickAllocationIn(BaseModel):
+    player_id: int
+    confidence_points: int = Field(ge=1, le=100)
+
+
 class PickIn(BaseModel):
     event_id: int
-    player_ids: list[int] = Field(min_length=1, max_length=3)
-    confidence_points: int = Field(default=10, ge=1, le=100)
+    player_ids: list[int] = Field(default_factory=list, max_length=3)
+    confidence_points: int | None = Field(default=None, ge=1, le=100)
+    allocations: list[PickAllocationIn] = Field(default_factory=list, max_length=3)
+
+
+class PredictionItemIn(BaseModel):
+    participant_id: int | None = None
+    player_id: int | None = None
+    confidence_points: int = Field(ge=1, le=100)
+
+
+class PredictionIn(BaseModel):
+    items: list[PredictionItemIn] = Field(min_length=1, max_length=3)
 
 
 class EventCreateIn(BaseModel):
@@ -165,10 +181,34 @@ def event_detail(event_id: int, user: dict[str, Any] = Depends(current_user)) ->
 @app.post("/api/picks")
 def create_or_update_pick(data: PickIn, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     try:
-        picks = set_picks(settings.db_path, data.event_id, int(user["id"]), data.player_ids, data.confidence_points)
+        allocations = [item.model_dump() for item in data.allocations] if data.allocations else None
+        picks = set_picks(
+            settings.db_path,
+            data.event_id,
+            int(user["id"]),
+            data.player_ids,
+            data.confidence_points,
+            allocations=allocations,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     event = get_event(settings.db_path, data.event_id, user_id=int(user["id"]))
+    return {"picks": picks, "event": event}
+
+
+@app.post("/api/events/{event_id}/prediction")
+def save_event_prediction(event_id: int, data: PredictionIn, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    allocations: list[dict[str, int]] = []
+    for item in data.items:
+        player_id = item.participant_id or item.player_id
+        if not player_id:
+            raise HTTPException(status_code=400, detail="Участник обязателен")
+        allocations.append({"player_id": int(player_id), "confidence_points": int(item.confidence_points)})
+    try:
+        picks = set_picks(settings.db_path, event_id, int(user["id"]), [], allocations=allocations)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    event = get_event(settings.db_path, event_id, user_id=int(user["id"]))
     return {"picks": picks, "event": event}
 
 
