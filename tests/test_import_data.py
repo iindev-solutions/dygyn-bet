@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.db import connect, init_db, list_events, list_players, seed_demo
+from app.db import connect, get_player, init_db, list_events, list_players, seed_demo
 from app.import_data import import_dygyn_pack, validate_dygyn_pack
 
 PACK_DIR = Path(__file__).resolve().parents[1] / "data" / "import" / "dygyn_2026"
@@ -40,6 +40,11 @@ def test_import_dygyn_pack(tmp_path):
     boris = next(player for player in players if player["name"] == "Борис Сдвижков")
     assert boris["region"] == "Амгинский улус / Амма"
     assert boris["summary"]["history_count"] >= 1
+
+    boris_detail = get_player(db_path, boris["id"])
+    assert boris_detail is not None
+    assert len(boris_detail["discipline_results"]) == 7
+    assert boris_detail["discipline_results"][0]["discipline_name"]
 
     with connect(db_path) as conn:
         rows = conn.execute(

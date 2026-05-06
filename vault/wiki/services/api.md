@@ -83,6 +83,19 @@ Rules:
 
 Returns active players with recent history and summary. Historical-only imported players are hidden from this public list for now.
 
+### `GET /api/players/{player_id}`
+
+Returns participant profile detail with:
+
+- imported profile fields;
+- recent history;
+- summary;
+- discipline results joined with discipline metadata.
+
+### `GET /api/participants/{player_id}`
+
+Alias for player detail, matching the canonical brief wording.
+
 ### `GET /api/leaderboard`
 
 Returns top 100 users ordered by fan score, correct picks, and pick count.

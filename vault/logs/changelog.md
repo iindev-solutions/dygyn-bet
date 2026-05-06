@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-06 — Participant Discipline Tables Exposed
+
+- Added `get_player()` DB detail with history, summary, and discipline results joined to discipline metadata.
+- Added `GET /api/players/{player_id}` and `/api/participants/{player_id}` alias.
+- Updated Players tab: participant cards open detail view with profile, strengths, prior Dygyn note, and discipline-result tables.
+- Added styles for photos, profile detail, and result tables.
+- Updated import test expectations for player detail.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; temp DB player-detail smoke; `git diff --check`.
+- Not verified: full `python -m pytest` because local environment lacks pytest.
+
 ## 2026-05-06 — Import Validator and Importer
 
 - Added SQLite schema support for sources, import metadata, disciplines, and player discipline results.

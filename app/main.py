@@ -18,6 +18,7 @@ from .db import (
     admin_create_player,
     admin_settle_event,
     get_event,
+    get_player,
     init_db,
     leaderboard,
     list_events,
@@ -174,6 +175,19 @@ def create_or_update_pick(data: PickIn, user: dict[str, Any] = Depends(current_u
 @app.get("/api/players")
 def players(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {"players": list_players(settings.db_path)}
+
+
+@app.get("/api/players/{player_id}")
+def player_detail(player_id: int, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    player = get_player(settings.db_path, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Участник не найден")
+    return {"player": player}
+
+
+@app.get("/api/participants/{player_id}")
+def participant_detail(player_id: int, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return player_detail(player_id, user)
 
 
 @app.get("/api/leaderboard")

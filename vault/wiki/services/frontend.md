@@ -5,7 +5,7 @@
 - Provide Telegram Mini App user interface.
 - Initialize Telegram WebApp SDK.
 - Send raw Telegram initData to backend.
-- Render events, participants, picks, statistics, player history, rules, and leaderboard.
+- Render events, participants, picks, statistics, player history, discipline-result tables, rules, and leaderboard.
 
 ## Main Files
 
@@ -17,7 +17,7 @@
 
 - Games — arena hero, event list, event detail, up to three participant choices, confidence controls, share actions.
 - Support — support statistics and fan leaderboard.
-- Players — participant profiles and history.
+- Players — participant cards, detail view, profile fields, and discipline-result tables.
 - Rules — product rules and no-money notice.
 
 ## Auth Behavior

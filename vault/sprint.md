@@ -30,11 +30,12 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.18 | Add participant discipline stat tables for all 7 Dygyn disciplines | TODO |
 | 0.19 | Add mandatory admin-only TMA tab for import/results/finish operations | TODO |
 | 0.20 | Add CSV import validator/importer for Dygyn 2026 data pack | DONE |
+| 0.21 | Expose participant discipline stats in API/frontend | DONE |
 
 ## Current Priority
 
 1. Keep product legally safe: fan votes only, no money.
-2. Expose imported participant discipline stats through backend/frontend.
+2. Apply import to dev/prod DB after backup.
 3. Implement canonical 100-point allocation model from `new_brief.md`.
 4. Add admin-only TMA tab for safe live operations.
 5. Replace demo data before any public launch.

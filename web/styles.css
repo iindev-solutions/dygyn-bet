@@ -324,6 +324,60 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   color: var(--accent);
   font-weight: 950;
 }
+.player-card .details-btn { margin-top: 14px; }
+.player-photo {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(242, 184, 75, .28);
+  border-radius: 18px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, .06);
+}
+.profile-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-top: 14px;
+}
+.profile-photo {
+  width: 92px;
+  height: 92px;
+  border: 1px solid rgba(242, 184, 75, .28);
+  border-radius: 26px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, .06);
+}
+.profile-photo.avatar {
+  display: inline-grid;
+  place-items: center;
+  font-size: 28px;
+}
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+.result-table {
+  width: 100%;
+  min-width: 430px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.result-table th,
+.result-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.result-table th {
+  color: var(--accent);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.result-table small { color: var(--hint); }
 .toast {
   position: fixed;
   left: 14px;

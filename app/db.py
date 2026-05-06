@@ -410,26 +410,68 @@ def set_picks(db_path: str, event_id: int, user_id: int, player_ids: list[int], 
         return rows_to_dicts(pick_rows)
 
 
+def player_summary(conn: sqlite3.Connection, player_id: int) -> dict[str, Any]:
+    summary = conn.execute(
+        """
+        SELECT COUNT(*) AS history_count,
+               COALESCE(SUM(CASE WHEN place=1 THEN 1 ELSE 0 END), 0) AS wins,
+               COALESCE(SUM(CASE WHEN place BETWEEN 1 AND 3 THEN 1 ELSE 0 END), 0) AS podiums
+        FROM player_history
+        WHERE player_id=?
+        """,
+        (player_id,),
+    ).fetchone()
+    discipline_summary = conn.execute(
+        """
+        SELECT COUNT(*) AS discipline_results_count,
+               COUNT(DISTINCT year || ':' || event_title) AS discipline_events_count
+        FROM player_discipline_results
+        WHERE player_id=?
+        """,
+        (player_id,),
+    ).fetchone()
+    data = dict(summary)
+    data.update(dict(discipline_summary))
+    return data
+
+
+def get_player(db_path: str, player_id: int) -> dict[str, Any] | None:
+    with connect(db_path) as conn:
+        row = conn.execute("SELECT * FROM players WHERE id=?", (player_id,)).fetchone()
+        if not row:
+            return None
+        player = dict(row)
+        history = conn.execute(
+            "SELECT * FROM player_history WHERE player_id=? ORDER BY year DESC, competition DESC LIMIT 12",
+            (player_id,),
+        ).fetchall()
+        discipline_results = conn.execute(
+            """
+            SELECT r.*, d.name_ru AS discipline_name, d.name_yakut, d.unit AS discipline_unit,
+                   d.raw_result_type, d.higher_is_better, d.sort_order
+            FROM player_discipline_results r
+            JOIN disciplines d ON d.discipline_id=r.discipline_id
+            WHERE r.player_id=?
+            ORDER BY r.year DESC, r.event_title DESC, d.sort_order ASC
+            """,
+            (player_id,),
+        ).fetchall()
+        player["history"] = rows_to_dicts(history)
+        player["discipline_results"] = rows_to_dicts(discipline_results)
+        player["summary"] = player_summary(conn, player_id)
+        return player
+
+
 def list_players(db_path: str) -> list[dict[str, Any]]:
     with connect(db_path) as conn:
         players = rows_to_dicts(conn.execute("SELECT * FROM players WHERE is_active=1 ORDER BY name").fetchall())
         for player in players:
             history = conn.execute(
-                "SELECT * FROM player_history WHERE player_id=? ORDER BY year DESC, competition DESC LIMIT 8",
+                "SELECT * FROM player_history WHERE player_id=? ORDER BY year DESC, competition DESC LIMIT 3",
                 (player["id"],),
             ).fetchall()
             player["history"] = rows_to_dicts(history)
-            summary = conn.execute(
-                """
-                SELECT COUNT(*) AS history_count,
-                       SUM(CASE WHEN place=1 THEN 1 ELSE 0 END) AS wins,
-                       SUM(CASE WHEN place BETWEEN 1 AND 3 THEN 1 ELSE 0 END) AS podiums
-                FROM player_history
-                WHERE player_id=?
-                """,
-                (player["id"],),
-            ).fetchone()
-            player["summary"] = dict(summary)
+            player["summary"] = player_summary(conn, int(player["id"]))
         return players
 
 

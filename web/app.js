@@ -16,6 +16,7 @@ const state = {
   me: null,
   events: [],
   selectedEvent: null,
+  selectedPlayer: null,
   players: [],
   confidence: 25,
   draftPicksByEvent: {},
@@ -421,23 +422,108 @@ function renderSupportStats(event) {
 async function loadPlayers() {
   const data = await api('/api/players');
   state.players = data.players;
+  state.selectedPlayer = null;
+  renderPlayersList();
+}
+
+async function loadPlayer(playerId) {
+  const data = await api(`/api/players/${playerId}`);
+  state.selectedPlayer = data.player;
+  renderPlayerDetail(data.player);
+}
+
+function renderPlayersList() {
   $('#playersList').innerHTML = state.players.map(p => `
-    <article class="card">
+    <article class="card player-card">
       <div class="row">
-        <div><h2>${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.region || 'регион не указан')}</p></div>
-        <span class="badge">${p.summary?.podiums || 0} топ-3</span>
+        <div>
+          <h2>${escapeHtml(p.name)}</h2>
+          <p class="muted">${escapeHtml(p.region || 'регион не указан')}</p>
+        </div>
+        ${p.avatar_url ? `<img class="player-photo" src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<span class="avatar">${escapeHtml(initials(p.name))}</span>`}
       </div>
-      <p>${escapeHtml(p.bio || '')}</p>
+      <p>${escapeHtml(p.short_description || p.bio || '')}</p>
       <div class="stat-grid">
         <div class="stat-box"><strong>${p.summary?.wins || 0}</strong><span>побед</span></div>
         <div class="stat-box"><strong>${p.summary?.podiums || 0}</strong><span>топ-3</span></div>
-        <div class="stat-box"><strong>${p.summary?.history_count || 0}</strong><span>записей</span></div>
+        <div class="stat-box"><strong>${p.summary?.discipline_results_count || 0}</strong><span>результатов</span></div>
       </div>
-      <div class="history">
-        ${(p.history || []).map(h => `<div class="history-item"><strong>${h.year} · ${escapeHtml(h.competition)}</strong><br><span class="muted">${h.place ? `${h.place} место` : 'место не указано'}${h.score ? ` · ${h.score} очков` : ''}</span><br>${escapeHtml(h.notes || '')}</div>`).join('') || '<p class="muted">История пока не добавлена.</p>'}
+      <button class="ghost wide details-btn" data-player-id="${p.id}">Открыть статистику</button>
+    </article>
+  `).join('') || '<div class="card empty">Участники пока не загружены.</div>';
+  $('#playersList').querySelectorAll('[data-player-id]').forEach(btn => {
+    btn.addEventListener('click', () => loadPlayer(btn.dataset.playerId));
+  });
+}
+
+function renderPlayerDetail(player) {
+  const groups = groupDisciplineResults(player.discipline_results || []);
+  const tables = groups.map(group => renderDisciplineTable(group.title, group.rows)).join('') || '<p class="muted">Статистика по видам пока не загружена.</p>';
+  $('#playersList').innerHTML = `
+    <article class="card player-detail">
+      <button class="ghost" id="backToPlayersBtn">← Участники</button>
+      <div class="profile-head">
+        ${player.avatar_url ? `<img class="profile-photo" src="${escapeHtml(player.avatar_url)}" alt="${escapeHtml(player.name)}" loading="lazy">` : `<span class="profile-photo avatar">${escapeHtml(initials(player.name))}</span>`}
+        <div>
+          <h2>${escapeHtml(player.name)}</h2>
+          <p class="muted">${escapeHtml(player.region || 'регион не указан')}</p>
+          ${player.city_or_village ? `<p class="muted">${escapeHtml(player.city_or_village)}</p>` : ''}
+        </div>
+      </div>
+      <p>${escapeHtml(player.short_description || player.bio || '')}</p>
+      ${player.strengths ? `<div class="history-item"><strong>Сильные стороны</strong><br><span class="muted">${escapeHtml(player.strengths)}</span></div>` : ''}
+      ${player.previous_dygyn_note ? `<div class="history-item"><strong>Опыт Игр Дыгына</strong><br><span class="muted">${escapeHtml(player.previous_dygyn_note)}</span></div>` : ''}
+      <div class="stat-grid">
+        <div class="stat-box"><strong>${player.summary?.wins || 0}</strong><span>побед</span></div>
+        <div class="stat-box"><strong>${player.summary?.podiums || 0}</strong><span>топ-3</span></div>
+        <div class="stat-box"><strong>${player.summary?.discipline_events_count || 0}</strong><span>турниров</span></div>
       </div>
     </article>
+    ${tables}
+  `;
+  $('#backToPlayersBtn').addEventListener('click', renderPlayersList);
+}
+
+function groupDisciplineResults(results) {
+  const map = new Map();
+  for (const row of results) {
+    const key = `${row.year} · ${row.event_title}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  }
+  return [...map.entries()].map(([title, rows]) => ({ title, rows }));
+}
+
+function renderDisciplineTable(title, rows) {
+  const body = rows.map(r => `
+    <tr>
+      <td><strong>${escapeHtml(r.discipline_name || r.discipline_id)}</strong><br><small>${escapeHtml(r.name_yakut || '')}</small></td>
+      <td>${escapeHtml(formatResultValue(r))}</td>
+      <td>${r.place ? `${r.place}` : '—'}</td>
+      <td>${r.points ?? '—'}</td>
+    </tr>
   `).join('');
+  return `
+    <article class="card">
+      <h2>${escapeHtml(title)}</h2>
+      <div class="table-wrap">
+        <table class="result-table">
+          <thead><tr><th>Вид</th><th>Результат</th><th>Место</th><th>Очки</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </article>
+  `;
+}
+
+function formatResultValue(row) {
+  if (row.result_text) return row.result_text;
+  if (row.result_value !== null && row.result_value !== undefined) return `${row.result_value} ${row.result_unit || ''}`.trim();
+  return '—';
+}
+
+function initials(name) {
+  return String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 }
 
 function escapeHtml(value) {
