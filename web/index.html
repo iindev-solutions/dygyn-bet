@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Игры Дыгына — прогнозы</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">MVP TMA</p>
+        <h1>Фан-прогнозы Игр Дыгына</h1>
+        <p id="userLine" class="muted">Загрузка пользователя...</p>
+      </div>
+      <button id="refreshBtn" class="ghost">Обновить</button>
+    </header>
+
+    <section class="notice">
+      <strong>Без денежных ставок.</strong> В MVP используются только голоса и виртуальные очки уверенности.
+    </section>
+
+    <nav class="tabs" aria-label="Разделы">
+      <button data-tab="events" class="active">События</button>
+      <button data-tab="stats">Статистика</button>
+      <button data-tab="players">Участники</button>
+      <button data-tab="rules">Правила</button>
+    </nav>
+
+    <section id="events" class="tab active">
+      <div id="eventsList" class="stack"></div>
+    </section>
+
+    <section id="stats" class="tab">
+      <div id="leaderboard" class="stack"></div>
+    </section>
+
+    <section id="players" class="tab">
+      <div id="playersList" class="stack"></div>
+    </section>
+
+    <section id="rules" class="tab">
+      <article class="card">
+        <h2>Правила MVP</h2>
+        <ol>
+          <li>Один Telegram-пользователь может выбрать одного участника на одно событие.</li>
+          <li>Прогноз можно менять до старта или ручной блокировки события.</li>
+          <li>Очки уверенности — виртуальные. Они показывают силу поддержки, но не являются деньгами.</li>
+          <li>После внесения результата администратором победившим прогнозам начисляются фан-очки.</li>
+        </ol>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
