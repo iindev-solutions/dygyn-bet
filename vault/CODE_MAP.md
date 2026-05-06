@@ -17,6 +17,7 @@
 - `app/config.py` — environment loading and immutable `Settings` dataclass.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
 - `app/bot.py` — aiogram polling bot with `/start`, `/app`, `/rules`, and Mini App buttons.
+- `app/bot_runner.py` — standalone bot polling entrypoint for systemd.
 
 ## Frontend: `web/`
 
@@ -53,9 +54,9 @@
 
 1. User loads events.
 2. User opens event details.
-3. User selects participant and confidence points.
-4. Backend checks event exists, status is `open`, start time is future, player belongs to event.
-5. Backend inserts/updates one pick using `UNIQUE(event_id, user_id)`.
+3. User selects up to three participants and confidence points.
+4. Backend checks event exists, status is `open`, start time is future, and every selected player belongs to event.
+5. Backend replaces current user's event picks and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
 
 ### Settlement Flow
 
@@ -63,4 +64,4 @@
 2. Backend deletes old results for event.
 3. Backend inserts submitted result rows.
 4. Event status becomes `settled`.
-5. Picks for first-place player receive `awarded_points = confidence_points`; others become 0.
+5. Pick rows for first-place player receive `awarded_points = confidence_points`; others become 0.

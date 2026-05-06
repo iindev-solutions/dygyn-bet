@@ -1,13 +1,13 @@
 # Roadmap
 
-## Phase 1 — MVP Readiness
+## Phase 1 — Launch Readiness
 
 - Keep vault-first project memory current.
 - Run locally with dev login.
 - Configure real Telegram bot token and HTTPS URL.
 - Replace demo participants/events with verified Dygyn Games data.
 - Add source URLs for every real history record.
-- Test auth, event list, pick creation/update, stats, player list, leaderboard.
+- Test auth, event list, three-pick creation/update, stats, player list, leaderboard.
 - Test admin APIs for player/event/result management.
 
 ## Phase 2 — Content and Admin Operations
@@ -20,6 +20,7 @@
 
 ## Phase 3 — Social Mechanics
 
+- Improve Instagram Stories sharing after mobile tests.
 - Share prediction to Telegram.
 - Friend or region leaderboards.
 - Reactions or comments.

@@ -1,6 +1,6 @@
 # 06. Legal / compliance risk
 
-## MVP stance
+## Product stance
 
 Проект должен запускаться как фан-сервис без денег:
 

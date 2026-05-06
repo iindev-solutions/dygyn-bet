@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS picks (
     awarded_points INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(event_id, user_id)
+    UNIQUE(event_id, user_id, player_id)
 );
 
 CREATE TABLE IF NOT EXISTS results (
@@ -115,6 +115,36 @@ def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
 def init_db(db_path: str) -> None:
     with connect(db_path) as conn:
         conn.executescript(SCHEMA)
+        migrate_picks_unique_constraint(conn)
+
+
+def migrate_picks_unique_constraint(conn: sqlite3.Connection) -> None:
+    row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='picks'").fetchone()
+    table_sql = str(row["sql"] if row else "")
+    if "UNIQUE(event_id, user_id)" not in table_sql:
+        return
+    conn.executescript(
+        """
+        CREATE TABLE picks_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+            confidence_points INTEGER NOT NULL DEFAULT 10 CHECK(confidence_points BETWEEN 1 AND 100),
+            awarded_points INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(event_id, user_id, player_id)
+        );
+        INSERT INTO picks_new (id, event_id, user_id, player_id, confidence_points, awarded_points, created_at, updated_at)
+        SELECT id, event_id, user_id, player_id, confidence_points, awarded_points, created_at, updated_at
+        FROM picks;
+        DROP TABLE picks;
+        ALTER TABLE picks_new RENAME TO picks;
+        CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
+        CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
+        """
+    )
 
 
 def upsert_user(db_path: str, user: TelegramUser) -> dict[str, Any]:
@@ -183,10 +213,13 @@ def get_event(db_path: str, event_id: int, user_id: int | None = None) -> dict[s
             "SELECT COUNT(*) AS picks, COALESCE(SUM(confidence_points),0) AS points FROM picks WHERE event_id=?",
             (event_id,),
         ).fetchone()
-        my_pick = None
+        my_picks: list[dict[str, Any]] = []
         if user_id is not None:
-            my_pick_row = conn.execute("SELECT * FROM picks WHERE event_id=? AND user_id=?", (event_id, user_id)).fetchone()
-            my_pick = dict(my_pick_row) if my_pick_row else None
+            my_pick_rows = conn.execute(
+                "SELECT * FROM picks WHERE event_id=? AND user_id=? ORDER BY id",
+                (event_id, user_id),
+            ).fetchall()
+            my_picks = rows_to_dicts(my_pick_rows)
         result_rows = conn.execute(
             """
             SELECT r.*, pl.name AS player_name
@@ -200,13 +233,22 @@ def get_event(db_path: str, event_id: int, user_id: int | None = None) -> dict[s
         data = dict(event)
         data["participants"] = rows_to_dicts(participants)
         data["totals"] = dict(total)
-        data["my_pick"] = my_pick
+        data["my_picks"] = my_picks
+        data["my_pick"] = my_picks[0] if my_picks else None
         data["results"] = rows_to_dicts(result_rows)
         return data
 
 
-def set_pick(db_path: str, event_id: int, user_id: int, player_id: int, confidence_points: int) -> dict[str, Any]:
+MAX_PICKS_PER_EVENT = 3
+
+
+def set_picks(db_path: str, event_id: int, user_id: int, player_ids: list[int], confidence_points: int) -> list[dict[str, Any]]:
     confidence_points = max(1, min(100, int(confidence_points)))
+    unique_player_ids = list(dict.fromkeys(int(player_id) for player_id in player_ids))
+    if not unique_player_ids:
+        raise ValueError("Выберите хотя бы одного участника")
+    if len(unique_player_ids) > MAX_PICKS_PER_EVENT:
+        raise ValueError("Можно выбрать максимум трёх участников")
     with connect(db_path) as conn:
         event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         if not event:
@@ -217,25 +259,27 @@ def set_pick(db_path: str, event_id: int, user_id: int, player_id: int, confiden
         if starts_at <= datetime.now(timezone.utc):
             conn.execute("UPDATE events SET status='locked' WHERE id=?", (event_id,))
             raise ValueError("Событие уже началось, прогнозы закрыты")
-        participant = conn.execute(
-            "SELECT 1 FROM event_participants WHERE event_id=? AND player_id=?",
-            (event_id, player_id),
-        ).fetchone()
-        if not participant:
-            raise ValueError("Этот участник не добавлен в событие")
-        conn.execute(
-            """
-            INSERT INTO picks (event_id, user_id, player_id, confidence_points)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(event_id, user_id) DO UPDATE SET
-                player_id=excluded.player_id,
-                confidence_points=excluded.confidence_points,
-                updated_at=CURRENT_TIMESTAMP
-            """,
-            (event_id, user_id, player_id, confidence_points),
-        )
-        row = conn.execute("SELECT * FROM picks WHERE event_id=? AND user_id=?", (event_id, user_id)).fetchone()
-        return dict(row)
+        rows = conn.execute(
+            f"SELECT player_id FROM event_participants WHERE event_id=? AND player_id IN ({','.join('?' for _ in unique_player_ids)})",
+            (event_id, *unique_player_ids),
+        ).fetchall()
+        allowed_ids = {int(row["player_id"]) for row in rows}
+        if len(allowed_ids) != len(unique_player_ids):
+            raise ValueError("Один или несколько участников не добавлены в событие")
+        conn.execute("DELETE FROM picks WHERE event_id=? AND user_id=?", (event_id, user_id))
+        for player_id in unique_player_ids:
+            conn.execute(
+                """
+                INSERT INTO picks (event_id, user_id, player_id, confidence_points)
+                VALUES (?, ?, ?, ?)
+                """,
+                (event_id, user_id, player_id, confidence_points),
+            )
+        pick_rows = conn.execute(
+            "SELECT * FROM picks WHERE event_id=? AND user_id=? ORDER BY id",
+            (event_id, user_id),
+        ).fetchall()
+        return rows_to_dicts(pick_rows)
 
 
 def list_players(db_path: str) -> list[dict[str, Any]]:
@@ -344,7 +388,7 @@ def seed_demo(db_path: str) -> None:
             "INSERT INTO events (title, description, starts_at, status) VALUES (?, ?, ?, 'open')",
             (
                 "Игры Дыгына 2026 — финал, демо-прогноз",
-                "MVP: фан-прогнозы без денег. Данные участников демонстрационные.",
+                "Фан-прогнозы без денег. Данные участников демонстрационные.",
                 starts,
             ),
         )

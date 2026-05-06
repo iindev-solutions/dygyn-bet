@@ -15,10 +15,10 @@
 
 ## Tabs
 
-- Events — event list, event detail, participant choices, confidence slider.
+- Events — event list, event detail, up to three participant choices, confidence slider, share actions.
 - Stats — leaderboard.
 - Players — participant profiles and history.
-- Rules — MVP rules and no-money notice.
+- Rules — product rules and no-money notice.
 
 ## Auth Behavior
 
@@ -34,6 +34,8 @@ When present, it calls:
 tg.ready();
 tg.expand();
 ```
+
+Frontend can run at root (`/`) or behind a prefix such as `/dygyn-bet/`. It derives the base path from `static/app.js` and prefixes API calls.
 
 For API calls, it sends:
 
@@ -63,15 +65,25 @@ Frontend must keep no-money language visible. Current notice:
 
 Avoid adding betting, deposit, withdrawal, odds, payout, or prize wording without legal approval.
 
+## Instagram Stories Sharing
+
+Direct Instagram Stories posting is not reliable from a Telegram Mini App web context. The product provides:
+
+- native Web Share when available;
+- copy-to-clipboard share text;
+- generated PNG story card for manual Instagram Stories upload.
+
 ## Manual Smoke Check
 
 1. Open locally with `ALLOW_DEV_LOGIN=true`.
 2. Confirm user line loads.
 3. Select event.
 4. Move confidence slider.
-5. Pick participant.
-6. Confirm toast and updated statistics.
-7. Open stats tab.
-8. Open players tab.
-9. Open rules tab and verify no-money warning.
-10. Repeat inside Telegram with real HTTPS URL and bot button.
+5. Pick up to three participants.
+6. Save the vote.
+7. Confirm toast and updated statistics.
+8. Copy share text or download the story card.
+9. Open stats tab.
+10. Open players tab.
+11. Open rules tab and verify no-money warning.
+12. Repeat inside Telegram with real HTTPS URL and bot button.

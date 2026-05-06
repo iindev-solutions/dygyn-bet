@@ -23,12 +23,12 @@ from .db import (
     list_events,
     list_players,
     seed_demo,
-    set_pick,
+    set_picks,
     upsert_user,
 )
 from .telegram_auth import TelegramAuthError, TelegramUser, telegram_user_from_init_data, validate_init_data
 
-app = FastAPI(title="Dygyn Fan Picks MVP", version="0.1.0")
+app = FastAPI(title="Dygyn Fan Picks", version="0.1.0")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "web"), name="static")
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
@@ -37,7 +37,7 @@ _bot_task: asyncio.Task[Any] | None = None
 
 class PickIn(BaseModel):
     event_id: int
-    player_id: int
+    player_ids: list[int] = Field(min_length=1, max_length=3)
     confidence_points: int = Field(default=10, ge=1, le=100)
 
 
@@ -105,10 +105,6 @@ async def on_startup() -> None:
 async def on_shutdown() -> None:
     if _bot_task:
         _bot_task.cancel()
-        try:
-            await _bot_task
-        except asyncio.CancelledError:
-            pass
 
 
 def _dev_user() -> TelegramUser:
@@ -168,11 +164,11 @@ def event_detail(event_id: int, user: dict[str, Any] = Depends(current_user)) ->
 @app.post("/api/picks")
 def create_or_update_pick(data: PickIn, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     try:
-        pick = set_pick(settings.db_path, data.event_id, int(user["id"]), data.player_id, data.confidence_points)
+        picks = set_picks(settings.db_path, data.event_id, int(user["id"]), data.player_ids, data.confidence_points)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     event = get_event(settings.db_path, data.event_id, user_id=int(user["id"]))
-    return {"pick": pick, "event": event}
+    return {"picks": picks, "event": event}
 
 
 @app.get("/api/players")

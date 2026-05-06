@@ -36,7 +36,7 @@ SQLite database (`data/dygyn.sqlite3`)
 - FastAPI app in `app/main.py`.
 - Owns auth, rate limiting, API routes, static serving, startup/shutdown lifecycle.
 - Starts DB schema and demo seed on startup.
-- Optional bot polling runs in the same process for MVP/dev.
+- Optional bot polling can run in the same process for local/dev use.
 
 ### Database
 
@@ -47,7 +47,7 @@ SQLite database (`data/dygyn.sqlite3`)
 
 ## Why This Design
 
-- FastAPI gives simple API and static serving for MVP.
+- FastAPI gives simple API and static serving for the early product.
 - SQLite is enough for early small-audience testing.
 - Aiogram is enough for Telegram bot commands and Mini App buttons.
 - Vanilla JS avoids build tooling and deploy complexity.

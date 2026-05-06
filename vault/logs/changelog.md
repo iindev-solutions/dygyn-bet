@@ -31,7 +31,7 @@
 
 ### Done
 
-- Prepared first git commit with the FastAPI Telegram Mini App MVP, docs, tests, Docker files, old wiki, and new vault.
+- Prepared first git commit with the FastAPI Telegram Mini App product, docs, tests, Docker files, old wiki, and new vault.
 
 ### Verified
 
@@ -41,3 +41,124 @@
 ### Next
 
 - Push first commit to `origin/main`.
+
+## 2026-05-06 — Three-Pick Voting and Story Sharing
+
+### Done
+
+- Changed event voting from one selected participant to up to three selected participants.
+- Changed `POST /api/picks` to accept `player_ids` and replace current user's event picks.
+- Changed SQLite pick uniqueness to `UNIQUE(event_id, user_id, player_id)` and added migration for old local DBs.
+- Updated frontend selection flow: choose up to three, save once, see selected markers.
+- Added sharing actions: native share, copy text, and generated PNG story card for manual Instagram Stories upload.
+- Updated bot rules, README, old wiki, vault API/data/frontend docs, code map, and sprint.
+
+### Verified
+
+- Ran `python -m py_compile app/*.py tests/*.py`.
+- Ran `node --check web/app.js`.
+- Ran `git diff --check`.
+- Ran a direct SQLite DB flow script covering three picks, four-pick rejection, event detail, and settlement.
+- Ran a direct SQLite migration script for the old `UNIQUE(event_id, user_id)` picks schema.
+
+### Not Verified
+
+- Full `pytest` still not run because project dependencies are not installed in the current Python environment (`fastapi` and `pytest` missing).
+- Manual Telegram Mini App and Instagram Stories share flow not tested on device.
+
+### Next
+
+- Install dependencies and run full `python -m pytest`.
+- Manually test on mobile Telegram with HTTPS URL.
+- Test story-card download/open behavior on iOS and Android.
+
+## 2026-05-06 — VPS Deployment Route Scouted
+
+### Done
+
+- Inspected `iind-vps` in read-only mode.
+- Identified existing nginx site for `iindiinda.duckdns.org`.
+- Confirmed existing root public folder `/var/www/iind-app/frontend/public` and existing `/api` Laravel route must not be touched.
+- Planned safe deployment under `https://iindiinda.duckdns.org/dygyn-bet/` using nginx prefix proxy to local FastAPI port `8010`.
+- Updated frontend to support prefix deployment by using relative static paths and deriving API base path from `static/app.js`.
+- Added deployment documentation.
+
+### Verified
+
+- Ran `node --check web/app.js`.
+- Ran `python -m py_compile app/*.py tests/*.py`.
+
+### Not Verified
+
+- No server files or nginx config were changed yet.
+- Production bot token/admin IDs are not configured yet.
+
+### Next
+
+- Get production `BOT_TOKEN` and `ADMIN_IDS`.
+- Deploy app to `/opt/dygyn-bet`.
+- Add nginx `/dygyn-bet/` reverse proxy location and run `nginx -t`.
+- Start systemd service and test public URL.
+
+## 2026-05-06 — Deployed to VPS
+
+### Done
+
+- Copied app to `/opt/dygyn-bet` on `iind-vps`.
+- Installed `python3.12-venv` on the VPS.
+- Created Python venv and installed requirements.
+- Created server-only `.env` with production `WEB_APP_URL`, `ALLOW_DEV_LOGIN=false`, `ENABLE_POLLING=false`, and SQLite path under `/opt/dygyn-bet/data`.
+- Created and started `dygyn-bet.service` on port `127.0.0.1:8010`.
+- Created and started separate `dygyn-bet-bot.service` for Telegram polling.
+- Added nginx `/dygyn-bet/` reverse proxy route without touching existing public folder or root `/api`.
+
+### Verified
+
+- VPS tests: `.venv/bin/python -m pytest` passed: 4 tests.
+- `systemctl status dygyn-bet`: active/running.
+- `systemctl status dygyn-bet-bot`: active/running.
+- API service restart after split polling/API: ~0.2s.
+- `nginx -t`: successful.
+- Public health: `https://iindiinda.duckdns.org/dygyn-bet/health` returns OK.
+- Public HTML and static JS are served under `/dygyn-bet/`.
+- Public `/dygyn-bet/api/me` returns expected 401 without Telegram auth.
+- Local repository does not contain the bot token (`rg` check).
+
+### Not Verified
+
+- Telegram `/start` button has not been explicitly verified in chat.
+- Full mobile QA still needed.
+- `ADMIN_IDS` is still empty on the server until the real admin Telegram numeric ID is provided.
+
+### Next
+
+- Add real `ADMIN_IDS` to `/opt/dygyn-bet/.env` and restart service.
+- Test bot `/start` in Telegram.
+- Test Mini App voting on mobile.
+
+## 2026-05-06 — Removed Launch-Phase Product Copy
+
+### Done
+
+- Removed launch-phase wording from user-facing UI, bot messages, README, and project docs.
+- Renamed old scope doc to `wiki/01-scope.md`.
+- Kept product meaning unchanged: fan predictions, no money.
+
+### Verified
+
+- Local search confirms removed launch-phase wording has no remaining matches.
+- Ran Python and JavaScript syntax checks locally.
+
+### Next
+
+- Deploy copy cleanup to VPS.
+- Recheck public page and bot copy.
+
+### Deployment Follow-Up
+
+- Deployed cleanup to `/opt/dygyn-bet` on `iind-vps`.
+- Removed old renamed scope file from server.
+- VPS tests passed: 4 tests.
+- Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both are active.
+- Public health check passed at `/dygyn-bet/health`.
+- Server search confirms removed launch-phase wording has no remaining matches.

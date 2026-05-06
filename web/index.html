@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Игры Дыгына — прогнозы</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="static/styles.css" />
 </head>
 <body>
   <main class="app">
     <header class="hero">
       <div>
-        <p class="eyebrow">MVP TMA</p>
+        <p class="eyebrow">Telegram Mini App</p>
         <h1>Фан-прогнозы Игр Дыгына</h1>
         <p id="userLine" class="muted">Загрузка пользователя...</p>
       </div>
@@ -19,7 +19,7 @@
     </header>
 
     <section class="notice">
-      <strong>Без денежных ставок.</strong> В MVP используются только голоса и виртуальные очки уверенности.
+      <strong>Без денежных ставок.</strong> Выберите до трёх участников и поделитесь выбором в сторис.
     </section>
 
     <nav class="tabs" aria-label="Разделы">
@@ -43,11 +43,12 @@
 
     <section id="rules" class="tab">
       <article class="card">
-        <h2>Правила MVP</h2>
+        <h2>Правила</h2>
         <ol>
-          <li>Один Telegram-пользователь может выбрать одного участника на одно событие.</li>
-          <li>Прогноз можно менять до старта или ручной блокировки события.</li>
+          <li>Один Telegram-пользователь может выбрать до трёх участников на одно событие.</li>
+          <li>Выбор можно менять до старта или ручной блокировки события.</li>
           <li>Очки уверенности — виртуальные. Они показывают силу поддержки, но не являются деньгами.</li>
+          <li>После сохранения выбора можно скачать карточку для Instagram Stories.</li>
           <li>После внесения результата администратором победившим прогнозам начисляются фан-очки.</li>
         </ol>
       </article>
@@ -55,6 +56,6 @@
   </main>
 
   <div id="toast" class="toast" hidden></div>
-  <script src="/static/app.js"></script>
+  <script src="static/app.js"></script>
 </body>
 </html>

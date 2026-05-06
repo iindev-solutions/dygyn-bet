@@ -7,7 +7,8 @@
 - Validate Telegram Mini App auth.
 - Manage SQLite schema and data access.
 - Seed demo data for empty local database.
-- Run aiogram bot polling when enabled.
+- Run API service.
+- Bot polling can run in a separate systemd service via `app.bot_runner`.
 - Enforce basic rate limiting and admin checks.
 
 ## Main Files
@@ -16,7 +17,8 @@
 - `app/db.py` — schema and persistence functions.
 - `app/config.py` — env settings.
 - `app/telegram_auth.py` — Telegram auth validation.
-- `app/bot.py` — Telegram bot polling.
+- `app/bot.py` — Telegram bot polling handlers.
+- `app/bot_runner.py` — standalone bot polling entrypoint.
 
 ## Environment Variables
 
@@ -26,7 +28,7 @@ From `.env.example`:
 - `WEB_APP_URL` — public HTTPS Mini App URL.
 - `ADMIN_IDS` — comma-separated Telegram numeric IDs.
 - `ALLOW_DEV_LOGIN` — local browser dev login; must be `false` in production.
-- `ENABLE_POLLING` — run aiogram polling inside FastAPI process.
+- `ENABLE_POLLING` — run aiogram polling inside FastAPI process. For VPS deployment, keep this `false` and run `app.bot_runner` as a separate service.
 - `DB_PATH` — SQLite DB path.
 - `AUTH_MAX_AGE_SECONDS` — max age for Telegram initData.
 - `RATE_LIMIT_WINDOW_SECONDS` — rate window.

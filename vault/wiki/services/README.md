@@ -7,5 +7,6 @@ Current service docs:
 - `api.md` — HTTP API contract and auth requirements.
 - `backend.md` — FastAPI, SQLite, aiogram, config, local run, deployment notes.
 - `frontend.md` — Telegram Mini App UI/client behavior.
+- `deployment.md` — VPS/nginx deployment route and constraints.
 
 Update these files when endpoints, runtime behavior, env variables, or deployment assumptions change.

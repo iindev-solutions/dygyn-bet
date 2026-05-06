@@ -28,12 +28,12 @@ X-Telegram-Init-Data: <window.Telegram.WebApp.initData>
 
 ## POST /api/picks
 
-Создать или обновить прогноз.
+Создать или заменить выбор пользователя: от 1 до 3 участников.
 
 ```json
 {
   "event_id": 1,
-  "player_id": 2,
+  "player_ids": [2, 3, 4],
   "confidence_points": 25
 }
 ```

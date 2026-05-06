@@ -1,11 +1,12 @@
 # Anti-Abuse
 
-## Current MVP Protections
+## Current Protections
 
 1. Telegram initData HMAC validation.
-2. One pick per event per user enforced by `UNIQUE(event_id, user_id)`.
-3. Event start-time lock: if `starts_at` is in the past, `set_pick()` changes event status to `locked` and rejects the pick.
-4. Event statuses: `draft`, `open`, `locked`, `settled`.
+2. Maximum three picks per event per user enforced in application logic.
+3. One row per selected participant enforced by `UNIQUE(event_id, user_id, player_id)`.
+4. Event start-time lock: if `starts_at` is in the past, `set_picks()` changes event status to `locked` and rejects the pick.
+5. Event statuses: `draft`, `open`, `locked`, `settled`.
 5. In-memory rate limit in FastAPI middleware.
 6. Manual user block field: `users.is_blocked`.
 7. Admin APIs require Telegram ID from `ADMIN_IDS`, except local dev admin under `ALLOW_DEV_LOGIN=true`.

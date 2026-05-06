@@ -1,6 +1,6 @@
 # Legal / Compliance Boundary
 
-## MVP Stance
+## Product Stance
 
 The project must operate as a fan-prediction/voting service with no money.
 

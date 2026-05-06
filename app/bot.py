@@ -21,7 +21,7 @@ async def run_polling(bot_token: str, web_app_url: str) -> None:
     @dp.message(CommandStart())
     async def start(message: Message) -> None:
         await message.answer(
-            "Привет! Это MVP фан-прогнозов по Играм Дыгына. "
+            "Привет! Это фан-прогнозы по Играм Дыгына. "
             "Здесь нет денежных ставок: только голосование, очки уверенности и статистика болельщиков.",
             reply_markup=_keyboard(web_app_url),
         )
@@ -33,15 +33,16 @@ async def run_polling(bot_token: str, web_app_url: str) -> None:
     @dp.message(Command("rules"))
     async def rules(message: Message) -> None:
         await message.answer(
-            "Правила MVP:\n"
-            "1. Один Telegram-аккаунт = один прогноз на событие.\n"
-            "2. Прогноз можно менять до закрытия события.\n"
+            "Правила:\n"
+            "1. Один Telegram-аккаунт может выбрать до трёх участников на событие.\n"
+            "2. Выбор можно менять до закрытия события.\n"
             "3. Очки уверенности виртуальные, денег и выигрышей нет.\n"
-            "4. После внесения результата начисляются фан-очки."
+            "4. После сохранения можно скачать карточку для сторис.\n"
+            "5. После внесения результата начисляются фан-очки."
         )
 
     @dp.message(F.web_app_data)
     async def web_app_data(message: Message) -> None:
-        await message.answer("Данные из Mini App получены. Для MVP основные действия идут через API внутри TMA.")
+        await message.answer("Данные из Mini App получены. Основные действия идут через API внутри TMA.")
 
     await dp.start_polling(bot)

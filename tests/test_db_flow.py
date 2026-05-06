@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.db import admin_create_event, admin_create_player, admin_settle_event, get_event, init_db, set_pick, upsert_user
+from app.db import admin_create_event, admin_create_player, admin_settle_event, get_event, init_db, set_picks, upsert_user
 from app.telegram_auth import TelegramUser
 
 
@@ -17,10 +17,12 @@ def test_pick_and_settle_flow(tmp_path):
         [player1["id"], player2["id"]],
     )
     user = upsert_user(db_path, TelegramUser(id=777, first_name="Test"))
-    pick = set_pick(db_path, event["id"], user["id"], player1["id"], 30)
-    assert pick["confidence_points"] == 30
+    picks = set_picks(db_path, event["id"], user["id"], [player1["id"], player2["id"]], 30)
+    assert len(picks) == 2
+    assert picks[0]["confidence_points"] == 30
     detailed = get_event(db_path, event["id"], user_id=user["id"])
-    assert detailed["totals"]["picks"] == 1
+    assert detailed["totals"]["picks"] == 2
+    assert len(detailed["my_picks"]) == 2
     admin_settle_event(db_path, event["id"], [{"player_id": player1["id"], "place": 1, "score": 42}])
     settled = get_event(db_path, event["id"], user_id=user["id"])
     assert settled["status"] == "settled"

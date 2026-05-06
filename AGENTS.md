@@ -39,12 +39,12 @@ All content inside `vault/` must be written in English.
 - FastAPI backend
 - Vanilla Telegram Mini App frontend
 - Aiogram bot
-- SQLite database for MVP
+- SQLite database for early product version
 - Pytest tests
 
 ## Product Rule
 
-This MVP is a fan-prediction/voting service only. Do not add real-money betting, deposits, withdrawals, odds, paid entry, or prizes with monetary value without a legal decision.
+This product is a fan-prediction/voting service only. Do not add real-money betting, deposits, withdrawals, odds, paid entry, or prizes with monetary value without a legal decision.
 
 ## Principle
 

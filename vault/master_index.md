@@ -58,6 +58,7 @@ Service docs:
 - `vault/wiki/services/api.md`
 - `vault/wiki/services/backend.md`
 - `vault/wiki/services/frontend.md`
+- `vault/wiki/services/deployment.md`
 
 ## Historical Docs
 

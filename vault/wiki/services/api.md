@@ -52,31 +52,32 @@ Returns detailed event with:
 - pick counts;
 - confidence sums;
 - totals;
-- current user's pick;
+- current user's picks;
 - results.
 
 ### `POST /api/picks`
 
-Creates or updates current user's pick.
+Creates or replaces current user's picks for an event.
 
 Request:
 
 ```json
 {
   "event_id": 1,
-  "player_id": 2,
+  "player_ids": [2, 3, 4],
   "confidence_points": 25
 }
 ```
 
 Rules:
 
-- confidence points are clamped/validated to 1–100;
+- user can choose 1–3 participants per event;
+- confidence points are clamped/validated to 1–100 and applied to each selected participant;
 - event must exist;
 - event status must be `open`;
 - event `starts_at` must be in the future;
-- player must be linked to the event;
-- one pick per user per event.
+- every selected player must be linked to the event;
+- backend stores one row per selected participant with `UNIQUE(event_id, user_id, player_id)`.
 
 ### `GET /api/players`
 

@@ -75,6 +75,10 @@ h3 { font-size: 17px; margin-bottom: 6px; }
   background: var(--accent);
   color: var(--accent-text);
 }
+button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
 .tab { display: none; }
 .tab.active { display: block; }
 .stack { display: grid; gap: 12px; }
@@ -139,6 +143,25 @@ h3 { font-size: 17px; margin-bottom: 6px; }
   border-top: 1px solid var(--line);
 }
 .confidence input { width: 100%; }
+.wide {
+  width: 100%;
+  margin-top: 12px;
+}
+.share-card {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  background: rgba(37, 99, 235, .06);
+}
+.share-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.share-actions button {
+  border-radius: 14px;
+}
 .history {
   display: grid;
   gap: 8px;
@@ -171,4 +194,5 @@ h3 { font-size: 17px; margin-bottom: 6px; }
 @media (max-width: 420px) {
   h1 { font-size: 24px; }
   .tabs { grid-template-columns: repeat(2, 1fr); }
+  .share-actions { grid-template-columns: 1fr; }
 }

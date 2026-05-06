@@ -48,7 +48,7 @@ Primary key:
 
 ## `picks`
 
-User predictions/votes.
+User predictions/votes. A user can select up to three participants per event.
 
 Fields:
 
@@ -61,7 +61,11 @@ Fields:
 
 Constraint:
 
-- `UNIQUE(event_id, user_id)` — one pick per user per event.
+- `UNIQUE(event_id, user_id, player_id)` — one row per selected participant.
+
+Application rule:
+
+- maximum three selected participants per user per event.
 
 ## `results`
 

@@ -1,8 +1,8 @@
-# Sprint — MVP Stabilization
+# Sprint — Product Stabilization
 
 ## Goal
 
-Turn the existing Dygyn Telegram Mini App MVP into a reliable fan-prediction product with clear project memory in `vault/`.
+Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product with clear project memory in `vault/`.
 
 ## Current Tasks
 
@@ -11,10 +11,16 @@ Turn the existing Dygyn Telegram Mini App MVP into a reliable fan-prediction pro
 | 0.1 | Add vault-first project memory | DONE |
 | 0.2 | Keep old `wiki/` as historical source docs | DONE |
 | 0.3 | Replace demo players/events with verified real data | TODO |
+| 0.3a | Allow up to three participant picks per user/event | DONE |
+| 0.3b | Add Instagram Stories manual share card | DONE |
 | 0.4 | Validate Telegram launch flow with real bot token and HTTPS URL | TODO |
 | 0.5 | Add or improve admin data-entry workflow | TODO |
 | 0.6 | Add source URLs for all real player history records | TODO |
 | 0.7 | Decide deployment target and backup plan | TODO |
+| 0.8 | Scout existing `iind-vps` route deployment | DONE |
+| 0.9 | Deploy preview to `iindiinda.duckdns.org/dygyn-bet/` | DONE |
+| 0.10 | Configure real admin Telegram IDs on VPS | TODO |
+| 0.11 | Split API and bot into separate systemd services | DONE |
 
 ## Current Priority
 
@@ -26,6 +32,6 @@ Turn the existing Dygyn Telegram Mini App MVP into a reliable fan-prediction pro
 ## Success Criteria
 
 - Project sessions start from `vault/`.
-- MVP can run locally with `ALLOW_DEV_LOGIN=true`.
+- Product can run locally with `ALLOW_DEV_LOGIN=true`.
 - Production config has `ALLOW_DEV_LOGIN=false`, real `BOT_TOKEN`, real `ADMIN_IDS`, and HTTPS `WEB_APP_URL`.
 - All real sports data has manually checked sources.
