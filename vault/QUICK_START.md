@@ -27,6 +27,7 @@ Read this first. Read deep docs only when task needs them.
 - Story-card sharing works.
 - Dygyn Fan Arena UI deployed.
 - VPS tests passed last deploy.
+- README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
 - Target product mechanic: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.

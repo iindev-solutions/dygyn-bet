@@ -3,7 +3,7 @@
 ## Root
 
 - `AGENTS.md` — vault-first project rules for coding agents.
-- `README.md` — Russian product overview, local run instructions, Telegram setup, Docker, admin curl examples, legal warning.
+- `README.md` — short Russian product description: fan app idea, 100-point prediction model, participant stats, visual style, legal boundary.
 - `new_brief.md` — Russian canonical MVP brief for product/UI/backend direction.
 - `.env.example` — configuration template for bot token, web app URL, admins, dev login, polling, SQLite path, Telegram auth age.
 - `.gitignore` — ignores Python env/cache, `.env`, SQLite data files, pyc.

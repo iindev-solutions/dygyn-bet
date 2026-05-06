@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-06 — README Rewrite
+
+- Rewrote `README.md` again as a short product-only description.
+- Removed local setup, admin curl examples, implementation status, source/data instructions, and excess MVP/TMA wording.
+- Kept core product idea, 100-point prediction model, participant stats, visual style, and no-money boundary.
+- Polished opening copy and legal boundary wording before push.
+- Updated `vault/QUICK_START.md` and `vault/CODE_MAP.md`.
+- Verified: `git diff --check` passed.
+
 ## 2026-05-06 — New MVP Brief Documented
 
 - Reviewed `new_brief.md` against current app and vault docs.
