@@ -9,6 +9,7 @@
 - App now allows a user to select up to three participants per event.
 - `POST /api/picks` now accepts `player_ids` and replaces current user's picks for the event.
 - Frontend includes share text, native share, and generated PNG story card for manual Instagram Stories repost.
+- Frontend now follows Dygyn Fan Arena direction: dark sports cards, bottom navigation, support progress bars, confidence chips, and sticky save action.
 - Frontend now supports prefix deployment such as `/dygyn-bet/` by deriving API base path from `static/app.js`.
 - VPS `iind-vps` now hosts the app under `https://iindiinda.duckdns.org/dygyn-bet/` without touching existing public root.
 - Server API service is `dygyn-bet.service`, bot service is `dygyn-bet-bot.service`, app path is `/opt/dygyn-bet`, local API port is `127.0.0.1:8010`.
@@ -21,7 +22,8 @@
 4. Next likely deployment task: add real `ADMIN_IDS` to `/opt/dygyn-bet/.env`, restart `dygyn-bet.service`, and test bot `/start` from Telegram.
 5. Next likely technical task: install dependencies and run full `python -m pytest`.
 5. Next likely product task: manually test the three-pick flow and story-card sharing on mobile Telegram.
-6. Next data task: replace demo participants/events with verified official data and source URLs.
+6. Next design task: test Dygyn Fan Arena UI on mobile Telegram and tune spacing/colors.
+7. Next data task: replace demo participants/events with verified official data and source URLs.
 
 ## Session Restart Prompt
 

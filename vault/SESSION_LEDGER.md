@@ -40,6 +40,15 @@
 - Not verified: explicit Telegram `/start` confirmation in chat; full mobile QA; admin ID not configured.
 - Next: add `ADMIN_IDS`, restart service, test from Telegram mobile.
 
+## 2026-05-06 — Dygyn Fan Arena Frontend Pass
+
+- Scope: apply `ref.md` design direction to the frontend without changing stack.
+- Changes: added vault design direction, dark sports UI, bottom nav, arena hero, participant cards, support bars, confidence chips, sticky save action, support+leaderboard tab.
+- Verified: JS syntax, Python compile, local search for removed wording/secrets.
+- Not verified: local pytest unavailable; mobile Telegram visual QA pending.
+- Follow-up: deployed to VPS; VPS tests passed; API and bot services restarted and active; public health and updated HTML checked.
+- Next: test on mobile, then plan admin-only TMA tab.
+
 ## 2026-05-06 — Removed Launch-Phase Product Copy
 
 - Scope: remove launch-phase wording from visible product/design copy.

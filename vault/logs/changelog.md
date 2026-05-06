@@ -136,6 +136,40 @@
 - Test bot `/start` in Telegram.
 - Test Mini App voting on mobile.
 
+## 2026-05-06 — Dygyn Fan Arena Frontend Pass
+
+### Done
+
+- Added `ref.md` as the root design reference after cleaning launch-phase wording.
+- Added canonical English design direction at `vault/wiki/architecture/design-direction.md`.
+- Restyled frontend toward Dygyn Fan Arena: dark sports UI, warm gold accent, arena hero, bottom navigation, participant cards, support progress bars, confidence chips, sticky save action.
+- Changed stats tab into support statistics plus fan leaderboard.
+- Updated frontend and code-map vault docs.
+
+### Verified
+
+- `node --check web/app.js` passed.
+- `python -m py_compile app/*.py tests/*.py` passed.
+- Local secret/removed-copy search passed.
+
+### Not Verified
+
+- Local `python -m pytest` could not run because pytest is not installed in the current local Python environment.
+- Mobile Telegram visual QA not done yet.
+
+### Deployment Follow-Up
+
+- Deployed frontend pass to `/opt/dygyn-bet` on `iind-vps`.
+- VPS tests passed: 4 tests.
+- Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both are active.
+- Public health check passed at `/dygyn-bet/health`.
+- Public HTML shows `Dygyn Fan Arena` and updated no-money copy.
+
+### Next
+
+- Test layout in Telegram on mobile.
+- Add admin-only TMA tab after admin Telegram numeric ID is provided.
+
 ## 2026-05-06 — Removed Launch-Phase Product Copy
 
 ### Done

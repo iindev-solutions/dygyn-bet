@@ -22,8 +22,8 @@
 ## Frontend: `web/`
 
 - `web/index.html` — Telegram Mini App shell with tabs: events, stats, players, rules.
-- `web/app.js` — vanilla JS client: Telegram WebApp init, API wrapper, event/pick/stat/player rendering, leaderboard, HTML escaping, toast.
-- `web/styles.css` — responsive Telegram-theme-aware UI styles.
+- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, three-pick flow, support stats, leaderboard, player cards, story-card sharing, HTML escaping, toast.
+- `web/styles.css` — Dygyn Fan Arena dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
 
 ## Tests: `tests/`
 

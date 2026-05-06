@@ -10,6 +10,7 @@ const appUrl = (path) => `${appBasePath}${path}`;
 const publicAppUrl = () => `${window.location.origin}${appBasePath || ''}/`;
 
 const MAX_PICKS = 3;
+const CONFIDENCE_PRESETS = [25, 50, 75, 100];
 
 const state = {
   me: null,
@@ -101,6 +102,23 @@ function getPickedNames(event = state.selectedEvent) {
   return event.participants.filter(p => ids.has(Number(p.id))).map(p => p.name);
 }
 
+function getTotalPoints(event) {
+  return Number(event?.totals?.points || 0);
+}
+
+function supportPercent(event, participant) {
+  const totalPoints = getTotalPoints(event);
+  const points = Number(participant.confidence_sum || 0);
+  return totalPoints ? Math.round(points / totalPoints * 100) : 0;
+}
+
+function topSupport(event, limit = 3) {
+  if (!event?.participants?.length) return [];
+  return [...event.participants]
+    .sort((a, b) => Number(b.confidence_sum || 0) - Number(a.confidence_sum || 0))
+    .slice(0, limit);
+}
+
 function toggleDraftPick(playerId) {
   if (!state.selectedEvent) return;
   const eventId = state.selectedEvent.id;
@@ -126,6 +144,7 @@ function renderEventsList() {
     return;
   }
   const selected = state.selectedEvent;
+  const hero = selected ? renderArenaHero(selected) : '';
   const eventPicker = state.events.map(e => `
     <button class="choice ${selected?.id === e.id ? 'selected' : ''}" data-event-id="${e.id}">
       <span>${escapeHtml(e.title)}<br><small>${formatDate(e.starts_at)} · ${e.participant_count} участников · ${e.pick_count} голосов</small></span>
@@ -134,9 +153,17 @@ function renderEventsList() {
   `).join('');
 
   const detail = selected ? renderEventDetail(selected) : '';
-  box.innerHTML = `<article class="card"><h2>Выберите событие</h2><div class="choices">${eventPicker}</div></article>${detail}`;
-  box.querySelectorAll('[data-event-id]').forEach(btn => btn.addEventListener('click', () => loadEvent(btn.dataset.eventId)));
-  box.querySelectorAll('[data-pick-player]').forEach(btn => btn.addEventListener('click', () => toggleDraftPick(Number(btn.dataset.pickPlayer))));
+  box.innerHTML = `${hero}<article class="card"><h2>События</h2><div class="choices">${eventPicker}</div></article>${detail}`;
+  bindEventScreenActions(box);
+}
+
+function bindEventScreenActions(scope) {
+  scope.querySelectorAll('[data-event-id]').forEach(btn => btn.addEventListener('click', () => loadEvent(btn.dataset.eventId)));
+  scope.querySelectorAll('[data-pick-player]').forEach(btn => btn.addEventListener('click', () => toggleDraftPick(Number(btn.dataset.pickPlayer))));
+  scope.querySelectorAll('[data-confidence-value]').forEach(btn => btn.addEventListener('click', () => {
+    state.confidence = Number(btn.dataset.confidenceValue);
+    renderEventsList();
+  }));
   $('#savePicksBtn')?.addEventListener('click', sendPicks);
   $('#copyShareBtn')?.addEventListener('click', copyShareText);
   $('#nativeShareBtn')?.addEventListener('click', nativeShare);
@@ -151,24 +178,35 @@ function renderEventsList() {
   }
 }
 
+function renderArenaHero(event) {
+  const leaders = topSupport(event, 3);
+  const supportRows = leaders.length ? leaders.map(p => {
+    const percent = supportPercent(event, p);
+    return `<div class="history-item"><div class="row"><strong>${escapeHtml(p.name)}</strong><span>${percent}%</span></div><div class="progress"><span style="width:${percent}%"></span></div></div>`;
+  }).join('') : '<p class="muted">Поддержка появится после первых голосов.</p>';
+  return `
+    <article class="card arena-card">
+      <div class="row">
+        <span class="badge">${statusLabel(event.status)}</span>
+        <span class="badge blue">Dygyn Fan Arena</span>
+      </div>
+      <h2 style="margin-top:18px">${escapeHtml(event.title)}</h2>
+      <p class="muted">Фан-прогнозы и поддержка участников</p>
+      <div class="stat-grid">
+        <div class="stat-box"><strong>${event.participant_count || event.participants?.length || 0}</strong><span>участников</span></div>
+        <div class="stat-box"><strong>${event.totals?.picks || 0}</strong><span>голосов</span></div>
+        <div class="stat-box"><strong>${formatDate(event.starts_at)}</strong><span>старт</span></div>
+      </div>
+      <div class="history" style="margin-top:14px"><h3>Сейчас болеют за</h3>${supportRows}</div>
+    </article>
+  `;
+}
+
 function renderEventDetail(event) {
-  const totalPoints = Number(event.totals.points || 0);
   const draftIds = getDraftPlayerIds(event);
   const draftIdSet = new Set(draftIds);
   const canPick = event.status === 'open';
-  const participants = event.participants.map(p => {
-    const points = Number(p.confidence_sum || 0);
-    const percent = totalPoints ? Math.round(points / totalPoints * 100) : 0;
-    const selected = draftIdSet.has(Number(p.id));
-    return `
-      <button class="choice ${selected ? 'selected' : ''}" data-pick-player="${p.id}" ${canPick ? '' : 'disabled'}>
-        <span>${escapeHtml(p.name)}<br><small>${escapeHtml(p.region || 'регион не указан')} · ${p.pick_count} голосов · ${points} очков${selected ? ' · выбран' : ''}</small>
-          <span class="meter"><span style="width:${percent}%"></span></span>
-        </span>
-        <strong>${selected ? '✓' : `${percent}%`}</strong>
-      </button>
-    `;
-  }).join('');
+  const participants = event.participants.map((p, index) => renderParticipantChoice(event, p, index, draftIdSet, canPick)).join('');
   const results = event.results?.length ? `
     <div class="history"><h3>Итоги</h3>${event.results.map(r => `
       <div class="history-item">${r.place} место — ${escapeHtml(r.player_name)} ${r.score ? `· ${r.score}` : ''}</div>
@@ -178,24 +216,48 @@ function renderEventDetail(event) {
     <article class="card">
       <div class="row">
         <div>
-          <h2>${escapeHtml(event.title)}</h2>
-          <p class="muted">${escapeHtml(event.description || '')}</p>
+          <h2>Кто победит?</h2>
+          <p class="muted">Выберите до ${MAX_PICKS} участников · ${draftIds.length}/${MAX_PICKS}</p>
         </div>
         <span class="badge">${statusLabel(event.status)}</span>
       </div>
-      <p class="muted">Старт: ${formatDate(event.starts_at)} · всего голосов: ${event.totals.picks || 0}</p>
-      <p><strong>Выберите до ${MAX_PICKS} участников</strong> <span class="muted">(${draftIds.length}/${MAX_PICKS})</span></p>
-      <div class="choices">${participants || '<div class="empty">Участники не добавлены.</div>'}</div>
-      ${canPick ? `
-        <div class="confidence">
-          <div class="row"><strong>Очки уверенности каждому выбранному</strong><span id="confidenceValue">${state.confidence}</span></div>
-          <input id="confidenceRange" type="range" min="1" max="100" value="${state.confidence}" />
-          <button id="savePicksBtn" class="primary wide" ${draftIds.length ? '' : 'disabled'}>Сохранить голос</button>
-        </div>
-      ` : '<p class="muted">Прогнозы закрыты.</p>'}
+      <div class="support-list">${participants || '<div class="empty">Участники не добавлены.</div>'}</div>
+      ${canPick ? renderConfidenceBlock(draftIds) : '<p class="muted">Прогнозы закрыты.</p>'}
       ${renderShareBlock(event, draftIds)}
       ${results}
     </article>`;
+}
+
+function renderParticipantChoice(event, participant, index, draftIdSet, canPick) {
+  const points = Number(participant.confidence_sum || 0);
+  const percent = supportPercent(event, participant);
+  const selected = draftIdSet.has(Number(participant.id));
+  return `
+    <button class="participant-card ${selected ? 'selected' : ''}" data-pick-player="${participant.id}" ${canPick ? '' : 'disabled'}>
+      <span>
+        <strong><span class="rank-dot">${index + 1}</span>${escapeHtml(participant.name)}</strong><br>
+        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ' · выбран' : ''}</small>
+        <span class="progress"><span style="width:${percent}%"></span></span>
+      </span>
+      <span class="percent">${selected ? '✓' : `${percent}%`}</span>
+    </button>
+  `;
+}
+
+function renderConfidenceBlock(draftIds) {
+  const chips = CONFIDENCE_PRESETS.map(value => `
+    <button class="chip ${state.confidence === value ? 'active' : ''}" data-confidence-value="${value}">${value}</button>
+  `).join('');
+  return `
+    <div class="confidence">
+      <div class="row"><strong>Очки уверенности</strong><span id="confidenceValue">${state.confidence}</span></div>
+      <div class="chips">${chips}</div>
+      <input id="confidenceRange" type="range" min="1" max="100" value="${state.confidence}" />
+      <div class="bottom-bar">
+        <button id="savePicksBtn" class="primary wide" ${draftIds.length ? '' : 'disabled'}>Сохранить прогноз</button>
+      </div>
+    </div>
+  `;
 }
 
 function renderShareBlock(event, draftIds) {
@@ -203,13 +265,13 @@ function renderShareBlock(event, draftIds) {
   const names = getPickedNames(event).map(escapeHtml).join(', ');
   return `
     <div class="share-card">
-      <h3>Раскрутить голосование</h3>
-      <p class="muted">Поделитесь своим выбором. Для Instagram Stories скачайте карточку и загрузите её в сторис вручную.</p>
+      <h3>Поделиться выбором</h3>
+      <p class="muted">Скачайте карточку и загрузите её в Instagram Stories вручную.</p>
       <p><strong>Мой выбор:</strong> ${names}</p>
       <div class="share-actions">
         <button id="nativeShareBtn" class="ghost">Поделиться</button>
-        <button id="copyShareBtn" class="ghost">Скопировать текст</button>
-        <button id="storyCardBtn" class="primary">Карточка для сторис</button>
+        <button id="copyShareBtn" class="ghost">Скопировать</button>
+        <button id="storyCardBtn" class="primary">Карточка</button>
       </div>
     </div>
   `;
@@ -232,15 +294,13 @@ async function sendPicks() {
   });
   state.selectedEvent = data.event;
   state.draftPicksByEvent[data.event.id] = (data.event.my_picks || []).map(p => Number(p.player_id));
-  toast('Голос сохранён');
+  toast('Прогноз сохранён');
   await loadEvents();
 }
 
 function buildShareText() {
-  const event = state.selectedEvent;
-  const names = getPickedNames(event);
-  const url = publicAppUrl();
-  return `Я выбрал участников Игр Дыгына: ${names.join(', ')}. Голосуй тоже: ${url}`;
+  const names = getPickedNames(state.selectedEvent);
+  return `Я выбрал участников Игр Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
 }
 
 async function copyShareText() {
@@ -274,12 +334,13 @@ function downloadStoryCard() {
   canvas.height = 1920;
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#2563eb');
-  gradient.addColorStop(1, '#111827');
+  gradient.addColorStop(0, '#f2b84b');
+  gradient.addColorStop(.38, '#1f2430');
+  gradient.addColorStop(1, '#0f1115');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'rgba(255,255,255,.14)';
+  ctx.fillStyle = 'rgba(255,255,255,.12)';
   ctx.beginPath();
   ctx.arc(900, 220, 260, 0, Math.PI * 2);
   ctx.fill();
@@ -289,12 +350,12 @@ function downloadStoryCard() {
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 78px Arial';
-  wrapCanvasText(ctx, 'Фан-прогнозы Игр Дыгына', 90, 220, 900, 92);
+  wrapCanvasText(ctx, 'Dygyn Fan Arena', 90, 220, 900, 92);
   ctx.font = '700 44px Arial';
   wrapCanvasText(ctx, event?.title || 'Голосование', 90, 460, 900, 56);
 
   ctx.font = '900 54px Arial';
-  ctx.fillText('Мой выбор:', 90, 720);
+  ctx.fillText('Мой прогноз:', 90, 720);
   ctx.font = '800 64px Arial';
   names.forEach((name, index) => {
     wrapCanvasText(ctx, `${index + 1}. ${name}`, 120, 830 + index * 170, 840, 72);
@@ -331,10 +392,30 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
 async function loadLeaderboard() {
   const data = await api('/api/leaderboard');
   const list = data.leaderboard;
-  $('#leaderboard').innerHTML = list.length ? list.map((u, i) => {
+  const support = state.selectedEvent ? renderSupportStats(state.selectedEvent) : '';
+  const leaders = list.length ? list.map((u, i) => {
     const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || u.telegram_id;
-    return `<article class="card row"><div><strong>${i + 1}. ${escapeHtml(String(name))}</strong><p class="muted">${u.picks} голосов · ${u.correct || 0} верных</p></div><span class="badge">${u.score} очков</span></article>`;
+    return `
+      <article class="leader-row">
+        <span class="avatar">${i + 1}</span>
+        <div><strong>${escapeHtml(String(name))}</strong><p class="muted">${u.picks} голосов · ${u.correct || 0} верных</p></div>
+        <span class="badge">${u.score} очков</span>
+      </article>`;
   }).join('') : '<div class="card empty">Рейтинг появится после первых голосов.</div>';
+  $('#leaderboard').innerHTML = `${support}<article class="card"><h2>Рейтинг болельщиков</h2><div class="history">${leaders}</div></article>`;
+}
+
+function renderSupportStats(event) {
+  const rows = topSupport(event, 10).map((p, index) => {
+    const percent = supportPercent(event, p);
+    return `
+      <div class="history-item">
+        <div class="row"><strong>${index + 1}. ${escapeHtml(p.name)}</strong><span class="percent">${percent}%</span></div>
+        <p class="muted">${p.pick_count} голосов · ${Number(p.confidence_sum || 0)} очков уверенности</p>
+        <div class="progress"><span style="width:${percent}%"></span></div>
+      </div>`;
+  }).join('') || '<p class="muted">Статистика появится после первых голосов.</p>';
+  return `<article class="card"><h2>Статистика поддержки</h2><div class="history">${rows}</div></article>`;
 }
 
 async function loadPlayers() {
@@ -342,8 +423,16 @@ async function loadPlayers() {
   state.players = data.players;
   $('#playersList').innerHTML = state.players.map(p => `
     <article class="card">
-      <div class="row"><div><h2>${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.region || '')}</p></div><span class="badge">${p.summary?.wins || 0} побед</span></div>
+      <div class="row">
+        <div><h2>${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.region || 'регион не указан')}</p></div>
+        <span class="badge">${p.summary?.podiums || 0} топ-3</span>
+      </div>
       <p>${escapeHtml(p.bio || '')}</p>
+      <div class="stat-grid">
+        <div class="stat-box"><strong>${p.summary?.wins || 0}</strong><span>побед</span></div>
+        <div class="stat-box"><strong>${p.summary?.podiums || 0}</strong><span>топ-3</span></div>
+        <div class="stat-box"><strong>${p.summary?.history_count || 0}</strong><span>записей</span></div>
+      </div>
       <div class="history">
         ${(p.history || []).map(h => `<div class="history-item"><strong>${h.year} · ${escapeHtml(h.competition)}</strong><br><span class="muted">${h.place ? `${h.place} место` : 'место не указано'}${h.score ? ` · ${h.score} очков` : ''}</span><br>${escapeHtml(h.notes || '')}</div>`).join('') || '<p class="muted">История пока не добавлена.</p>'}
       </div>

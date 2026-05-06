@@ -47,6 +47,7 @@ Architecture docs:
 
 - `vault/wiki/architecture/project-vision.md`
 - `vault/wiki/architecture/system-design.md`
+- `vault/wiki/architecture/design-direction.md`
 - `vault/wiki/architecture/auth-flow.md`
 - `vault/wiki/architecture/data-model.md`
 - `vault/wiki/architecture/anti-abuse.md`

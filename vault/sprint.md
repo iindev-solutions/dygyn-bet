@@ -21,6 +21,8 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.9 | Deploy preview to `iindiinda.duckdns.org/dygyn-bet/` | DONE |
 | 0.10 | Configure real admin Telegram IDs on VPS | TODO |
 | 0.11 | Split API and bot into separate systemd services | DONE |
+| 0.12 | Add Dygyn Fan Arena design direction | DONE |
+| 0.13 | Restyle frontend toward sports fan arena UI | DONE |
 
 ## Current Priority
 

@@ -15,8 +15,8 @@
 
 ## Tabs
 
-- Events — event list, event detail, up to three participant choices, confidence slider, share actions.
-- Stats — leaderboard.
+- Games — arena hero, event list, event detail, up to three participant choices, confidence controls, share actions.
+- Support — support statistics and fan leaderboard.
 - Players — participant profiles and history.
 - Rules — product rules and no-money notice.
 
@@ -56,6 +56,17 @@ X-Telegram-Init-Data: tg.initData
 
 Dynamic text uses `escapeHtml()` before inserting into HTML templates.
 
+## Visual Direction
+
+Current style follows `vault/wiki/architecture/design-direction.md`:
+
+- dark sports UI;
+- warm gold accent;
+- card-first layout;
+- progress bars for support statistics;
+- strong sticky save action;
+- no casino/bookmaker visual language.
+
 ## Product Copy Rule
 
 Frontend must keep no-money language visible. Current notice:
@@ -77,13 +88,14 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 
 1. Open locally with `ALLOW_DEV_LOGIN=true`.
 2. Confirm user line loads.
-3. Select event.
-4. Move confidence slider.
-5. Pick up to three participants.
-6. Save the vote.
-7. Confirm toast and updated statistics.
-8. Copy share text or download the story card.
-9. Open stats tab.
-10. Open players tab.
-11. Open rules tab and verify no-money warning.
-12. Repeat inside Telegram with real HTTPS URL and bot button.
+3. Confirm arena hero card renders.
+4. Select event.
+5. Move confidence slider or use confidence chips.
+6. Pick up to three participants.
+7. Save the vote through the sticky save action.
+8. Confirm toast and updated statistics.
+9. Copy share text or download the story card.
+10. Open support tab.
+11. Open players tab.
+12. Open rules tab and verify no-money warning.
+13. Repeat inside Telegram with real HTTPS URL and bot button.
