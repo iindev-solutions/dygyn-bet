@@ -24,13 +24,18 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.12 | Add Dygyn Fan Arena design direction | DONE |
 | 0.13 | Restyle frontend toward sports fan arena UI | DONE |
 | 0.14 | Switch vault workflow to compact QUICK_START mode | DONE |
+| 0.15 | Record `new_brief.md` as canonical MVP brief | DONE |
+| 0.16 | Design target 100-point allocation model | DONE |
+| 0.17 | Implement 100-point allocation backend/frontend | TODO |
+| 0.18 | Add participant discipline stat tables for all 7 Dygyn disciplines | TODO |
 
 ## Current Priority
 
 1. Keep product legally safe: fan votes only, no money.
-2. Replace demo data before any public launch.
-3. Test Telegram auth and TMA open flow in real Telegram.
-4. Add operational notes after deployment target is known.
+2. Implement canonical 100-point allocation model from `new_brief.md`.
+3. Add verified participant discipline stats for all 7 Dygyn disciplines.
+4. Replace demo data before any public launch.
+5. Test Telegram auth and TMA open flow in real Telegram.
 
 ## Success Criteria
 
@@ -38,3 +43,4 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 - Product can run locally with `ALLOW_DEV_LOGIN=true`.
 - Production config has `ALLOW_DEV_LOGIN=false`, real `BOT_TOKEN`, real `ADMIN_IDS`, and HTTPS `WEB_APP_URL`.
 - All real sports data has manually checked sources.
+- Prediction model enforces exactly 100 confidence points across 1–3 participants per user/event.

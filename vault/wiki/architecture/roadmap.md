@@ -5,16 +5,18 @@
 - Keep vault-first project memory current.
 - Run locally with dev login.
 - Configure real Telegram bot token and HTTPS URL.
+- Implement canonical `new_brief.md` alignment: 100 points distributed across 1–3 participants.
 - Replace demo participants/events with verified Dygyn Games data.
-- Add source URLs for every real history record.
-- Test auth, event list, three-pick creation/update, stats, player list, leaderboard.
+- Add source URLs for every real history/discipline result record.
+- Test auth, event list, prediction creation/update, stats, player list, leaderboard.
 - Test admin APIs for player/event/result management.
 
 ## Phase 2 — Content and Admin Operations
 
 - Build a simple admin page or admin scripts.
-- Add CSV import for players/history/events.
+- Add CSV import for players/history/events/discipline results.
 - Add participant photos.
+- Add participant detail pages with all 7 Dygyn discipline stat tables.
 - Add stricter source tracking.
 - Add notification before prediction close.
 

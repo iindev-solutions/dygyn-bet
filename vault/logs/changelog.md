@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-06 — New MVP Brief Documented
+
+- Reviewed `new_brief.md` against current app and vault docs.
+- User declared `new_brief.md` canonical MVP brief.
+- Recorded decisions in `vault/wiki/architecture/mvp-product-decisions.md`.
+- Target prediction model: one user/event prediction with exactly 100 virtual points distributed across 1–3 participants.
+- Recorded user vision: minimal Telegram bot/TMA with athlete detail pages and verified tabular stats for all 7 Dygyn disciplines by year/event.
+- Updated project vision, roadmap, sprint, resume plan, code map, and quick start.
+- Next: implement backend-first brief alignment.
+
 ## 2026-05-06 — Compact Vault Mode
 - Changed: added `vault/QUICK_START.md`; session start now reads quick context first, deep docs on demand.
 - Changed: updated `AGENTS.md`, `master_index.md`, `WORKFLOW.md`, and sprint for token-saving vault workflow.

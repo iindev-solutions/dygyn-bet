@@ -4,6 +4,7 @@
 
 - `AGENTS.md` — vault-first project rules for coding agents.
 - `README.md` — Russian product overview, local run instructions, Telegram setup, Docker, admin curl examples, legal warning.
+- `new_brief.md` — Russian canonical MVP brief for product/UI/backend direction.
 - `.env.example` — configuration template for bot token, web app URL, admins, dev login, polling, SQLite path, Telegram auth age.
 - `.gitignore` — ignores Python env/cache, `.env`, SQLite data files, pyc.
 - `requirements.txt` — Python dependencies: FastAPI, uvicorn, aiogram, python-dotenv, pytest, httpx.
@@ -34,6 +35,7 @@
 
 - `wiki/` — older Russian documentation; keep as source/history unless explicitly migrated or removed.
 - `vault/` — canonical English project memory.
+- `vault/wiki/architecture/mvp-product-decisions.md` — compact record of canonical MVP decisions: 100-point allocation, participant discipline stats, bot/TMA shape, scale assumptions.
 
 ## Runtime Data
 

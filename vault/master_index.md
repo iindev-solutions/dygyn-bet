@@ -52,6 +52,7 @@ Architecture docs:
 - `vault/wiki/architecture/anti-abuse.md`
 - `vault/wiki/architecture/legal-compliance.md`
 - `vault/wiki/architecture/roadmap.md`
+- `vault/wiki/architecture/mvp-product-decisions.md`
 
 Service docs:
 

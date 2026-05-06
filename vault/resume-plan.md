@@ -6,8 +6,9 @@
 - Existing Russian `wiki/` docs were studied and summarized into English canonical vault docs.
 - Codebase is a FastAPI + aiogram + vanilla JS Telegram Mini App product.
 - Current database is SQLite and seeds demo players/events automatically when empty.
-- App now allows a user to select up to three participants per event.
-- `POST /api/picks` now accepts `player_ids` and replaces current user's picks for the event.
+- App currently allows a user to select up to three participants per event.
+- Target MVP model from `new_brief.md`: one prediction per user/event, 100 total confidence points distributed across 1–3 participants.
+- `POST /api/picks` currently accepts `player_ids` and replaces current user's picks for the event.
 - Frontend includes share text, native share, and generated PNG story card for manual Instagram Stories repost.
 - Frontend now follows Dygyn Fan Arena direction: dark sports cards, bottom navigation, support progress bars, confidence chips, and sticky save action.
 - Frontend now supports prefix deployment such as `/dygyn-bet/` by deriving API base path from `static/app.js`.
@@ -20,10 +21,10 @@
 2. For product/architecture work, read `vault/wiki/architecture/*`.
 3. For implementation work, read `vault/CODE_MAP.md` and relevant service doc.
 4. Next likely deployment task: add real `ADMIN_IDS` to `/opt/dygyn-bet/.env`, restart `dygyn-bet.service`, and test bot `/start` from Telegram.
-5. Next likely technical task: install dependencies and run full `python -m pytest`.
-5. Next likely product task: manually test the three-pick flow and story-card sharing on mobile Telegram.
-6. Next design task: test Dygyn Fan Arena UI on mobile Telegram and tune spacing/colors.
-7. Next data task: replace demo participants/events with verified official data and source URLs.
+5. Next likely technical task: implement 100-point allocation model backend-first, preserving no-money language.
+6. Next likely data task: collect exact 7 Dygyn disciplines, units, ranking direction, participant list, and source-backed results.
+7. Next likely validation task: install dependencies and run full `python -m pytest`.
+8. Next likely product task: manually test voting and story-card sharing on mobile Telegram.
 
 ## Session Restart Prompt
 

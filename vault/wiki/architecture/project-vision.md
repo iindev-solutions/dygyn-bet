@@ -27,8 +27,8 @@ Fans need a lightweight way inside Telegram to:
 2. Bot sends a Mini App button.
 3. User opens the Mini App inside Telegram.
 4. Backend verifies raw Telegram `initData`.
-5. User selects an event and up to three participants.
-6. User assigns 1–100 virtual confidence points to each selected participant.
+5. User selects an event and 1–3 participants.
+6. User distributes exactly 100 virtual confidence points across selected participants.
 7. User can share text or download an Instagram Stories card for manual repost.
 8. App shows vote counts, confidence totals, percentages, player history, and leaderboard.
 8. Admin enters results after an event.
@@ -40,10 +40,10 @@ Fans need a lightweight way inside Telegram to:
 - Telegram Mini App frontend.
 - Server-side Telegram initData verification.
 - SQLite storage.
-- Up to three picks per user per event.
-- Virtual confidence points only.
-- Event locking after start or admin status change.
-- Player history with source URLs.
+- One prediction per user/event with 1–3 participants inside it.
+- Exactly 100 virtual confidence points distributed per event prediction.
+- Event locking after close time, start time, or admin status change.
+- Participant history and discipline-level stats with source URLs.
 - Admin APIs for players, history, events, and settlement.
 
 ## Out of Scope

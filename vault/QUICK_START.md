@@ -27,16 +27,22 @@ Read this first. Read deep docs only when task needs them.
 - Story-card sharing works.
 - Dygyn Fan Arena UI deployed.
 - VPS tests passed last deploy.
+- `new_brief.md` is canonical MVP brief.
+- Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
+- Target product mechanic: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
+- Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
 - `ADMIN_IDS` still needed from user.
 - Real participants/results still demo; must replace with verified sources.
 
 ## Next Best Tasks
 
-1. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.
-2. Add admin-only TMA tab.
-3. Add discipline-level participant stats table.
-4. Replace demo data with real verified Dygyn data.
-5. Mobile QA in Telegram.
+1. Confirm 100-point allocation model details, then implement backend-first.
+2. Add brief backend gaps: `closes_at`, fixed allocation validation, event stats/leaderboard/profile, admin close/finish aliases.
+3. Add participant discipline stats model/import: disciplines + per-athlete/year results with source URLs.
+4. Add brief frontend gaps: Home/Forecast/Stats/Rating/Profile structure and allocation UI + athlete stat tables.
+5. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.
+6. Replace demo data with real verified Dygyn data.
+7. Mobile QA in Telegram.
 
 ## Read Deep Docs Only If Needed
 
