@@ -8,27 +8,25 @@ This project uses one hard rule:
 
 ## Mandatory Session Start
 
-Read these files in order at the start of every session:
+Read first:
 
-1. `vault/master_index.md`
-2. `vault/WORKFLOW.md`
-3. `vault/sprint.md`
-4. `vault/resume-plan.md`
+1. `vault/QUICK_START.md`
 
-Then read task-specific docs under `vault/wiki/` and `vault/CODE_MAP.md`.
+Read deep docs only when task needs them:
+
+- `vault/CODE_MAP.md`
+- `vault/wiki/architecture/*`
+- `vault/wiki/services/*`
+- legacy `wiki/` only when explicitly needed.
 
 ## Mandatory Session End
 
-Before closing meaningful work, update:
+Before closing meaningful work, update terse:
 
 1. `vault/logs/changelog.md`
+2. `vault/QUICK_START.md` if current state or next tasks changed
 
-Update when relevant:
-
-1. `vault/resume-plan.md`
-2. `vault/sprint.md`
-3. `vault/CODE_MAP.md`
-4. `vault/SESSION_LEDGER.md`
+Update deep docs only when their facts changed.
 
 ## Language Rule
 
@@ -45,6 +43,10 @@ All content inside `vault/` must be written in English.
 ## Product Rule
 
 This product is a fan-prediction/voting service only. Do not add real-money betting, deposits, withdrawals, odds, paid entry, or prizes with monetary value without a legal decision.
+
+## Token Rule
+
+Keep vault updates compact. No duplicate long explanations. Prefer short bullets.
 
 ## Principle
 

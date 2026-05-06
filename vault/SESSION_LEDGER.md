@@ -1,5 +1,12 @@
 # Session Ledger
 
+## 2026-05-06 — Compact Vault Mode
+- Scope: reduce token cost of future sessions and create reusable starter.
+- Changed: added `QUICK_START.md`; deep docs now on-demand; changelog style compact.
+- Changed: created sibling `../empty-template-vault` starter with compact vault skeleton.
+- Next: use compact vault updates only.
+
+
 ## 2026-05-06 — Vault Initialized
 
 - Scope: study `empty-template-vault-rag`, inspect current `dygyn-bet` docs/code, add project `vault/`.

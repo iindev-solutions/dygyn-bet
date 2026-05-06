@@ -17,23 +17,22 @@ It tracks:
 
 ## Start Here
 
-At the start of every session, read in order:
+Default session start:
 
-1. `vault/master_index.md`
-2. `vault/WORKFLOW.md`
-3. `vault/sprint.md`
-4. `vault/resume-plan.md`
+1. Read `vault/QUICK_START.md` only.
+2. Read task-specific deep docs only if needed.
 
-Then read task-specific docs:
+Deep docs:
 
-- `vault/CODE_MAP.md`
-- `vault/wiki/architecture/`
-- `vault/wiki/services/`
+- code map: `vault/CODE_MAP.md`
+- architecture: `vault/wiki/architecture/`
+- services: `vault/wiki/services/`
 
 ## Core Files
 
 | File | Purpose |
 |------|---------|
+| `vault/QUICK_START.md` | Compact current context; read first |
 | `vault/WORKFLOW.md` | Mandatory operating protocol |
 | `vault/SESSION_LEDGER.md` | Short session-by-session notes |
 | `vault/sprint.md` | Current sprint and priorities |
@@ -64,6 +63,10 @@ Service docs:
 ## Historical Docs
 
 The repository also contains the older Russian `wiki/` directory. Keep it as historical/source documentation unless explicitly migrated or removed. New canonical updates should go into `vault/`.
+
+## Token Rule
+
+Keep new vault content compact. Prefer short bullets. Avoid duplicating facts across many files.
 
 ## Rule
 

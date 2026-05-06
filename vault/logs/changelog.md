@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-06 — Compact Vault Mode
+- Changed: added `vault/QUICK_START.md`; session start now reads quick context first, deep docs on demand.
+- Changed: updated `AGENTS.md`, `master_index.md`, `WORKFLOW.md`, and sprint for token-saving vault workflow.
+- Changed: created sibling starter `../empty-template-vault` with compact vault skeleton.
+- Verified: template file tree created.
+- Next: keep future vault updates terse.
+
+
 ## 2026-05-06 — Vault Initialized
 
 ### Done

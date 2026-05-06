@@ -1,50 +1,60 @@
 # Vault Workflow
 
-## Session Start
+## Default Session Start
 
-Read these files in order:
+Read only:
 
-1. `vault/master_index.md`
-2. `vault/WORKFLOW.md`
-3. `vault/sprint.md`
-4. `vault/resume-plan.md`
+1. `vault/QUICK_START.md`
 
-Then read task-specific files:
+Then decide if deep docs needed.
 
-- `vault/CODE_MAP.md`
-- relevant docs under `vault/wiki/architecture/`
-- relevant docs under `vault/wiki/services/`
+## Deep Docs On Demand
+
+- Code/layout task → `vault/CODE_MAP.md`
+- Design task → `vault/wiki/architecture/design-direction.md`
+- Deploy task → `vault/wiki/services/deployment.md`
+- API task → `vault/wiki/services/api.md`
+- DB task → `vault/wiki/architecture/data-model.md`
+- Frontend task → `vault/wiki/services/frontend.md`
+
+Do not read all wiki by default.
 
 ## During Work
 
-- Keep changes surgical.
-- Do not add speculative features.
-- Preserve the fan-prediction/no-money product boundary.
-- If architecture, API, data model, deployment, or legal assumptions change, update `vault/` in the same session.
-- Do not trust browser-supplied Telegram user data unless backend validates raw `Telegram.WebApp.initData`.
+- Surgical changes only.
+- No speculative features.
+- Preserve no-money product boundary.
+- Backend must validate raw Telegram `initData`; never trust browser identity.
+- If important project state changes, put it in `QUICK_START.md`.
 
 ## Session End
 
-Before closing meaningful work, update:
+Always for meaningful work:
 
-1. `vault/logs/changelog.md`
+1. Update `vault/logs/changelog.md` terse.
+2. Update `vault/QUICK_START.md` if state/next changed.
 
-Update when relevant:
+Update deep docs only when facts changed.
 
-1. `vault/resume-plan.md`
-2. `vault/sprint.md`
-3. `vault/CODE_MAP.md`
-4. `vault/SESSION_LEDGER.md`
+## Changelog Style
+
+Use compact blocks:
+
+```md
+## YYYY-MM-DD — Short Title
+- Changed: ...
+- Verified: ...
+- Next: ...
+```
+
+No long prose. No duplicated summaries.
 
 ## Verification
 
 Prefer concrete checks:
 
 - `pytest`
-- API smoke checks via local server or FastAPI test client
-- manual Telegram Mini App smoke check when Telegram behavior changes
-- file tree review when documentation/vault structure changes
-
-## Rule
-
-Do not leave important state only in chat. Move it into `vault/`.
+- `node --check web/app.js`
+- `python -m py_compile app/*.py tests/*.py`
+- `curl /health`
+- mobile Telegram smoke when UI/auth changes

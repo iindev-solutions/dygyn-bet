@@ -23,6 +23,7 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.11 | Split API and bot into separate systemd services | DONE |
 | 0.12 | Add Dygyn Fan Arena design direction | DONE |
 | 0.13 | Restyle frontend toward sports fan arena UI | DONE |
+| 0.14 | Switch vault workflow to compact QUICK_START mode | DONE |
 
 ## Current Priority
 
