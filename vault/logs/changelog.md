@@ -10,7 +10,8 @@
 - Added DB flow test for live results and finish scoring.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; direct live admin DB smoke; `git diff --check`.
 - Not verified: full `python -m pytest` because local environment lacks pytest.
-- Next: deploy to VPS and set real `ADMIN_IDS`.
+- Deployment follow-up: deployed to VPS; DB backed up; VPS `pytest` 8 passed; services active; public health and static JS OK.
+- Note: VPS `ADMIN_IDS` is empty, so admin tab is not visible until real Telegram numeric ID is configured.
 
 ## 2026-05-06 — VPS Deploy with Imported Data
 

@@ -26,14 +26,14 @@ Read this first. Read deep docs only when task needs them.
 - 100-point allocation voting works locally: one prediction distributes exactly 100 points across 1–3 participants.
 - Story-card sharing works.
 - Dygyn Fan Arena UI deployed.
-- Latest VPS deploy done: code updated, DB backed up, import applied, services active, VPS tests passed.
+- Latest VPS deploy done: admin live-results flow deployed, DB backed up, services active, VPS tests passed.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
 - Product mechanic implemented locally: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
 - Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
 - Dygyn Games are a two-day event; app now has live Day 1, Day 2, overall/final results model and public rendering.
-- Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned.
+- Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned. VPS `ADMIN_IDS` is currently empty.
 - `ADMIN_IDS` still needed from user.
 - Production DB now has imported Dygyn 2026 data: 16 active participants, 7 disciplines, 126 discipline result rows.
 - Backend and frontend expose participant detail with imported discipline-result tables.
