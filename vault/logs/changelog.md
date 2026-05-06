@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-06 — VPS Deploy with Imported Data
+
+- Deployed latest app to `/opt/dygyn-bet` on `iind-vps`.
+- Backed up SQLite DB under `/opt/dygyn-bet/backups/` before import.
+- Fixed old-schema migration bug by moving extension indexes after column migrations; added regression test.
+- Applied `data/import/dygyn_2026/` to production DB.
+- Production DB now has 1 event, 16 active participants, 7 disciplines, 16 event participants, and 126 discipline result rows.
+- Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both active.
+- Verified on VPS: import validation, `pytest` 6 passed before migration hotfix, import apply, public health OK, static JS 200, DB counts OK.
+- Next: user QA inside Telegram bot/Mini App.
+
 ## 2026-05-06 — 100-Point Prediction Allocation
 
 - Changed prediction model to enforce exactly 100 confidence points across 1–3 participants per user/event.

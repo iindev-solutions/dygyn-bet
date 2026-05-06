@@ -26,7 +26,7 @@ Read this first. Read deep docs only when task needs them.
 - 100-point allocation voting works locally: one prediction distributes exactly 100 points across 1–3 participants.
 - Story-card sharing works.
 - Dygyn Fan Arena UI deployed.
-- VPS tests passed last deploy.
+- Latest VPS deploy done: code updated, DB backed up, import applied, services active, VPS tests passed.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
@@ -35,12 +35,12 @@ Read this first. Read deep docs only when task needs them.
 - Dygyn Games are a two-day event; target app must show Day 1, Day 2, overall/final results, provisional/official state, and final winners.
 - Admin panel is mandatory: `ADMIN_IDS`-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and final finish.
 - `ADMIN_IDS` still needed from user.
-- Real participants/results still demo in deployed DB; local import CLI validates/applies `data/import/dygyn_2026/` into SQLite.
-- Backend and frontend now expose participant detail with imported discipline-result tables.
+- Production DB now has imported Dygyn 2026 data: 16 active participants, 7 disciplines, 126 discipline result rows.
+- Backend and frontend expose participant detail with imported discipline-result tables.
 
 ## Next Best Tasks
 
-1. Apply import to local/dev DB and QA participant detail tables + 100-point prediction flow.
+1. QA in Telegram bot/Mini App on mobile: event, participant tables, 100-point prediction.
 2. Implement backend stats/leaderboard/profile and two-day standings APIs.
 3. Add mandatory admin-only TMA tab for import/results/finish operations.
 4. Add mandatory admin-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and finish.

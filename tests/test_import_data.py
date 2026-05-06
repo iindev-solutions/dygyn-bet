@@ -59,3 +59,62 @@ def test_import_dygyn_pack(tmp_path):
         assert len(rows) == 1
         assert rows[0]["result_text"] == ">102"
         assert rows[0]["result_value"] == 102.0
+
+
+def test_import_migrates_old_schema(tmp_path):
+    db_path = str(tmp_path / "old.sqlite3")
+    with connect(db_path) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                region TEXT DEFAULT '',
+                bio TEXT DEFAULT '',
+                avatar_url TEXT DEFAULT '',
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT DEFAULT '',
+                starts_at TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('draft','open','locked','settled')),
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE event_participants (
+                event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+                PRIMARY KEY (event_id, player_id)
+            );
+            CREATE TABLE picks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                user_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+                confidence_points INTEGER NOT NULL DEFAULT 10 CHECK(confidence_points BETWEEN 1 AND 100),
+                awarded_points INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(event_id, user_id, player_id)
+            );
+            CREATE TABLE player_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+                year INTEGER NOT NULL,
+                competition TEXT NOT NULL,
+                place INTEGER,
+                score REAL,
+                notes TEXT DEFAULT '',
+                source_url TEXT DEFAULT '',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        )
+
+    result = import_dygyn_pack(db_path, PACK_DIR)
+    assert result["counts"]["active_players"] == 16
+    with connect(db_path) as conn:
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(players)").fetchall()}
+        assert "external_id" in columns

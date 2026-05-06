@@ -155,10 +155,6 @@ CREATE TABLE IF NOT EXISTS player_history (
 CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
-CREATE INDEX IF NOT EXISTS idx_players_external_id ON players(external_id) WHERE external_id != '';
-CREATE INDEX IF NOT EXISTS idx_events_external_id ON events(external_id) WHERE external_id != '';
-CREATE INDEX IF NOT EXISTS idx_discipline_results_player ON player_discipline_results(player_id);
-CREATE INDEX IF NOT EXISTS idx_discipline_results_event ON player_discipline_results(year, event_title);
 """
 
 
