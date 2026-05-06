@@ -25,21 +25,45 @@ CREATE TABLE IF NOT EXISTS users (
     last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS sources (
+    source_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    type TEXT DEFAULT '',
+    url TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    external_id TEXT DEFAULT '',
     name TEXT NOT NULL,
     region TEXT DEFAULT '',
+    city_or_village TEXT DEFAULT '',
+    qualification_route TEXT DEFAULT '',
+    short_description TEXT DEFAULT '',
+    strengths TEXT DEFAULT '',
+    previous_dygyn_note TEXT DEFAULT '',
     bio TEXT DEFAULT '',
     avatar_url TEXT DEFAULT '',
+    source_id TEXT DEFAULT '',
+    source_url TEXT DEFAULT '',
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    external_id TEXT DEFAULT '',
     title TEXT NOT NULL,
     description TEXT DEFAULT '',
     starts_at TEXT NOT NULL,
+    ends_at TEXT DEFAULT '',
+    closes_at TEXT DEFAULT '',
+    location TEXT DEFAULT '',
+    parent_event TEXT DEFAULT '',
+    source_id TEXT DEFAULT '',
+    source_url TEXT DEFAULT '',
     status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('draft','open','locked','settled')),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -47,7 +71,50 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS event_participants (
     event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    seed_order INTEGER,
+    qualification_route TEXT DEFAULT '',
+    status TEXT DEFAULT '',
+    source_id TEXT DEFAULT '',
+    source_url TEXT DEFAULT '',
     PRIMARY KEY (event_id, player_id)
+);
+
+CREATE TABLE IF NOT EXISTS disciplines (
+    discipline_id TEXT PRIMARY KEY,
+    result_code_2025 TEXT DEFAULT '',
+    name_ru TEXT NOT NULL,
+    name_yakut TEXT DEFAULT '',
+    unit TEXT DEFAULT '',
+    raw_result_type TEXT DEFAULT '',
+    higher_is_better INTEGER NOT NULL DEFAULT 1,
+    sort_direction TEXT DEFAULT '',
+    scoring_note TEXT DEFAULT '',
+    rules_note TEXT DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    source_id TEXT DEFAULT '',
+    source_url TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS player_discipline_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    year INTEGER NOT NULL,
+    event_title TEXT NOT NULL,
+    discipline_id TEXT NOT NULL REFERENCES disciplines(discipline_id) ON DELETE CASCADE,
+    result_text TEXT DEFAULT '',
+    result_value REAL,
+    result_unit TEXT DEFAULT '',
+    place INTEGER,
+    points REAL,
+    overall_rank INTEGER,
+    overall_points REAL,
+    source_id TEXT DEFAULT '',
+    source_url TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(year, event_title, player_id, discipline_id)
 );
 
 CREATE TABLE IF NOT EXISTS picks (
@@ -88,6 +155,10 @@ CREATE TABLE IF NOT EXISTS player_history (
 CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
+CREATE INDEX IF NOT EXISTS idx_players_external_id ON players(external_id) WHERE external_id != '';
+CREATE INDEX IF NOT EXISTS idx_events_external_id ON events(external_id) WHERE external_id != '';
+CREATE INDEX IF NOT EXISTS idx_discipline_results_player ON player_discipline_results(player_id);
+CREATE INDEX IF NOT EXISTS idx_discipline_results_event ON player_discipline_results(year, event_title);
 """
 
 
@@ -116,6 +187,63 @@ def init_db(db_path: str) -> None:
     with connect(db_path) as conn:
         conn.executescript(SCHEMA)
         migrate_picks_unique_constraint(conn)
+        migrate_schema_extensions(conn)
+
+
+def add_missing_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
+    existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    for name, definition in columns.items():
+        if name not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
+
+
+def migrate_schema_extensions(conn: sqlite3.Connection) -> None:
+    add_missing_columns(
+        conn,
+        "players",
+        {
+            "external_id": "TEXT DEFAULT ''",
+            "city_or_village": "TEXT DEFAULT ''",
+            "qualification_route": "TEXT DEFAULT ''",
+            "short_description": "TEXT DEFAULT ''",
+            "strengths": "TEXT DEFAULT ''",
+            "previous_dygyn_note": "TEXT DEFAULT ''",
+            "source_id": "TEXT DEFAULT ''",
+            "source_url": "TEXT DEFAULT ''",
+        },
+    )
+    add_missing_columns(
+        conn,
+        "events",
+        {
+            "external_id": "TEXT DEFAULT ''",
+            "ends_at": "TEXT DEFAULT ''",
+            "closes_at": "TEXT DEFAULT ''",
+            "location": "TEXT DEFAULT ''",
+            "parent_event": "TEXT DEFAULT ''",
+            "source_id": "TEXT DEFAULT ''",
+            "source_url": "TEXT DEFAULT ''",
+        },
+    )
+    add_missing_columns(
+        conn,
+        "event_participants",
+        {
+            "seed_order": "INTEGER",
+            "qualification_route": "TEXT DEFAULT ''",
+            "status": "TEXT DEFAULT ''",
+            "source_id": "TEXT DEFAULT ''",
+            "source_url": "TEXT DEFAULT ''",
+        },
+    )
+    conn.executescript(
+        """
+        CREATE INDEX IF NOT EXISTS idx_players_external_id ON players(external_id) WHERE external_id != '';
+        CREATE INDEX IF NOT EXISTS idx_events_external_id ON events(external_id) WHERE external_id != '';
+        CREATE INDEX IF NOT EXISTS idx_discipline_results_player ON player_discipline_results(player_id);
+        CREATE INDEX IF NOT EXISTS idx_discipline_results_event ON player_discipline_results(year, event_title);
+        """
+    )
 
 
 def migrate_picks_unique_constraint(conn: sqlite3.Connection) -> None:
@@ -284,7 +412,7 @@ def set_picks(db_path: str, event_id: int, user_id: int, player_ids: list[int], 
 
 def list_players(db_path: str) -> list[dict[str, Any]]:
     with connect(db_path) as conn:
-        players = rows_to_dicts(conn.execute("SELECT * FROM players ORDER BY name").fetchall())
+        players = rows_to_dicts(conn.execute("SELECT * FROM players WHERE is_active=1 ORDER BY name").fetchall())
         for player in players:
             history = conn.execute(
                 "SELECT * FROM player_history WHERE player_id=? ORDER BY year DESC, competition DESC LIMIT 8",

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-06 — Import Validator and Importer
+
+- Added SQLite schema support for sources, import metadata, disciplines, and player discipline results.
+- Added `app/import_data.py` to validate/import `data/import/dygyn_2026/`.
+- Added `scripts/import_dygyn_data.py` CLI with validate/apply modes.
+- Import apply purges seeded demo rows before loading real data.
+- Added import tests for pack validation and temp-DB import.
+- Public player list now hides historical-only imported players.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `python scripts/import_dygyn_data.py --json`; temp DB import smoke.
+- Not verified: full `python -m pytest` because local environment lacks pytest.
+
 ## 2026-05-06 — Import Data Pack Reviewed
 
 - Reviewed CSV/XLSX data pack and renamed folder to `data/import/dygyn_2026/`.

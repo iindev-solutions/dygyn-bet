@@ -35,13 +35,13 @@ Read this first. Read deep docs only when task needs them.
 - Dygyn Games are a two-day event; target app must show Day 1, Day 2, overall/final results, provisional/official state, and final winners.
 - Admin panel is mandatory: `ADMIN_IDS`-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and final finish.
 - `ADMIN_IDS` still needed from user.
-- Real participants/results still demo in DB; import data pack now exists under `data/import/dygyn_2026/` with 2026 participants, 7 disciplines, 2025 results, partial 2026 qualifier results, and sources.
+- Real participants/results still demo in deployed DB; local import CLI now validates/applies `data/import/dygyn_2026/` into SQLite.
 
 ## Next Best Tasks
 
-1. Commit current docs/import-data pack after final review.
-2. Build import validator/importer for `data/import/dygyn_2026/`.
-3. Implement backend schema/API: 100-point allocation, `closes_at`, stats, leaderboard/profile, discipline results, two-day standings.
+1. Finish/review import CLI commit, then apply import to local/dev DB.
+2. Implement backend API to expose participant discipline stats and imported 2026 event data.
+3. Implement backend schema/API: 100-point allocation, `closes_at`, stats, leaderboard/profile, two-day standings.
 4. Add mandatory admin-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and finish.
 5. Add public frontend screens: Home/Forecast/Stats/Rating/Profile + athlete stat/result tables.
 6. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.

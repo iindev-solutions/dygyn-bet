@@ -81,7 +81,7 @@ Rules:
 
 ### `GET /api/players`
 
-Returns players with recent history and summary.
+Returns active players with recent history and summary. Historical-only imported players are hidden from this public list for now.
 
 ### `GET /api/leaderboard`
 
@@ -144,6 +144,21 @@ Set results and award fan points to users who picked first place.
   ]
 }
 ```
+
+## Import CLI
+
+`python scripts/import_dygyn_data.py --json` validates `data/import/dygyn_2026/`.
+
+`python scripts/import_dygyn_data.py --apply --db <sqlite-path>` imports the pack into SQLite.
+
+Imported data:
+
+- sources;
+- disciplines;
+- 2026 participants and event links;
+- 2025 overall history;
+- 2025 discipline results;
+- partial 2026 qualifier results.
 
 ## Planned Admin Panel
 

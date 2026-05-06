@@ -13,17 +13,28 @@ Important fields:
 - `is_blocked` — manual block flag.
 - `created_at`, `last_seen_at` — timestamps.
 
+## `sources`
+
+Imported or manually entered source references.
+
+Fields:
+
+- `source_id`, `title`, `type`, `url`, `notes`.
+
 ## `players`
 
 Dygyn Games participants/athletes.
 
 Fields:
 
+- `external_id` — stable import ID when available.
 - `name` — required participant name.
 - `region` — city/ulus/region.
+- `city_or_village`, `qualification_route`, `short_description`, `strengths`, `previous_dygyn_note` — imported participant profile fields.
 - `bio` — short profile.
 - `avatar_url` — optional image URL for future use.
-- `is_active` — manual active flag.
+- `source_id`, `source_url`.
+- `is_active` — active public participant flag; historical-only imported players are inactive.
 - `created_at`.
 
 ## `events`
@@ -32,9 +43,13 @@ Prediction/voting events.
 
 Fields:
 
+- `external_id` — stable import ID when available.
 - `title` — event name.
 - `description`.
 - `starts_at` — ISO timestamp.
+- `ends_at`, `closes_at`.
+- `location`, `parent_event`.
+- `source_id`, `source_url`.
 - `status` — `draft`, `open`, `locked`, or `settled`.
 - `created_at`.
 
@@ -45,6 +60,10 @@ Many-to-many link between events and players.
 Primary key:
 
 - `(event_id, player_id)`.
+
+Imported metadata:
+
+- `seed_order`, `qualification_route`, `status`, `source_id`, `source_url`.
 
 ## `picks`
 
@@ -99,18 +118,35 @@ Fields:
 - `source_url` — required in practice for real data provenance.
 - `created_at`.
 
-## Planned Canonical Result Model
-
-Not implemented yet. Needed for `new_brief.md` alignment and two-day Dygyn Games updates.
-
-### `disciplines`
+## `disciplines`
 
 Seven Dygyn disciplines.
 
 Fields:
 
-- `code`, `name`, `unit`, `sort_order`.
-- `lower_is_better` — e.g. time disciplines rank lower values higher.
+- `discipline_id`, `result_code_2025`, `name_ru`, `name_yakut`.
+- `unit`, `raw_result_type`, `higher_is_better`, `sort_direction`, `sort_order`.
+- `scoring_note`, `rules_note`, `source_id`, `source_url`.
+
+## `player_discipline_results`
+
+Per-athlete discipline history imported from the data pack.
+
+Fields:
+
+- `player_id`, `year`, `event_title`, `discipline_id`.
+- `result_text` — display value, e.g. `5:40`, `>102`, `1 место`.
+- `result_value` — sortable numeric value when possible.
+- `result_unit`, `place`, `points`, `overall_rank`, `overall_points`.
+- `source_id`, `source_url`, `notes`, `updated_at`.
+
+Constraint:
+
+- `UNIQUE(year, event_title, player_id, discipline_id)`.
+
+## Planned Two-Day Result Model
+
+Not implemented yet. Needed for live Day 1/Day 2 updates during Dygyn Games.
 
 ### `event_days`
 

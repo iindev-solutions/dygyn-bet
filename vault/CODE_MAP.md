@@ -15,8 +15,9 @@
 ## Backend: `app/`
 
 - `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/leaderboard/admin API endpoints.
-- `app/db.py` — SQLite schema and all persistence functions: users, players, events, participants, picks, results, history, leaderboard, demo seed.
+- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, picks, results, sources, disciplines, discipline results, history, leaderboard, demo seed.
 - `app/config.py` — environment loading and immutable `Settings` dataclass.
+- `app/import_data.py` — validates/imports `data/import/dygyn_2026/` CSV pack into SQLite sources, disciplines, players, event links, history, and discipline-result tables.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
 - `app/bot.py` — aiogram polling bot with `/start`, `/app`, `/rules`, and Mini App buttons.
 - `app/bot_runner.py` — standalone bot polling entrypoint for systemd.
@@ -27,10 +28,15 @@
 - `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, three-pick flow, support stats, leaderboard, player cards, story-card sharing, HTML escaping, toast.
 - `web/styles.css` — Dygyn Fan Arena dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
 
+## Scripts
+
+- `scripts/import_dygyn_data.py` — CLI for validating or applying the Dygyn 2026 import data pack.
+
 ## Tests: `tests/`
 
 - `tests/test_telegram_auth.py` — validates signed initData, rejects tampering and expired auth data.
 - `tests/test_db_flow.py` — exercises pick creation and event settlement flow in temporary SQLite DB.
+- `tests/test_import_data.py` — validates CSV pack and imports it into a temporary SQLite DB.
 
 ## Docs
 
