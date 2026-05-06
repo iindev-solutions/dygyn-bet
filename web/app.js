@@ -18,6 +18,7 @@ const state = {
   selectedEvent: null,
   selectedPlayer: null,
   players: [],
+  disciplines: [],
   draftAllocationsByEvent: {},
 };
 
@@ -65,6 +66,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === name));
   if (name === 'stats') loadLeaderboard();
   if (name === 'players') loadPlayers();
+  if (name === 'admin') loadAdmin();
 }
 
 async function loadMe() {
@@ -72,6 +74,14 @@ async function loadMe() {
   state.me = data.user;
   const name = [data.user.first_name, data.user.last_name].filter(Boolean).join(' ') || data.user.username || data.user.telegram_id;
   $('#userLine').textContent = `Вы вошли как ${name}`;
+  $('#adminTabBtn').hidden = !data.user.is_admin;
+}
+
+async function loadDisciplines() {
+  if (state.disciplines.length) return state.disciplines;
+  const data = await api('/api/disciplines');
+  state.disciplines = data.disciplines;
+  return state.disciplines;
 }
 
 async function loadEvents() {
@@ -266,6 +276,7 @@ function renderEventDetail(event) {
       ${canPick ? renderConfidenceBlock(draftIds) : '<p class="muted">Прогнозы закрыты.</p>'}
       ${renderShareBlock(event, draftIds)}
       ${results}
+      ${renderLiveResults(event.live_results)}
     </article>`;
 }
 
@@ -311,6 +322,25 @@ function renderConfidenceBlock(draftIds) {
       </div>
     </div>
   `;
+}
+
+function renderLiveResults(results) {
+  if (!results) return '';
+  const standings = results.standings || [];
+  const disciplineRows = results.discipline_results || [];
+  if (!standings.length && !disciplineRows.length) return '';
+  const standingsHtml = [0, 1, 2].map(day => {
+    const rows = standings.filter(row => Number(row.day_number) === day).slice(0, 5);
+    if (!rows.length) return '';
+    const title = day === 0 ? 'Общий зачёт' : `День ${day}`;
+    return `<div class="history-item"><strong>${title}</strong>${rows.map(row => `<div class="row"><span>${row.place}. ${escapeHtml(row.player_name)}</span><span>${row.total_points ?? '—'}${row.is_winner ? ' · победитель' : ''}</span></div>`).join('')}</div>`;
+  }).join('');
+  const dayRows = [1, 2].map(day => {
+    const rows = disciplineRows.filter(row => Number(row.day_number) === day).slice(0, 8);
+    if (!rows.length) return '';
+    return `<div class="history-item"><strong>Результаты: день ${day}</strong>${rows.map(row => `<div class="row"><span>${escapeHtml(row.discipline_name)} · ${escapeHtml(row.player_name)}</span><span>${escapeHtml(row.result_text || row.place || '—')}</span></div>`).join('')}</div>`;
+  }).join('');
+  return `<div class="history"><h3>Ход Игр</h3>${standingsHtml}${dayRows}<p class="muted">${results.last_updated_at ? `Обновлено: ${formatDate(results.last_updated_at)}` : ''}</p></div>`;
 }
 
 function renderShareBlock(event, draftIds) {
@@ -579,6 +609,161 @@ function formatResultValue(row) {
 
 function initials(name) {
   return String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+}
+
+async function loadAdmin() {
+  const panel = $('#adminPanel');
+  if (!state.me?.is_admin) {
+    panel.innerHTML = '<div class="card empty">Нужны права администратора.</div>';
+    return;
+  }
+  await loadDisciplines();
+  if (!state.selectedEvent) await loadEvents();
+  renderAdminPanel();
+}
+
+function renderAdminPanel() {
+  const panel = $('#adminPanel');
+  const event = state.selectedEvent;
+  if (!event) {
+    panel.innerHTML = '<div class="card empty">Сначала создайте событие.</div>';
+    return;
+  }
+  const participantOptions = (event.participants || []).map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  const disciplineOptions = state.disciplines.map(d => `<option value="${escapeHtml(d.discipline_id)}">${escapeHtml(d.name_ru)}</option>`).join('');
+  panel.innerHTML = `
+    <article class="card">
+      <div class="row">
+        <div>
+          <h2>Админ</h2>
+          <p class="muted">${escapeHtml(event.title)} · Day 1 / Day 2 / финал</p>
+        </div>
+        <button class="ghost" id="adminRefreshBtn">Обновить</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Результат дисциплины</h2>
+      <form id="adminDisciplineForm" class="admin-form">
+        <div class="form-grid">
+          <label>День<select name="day_number"><option value="1">День 1</option><option value="2">День 2</option></select></label>
+          <label>Статус<select name="status"><option value="provisional">Промежуточно</option><option value="official">Официально</option></select></label>
+        </div>
+        <label>Участник<select name="participant_id">${participantOptions}</select></label>
+        <label>Вид<select name="discipline_id">${disciplineOptions}</select></label>
+        <div class="form-grid">
+          <label>Результат<input name="result_text" placeholder="5:40 / 50 / >102" /></label>
+          <label>Число для сортировки<input name="result_value" type="number" step="0.01" placeholder="340" /></label>
+        </div>
+        <div class="form-grid">
+          <label>Единица<input name="result_unit" placeholder="секунды / метры / очки" /></label>
+          <label>Место<input name="place" type="number" min="1" /></label>
+        </div>
+        <label>Очки<input name="points" type="number" step="0.01" /></label>
+        <label>Заметка<textarea name="notes" placeholder="Источник / комментарий"></textarea></label>
+        <button class="primary wide" type="submit">Сохранить результат</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Таблица итогов</h2>
+      <form id="adminStandingForm" class="admin-form">
+        <div class="form-grid">
+          <label>Раздел<select name="day_number"><option value="1">День 1</option><option value="2">День 2</option><option value="0">Общий зачёт</option></select></label>
+          <label>Статус<select name="status"><option value="provisional">Промежуточно</option><option value="official">Официально</option></select></label>
+        </div>
+        <label>Участник<select name="participant_id">${participantOptions}</select></label>
+        <div class="form-grid">
+          <label>Место<input name="place" type="number" min="1" required /></label>
+          <label>Сумма очков<input name="total_points" type="number" step="0.01" /></label>
+        </div>
+        <label><span><input name="is_winner" type="checkbox" /> Победитель</span></label>
+        <label>Заметка<textarea name="notes" placeholder="Источник / комментарий"></textarea></label>
+        <button class="primary wide" type="submit">Сохранить строку</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Завершить событие</h2>
+      <form id="adminFinishForm" class="admin-form">
+        <label>Победитель<select name="winner_participant_id">${participantOptions}</select></label>
+        <button class="primary wide" type="submit">Зафиксировать победителя и начислить очки</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Текущие результаты</h2>
+      ${renderLiveResults(event.live_results) || '<p class="muted">Результаты ещё не внесены.</p>'}
+    </article>
+  `;
+  bindAdminPanel(event);
+}
+
+function bindAdminPanel(event) {
+  $('#adminRefreshBtn')?.addEventListener('click', async () => {
+    await loadEvent(event.id);
+    await loadAdmin();
+    toast('Админка обновлена');
+  });
+  $('#adminDisciplineForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    await api(`/api/admin/events/${event.id}/discipline-results`, {
+      method: 'POST',
+      body: JSON.stringify({
+        day_number: Number(form.get('day_number')),
+        participant_id: Number(form.get('participant_id')),
+        discipline_id: String(form.get('discipline_id')),
+        result_text: String(form.get('result_text') || ''),
+        result_value: numberOrNull(form.get('result_value')),
+        result_unit: String(form.get('result_unit') || ''),
+        place: numberOrNull(form.get('place')),
+        points: numberOrNull(form.get('points')),
+        status: String(form.get('status') || 'provisional'),
+        notes: String(form.get('notes') || ''),
+      })
+    });
+    await loadEvent(event.id);
+    renderAdminPanel();
+    toast('Результат сохранён');
+  });
+  $('#adminStandingForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    await api(`/api/admin/events/${event.id}/standings`, {
+      method: 'POST',
+      body: JSON.stringify({
+        day_number: Number(form.get('day_number')),
+        participant_id: Number(form.get('participant_id')),
+        place: Number(form.get('place')),
+        total_points: numberOrNull(form.get('total_points')),
+        is_winner: form.get('is_winner') === 'on',
+        status: String(form.get('status') || 'provisional'),
+        notes: String(form.get('notes') || ''),
+      })
+    });
+    await loadEvent(event.id);
+    renderAdminPanel();
+    toast('Таблица сохранена');
+  });
+  $('#adminFinishForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    if (!confirm('Завершить событие и начислить очки болельщикам?')) return;
+    const data = await api(`/api/admin/events/${event.id}/finish`, {
+      method: 'POST',
+      body: JSON.stringify({ winner_participant_id: Number(form.get('winner_participant_id')) })
+    });
+    state.selectedEvent = data.event;
+    await loadEvents();
+    await loadAdmin();
+    toast('Событие завершено');
+  });
+}
+
+function numberOrNull(value) {
+  const text = String(value ?? '').trim();
+  return text ? Number(text) : null;
 }
 
 function escapeHtml(value) {

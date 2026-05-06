@@ -117,6 +117,50 @@ CREATE TABLE IF NOT EXISTS player_discipline_results (
     UNIQUE(year, event_title, player_id, discipline_id)
 );
 
+CREATE TABLE IF NOT EXISTS event_days (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    day_number INTEGER NOT NULL CHECK(day_number IN (1, 2)),
+    title TEXT DEFAULT '',
+    starts_at TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'provisional' CHECK(status IN ('provisional','official')),
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, day_number)
+);
+
+CREATE TABLE IF NOT EXISTS event_discipline_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    day_number INTEGER NOT NULL CHECK(day_number IN (1, 2)),
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    discipline_id TEXT NOT NULL REFERENCES disciplines(discipline_id) ON DELETE CASCADE,
+    result_text TEXT DEFAULT '',
+    result_value REAL,
+    result_unit TEXT DEFAULT '',
+    place INTEGER,
+    points REAL,
+    status TEXT NOT NULL DEFAULT 'provisional' CHECK(status IN ('provisional','official')),
+    source_url TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, day_number, player_id, discipline_id)
+);
+
+CREATE TABLE IF NOT EXISTS event_standings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    day_number INTEGER NOT NULL DEFAULT 0 CHECK(day_number IN (0, 1, 2)),
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    place INTEGER NOT NULL CHECK(place >= 1),
+    total_points REAL,
+    is_winner INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'provisional' CHECK(status IN ('provisional','official')),
+    source_url TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, day_number, player_id)
+);
+
 CREATE TABLE IF NOT EXISTS picks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -155,6 +199,8 @@ CREATE TABLE IF NOT EXISTS player_history (
 CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
+CREATE INDEX IF NOT EXISTS idx_event_discipline_results_event ON event_discipline_results(event_id, day_number);
+CREATE INDEX IF NOT EXISTS idx_event_standings_event ON event_standings(event_id, day_number);
 """
 
 
@@ -306,6 +352,12 @@ def get_user_by_telegram_id(db_path: str, telegram_id: int) -> dict[str, Any] | 
         return dict(row) if row else None
 
 
+def list_disciplines(db_path: str) -> list[dict[str, Any]]:
+    with connect(db_path) as conn:
+        rows = conn.execute("SELECT * FROM disciplines ORDER BY sort_order, name_ru").fetchall()
+        return rows_to_dicts(rows)
+
+
 def list_events(db_path: str) -> list[dict[str, Any]]:
     with connect(db_path) as conn:
         rows = conn.execute(
@@ -377,7 +429,55 @@ def get_event(db_path: str, event_id: int, user_id: int | None = None) -> dict[s
         data["my_picks"] = my_picks
         data["my_pick"] = my_picks[0] if my_picks else None
         data["results"] = rows_to_dicts(result_rows)
+        data["live_results"] = get_event_results_from_conn(conn, event_id)
         return data
+
+
+def get_event_results(db_path: str, event_id: int) -> dict[str, Any]:
+    with connect(db_path) as conn:
+        return get_event_results_from_conn(conn, event_id)
+
+
+def get_event_results_from_conn(conn: sqlite3.Connection, event_id: int) -> dict[str, Any]:
+    days = rows_to_dicts(
+        conn.execute(
+            "SELECT * FROM event_days WHERE event_id=? ORDER BY day_number",
+            (event_id,),
+        ).fetchall()
+    )
+    discipline_results = rows_to_dicts(
+        conn.execute(
+            """
+            SELECT r.*, p.name AS player_name, p.region AS player_region,
+                   d.name_ru AS discipline_name, d.name_yakut, d.unit AS discipline_unit, d.sort_order
+            FROM event_discipline_results r
+            JOIN players p ON p.id=r.player_id
+            JOIN disciplines d ON d.discipline_id=r.discipline_id
+            WHERE r.event_id=?
+            ORDER BY r.day_number, d.sort_order, COALESCE(r.place, 999), p.name
+            """,
+            (event_id,),
+        ).fetchall()
+    )
+    standings = rows_to_dicts(
+        conn.execute(
+            """
+            SELECT s.*, p.name AS player_name, p.region AS player_region
+            FROM event_standings s
+            JOIN players p ON p.id=s.player_id
+            WHERE s.event_id=?
+            ORDER BY s.day_number, s.place, p.name
+            """,
+            (event_id,),
+        ).fetchall()
+    )
+    updated_values = [row.get("updated_at") for row in days + discipline_results + standings if row.get("updated_at")]
+    return {
+        "days": days,
+        "discipline_results": discipline_results,
+        "standings": standings,
+        "last_updated_at": max(updated_values) if updated_values else None,
+    }
 
 
 MAX_PICKS_PER_EVENT = 3
@@ -567,6 +667,173 @@ def admin_create_event(db_path: str, title: str, starts_at: str, description: st
         event_id = int(cur.lastrowid)
         for player_id in player_ids:
             conn.execute("INSERT OR IGNORE INTO event_participants (event_id, player_id) VALUES (?, ?)", (event_id, int(player_id)))
+        row = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
+        return dict(row)
+
+
+def validate_event_player(conn: sqlite3.Connection, event_id: int, player_id: int) -> None:
+    row = conn.execute(
+        "SELECT 1 FROM event_participants WHERE event_id=? AND player_id=?",
+        (event_id, player_id),
+    ).fetchone()
+    if not row:
+        raise ValueError("Участник не добавлен в событие")
+
+
+def validate_result_status(status: str) -> str:
+    value = (status or "provisional").strip().lower()
+    if value not in {"provisional", "official"}:
+        raise ValueError("Некорректный статус результата")
+    return value
+
+
+def admin_upsert_discipline_result(
+    db_path: str,
+    event_id: int,
+    day_number: int,
+    player_id: int,
+    discipline_id: str,
+    result_text: str = "",
+    result_value: float | None = None,
+    result_unit: str = "",
+    place: int | None = None,
+    points: float | None = None,
+    status: str = "provisional",
+    source_url: str = "",
+    notes: str = "",
+) -> dict[str, Any]:
+    if day_number not in {1, 2}:
+        raise ValueError("День должен быть 1 или 2")
+    if place is not None and place < 1:
+        raise ValueError("Место должно быть больше нуля")
+    status = validate_result_status(status)
+    with connect(db_path) as conn:
+        event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
+        if not event:
+            raise ValueError("Событие не найдено")
+        validate_event_player(conn, event_id, player_id)
+        discipline = conn.execute("SELECT * FROM disciplines WHERE discipline_id=?", (discipline_id,)).fetchone()
+        if not discipline:
+            raise ValueError("Дисциплина не найдена")
+        conn.execute(
+            """
+            INSERT INTO event_days (event_id, day_number, title, status, updated_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(event_id, day_number) DO UPDATE SET
+                status=excluded.status,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (event_id, day_number, f"День {day_number}", status),
+        )
+        conn.execute(
+            """
+            INSERT INTO event_discipline_results (
+                event_id, day_number, player_id, discipline_id, result_text, result_value, result_unit,
+                place, points, status, source_url, notes, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(event_id, day_number, player_id, discipline_id) DO UPDATE SET
+                result_text=excluded.result_text,
+                result_value=excluded.result_value,
+                result_unit=excluded.result_unit,
+                place=excluded.place,
+                points=excluded.points,
+                status=excluded.status,
+                source_url=excluded.source_url,
+                notes=excluded.notes,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (
+                event_id,
+                day_number,
+                player_id,
+                discipline_id,
+                result_text.strip(),
+                result_value,
+                result_unit.strip(),
+                place,
+                points,
+                status,
+                source_url.strip(),
+                notes.strip(),
+            ),
+        )
+        return get_event_results_from_conn(conn, event_id)
+
+
+def admin_upsert_standing(
+    db_path: str,
+    event_id: int,
+    day_number: int,
+    player_id: int,
+    place: int,
+    total_points: float | None = None,
+    is_winner: bool = False,
+    status: str = "provisional",
+    source_url: str = "",
+    notes: str = "",
+) -> dict[str, Any]:
+    if day_number not in {0, 1, 2}:
+        raise ValueError("День должен быть 0, 1 или 2")
+    if place < 1:
+        raise ValueError("Место должно быть больше нуля")
+    status = validate_result_status(status)
+    with connect(db_path) as conn:
+        event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
+        if not event:
+            raise ValueError("Событие не найдено")
+        validate_event_player(conn, event_id, player_id)
+        conn.execute(
+            """
+            INSERT INTO event_standings (
+                event_id, day_number, player_id, place, total_points, is_winner, status, source_url, notes, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(event_id, day_number, player_id) DO UPDATE SET
+                place=excluded.place,
+                total_points=excluded.total_points,
+                is_winner=excluded.is_winner,
+                status=excluded.status,
+                source_url=excluded.source_url,
+                notes=excluded.notes,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (event_id, day_number, player_id, place, total_points, 1 if is_winner else 0, status, source_url.strip(), notes.strip()),
+        )
+        return get_event_results_from_conn(conn, event_id)
+
+
+def admin_finish_event(db_path: str, event_id: int, winner_player_id: int) -> dict[str, Any]:
+    with connect(db_path) as conn:
+        event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
+        if not event:
+            raise ValueError("Событие не найдено")
+        validate_event_player(conn, event_id, winner_player_id)
+        conn.execute("DELETE FROM results WHERE event_id=?", (event_id,))
+        conn.execute(
+            "INSERT INTO results (event_id, player_id, place, score, prize_text) VALUES (?, ?, 1, NULL, '')",
+            (event_id, winner_player_id),
+        )
+        conn.execute("UPDATE event_standings SET is_winner=0 WHERE event_id=? AND day_number=0", (event_id,))
+        conn.execute(
+            """
+            INSERT INTO event_standings (event_id, day_number, player_id, place, is_winner, status, notes, updated_at)
+            VALUES (?, 0, ?, 1, 1, 'official', 'Final official winner', CURRENT_TIMESTAMP)
+            ON CONFLICT(event_id, day_number, player_id) DO UPDATE SET
+                place=1,
+                is_winner=1,
+                status='official',
+                notes='Final official winner',
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (event_id, winner_player_id),
+        )
+        conn.execute("UPDATE events SET status='settled' WHERE id=?", (event_id,))
+        conn.execute("UPDATE picks SET awarded_points=0 WHERE event_id=?", (event_id,))
+        conn.execute(
+            "UPDATE picks SET awarded_points=confidence_points WHERE event_id=? AND player_id=?",
+            (event_id, winner_player_id),
+        )
         row = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         return dict(row)
 

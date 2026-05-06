@@ -102,6 +102,14 @@ Returns participant profile detail with:
 
 Alias for player detail, matching the canonical brief wording.
 
+### `GET /api/events/{event_id}/results`
+
+Return Day 1, Day 2, overall/final standings, discipline results, final winners, and last updated time.
+
+### `GET /api/disciplines`
+
+Returns seven Dygyn disciplines with display metadata.
+
 ### `GET /api/leaderboard`
 
 Returns top 100 users ordered by fan score, correct picks, and pick count.
@@ -151,18 +159,50 @@ Create event and attach participants.
 }
 ```
 
-### `POST /api/admin/events/{event_id}/settle`
+### `POST /api/admin/events/{event_id}/discipline-results`
 
-Set results and award fan points to users who picked first place.
+Upsert per-athlete discipline result for Day 1 or Day 2.
 
 ```json
 {
-  "results": [
-    {"player_id": 1, "place": 1, "score": 42},
-    {"player_id": 2, "place": 2, "score": 39}
-  ]
+  "day_number": 1,
+  "participant_id": 1,
+  "discipline_id": "run_400m",
+  "result_text": "54.00",
+  "result_value": 54.0,
+  "result_unit": "seconds",
+  "place": 1,
+  "points": 1,
+  "status": "provisional"
 }
 ```
+
+### `POST /api/admin/events/{event_id}/standings`
+
+Upsert Day 1, Day 2, or overall/final standings row. `day_number=0` means overall/final.
+
+```json
+{
+  "day_number": 0,
+  "participant_id": 1,
+  "place": 1,
+  "total_points": 30,
+  "is_winner": true,
+  "status": "official"
+}
+```
+
+### `POST /api/admin/events/{event_id}/finish`
+
+Set official winner, mark event settled, and award fan points.
+
+```json
+{"winner_participant_id": 1}
+```
+
+### `POST /api/admin/events/{event_id}/settle`
+
+Legacy final result endpoint. Prefer `/finish` for the canonical live-results flow.
 
 ## Import CLI
 
@@ -179,46 +219,21 @@ Imported data:
 - 2025 discipline results;
 - partial 2026 qualifier results.
 
-## Planned Admin Panel
+## Admin Panel
 
-Admin panel is required and should live inside the Telegram Mini App behind `ADMIN_IDS` access.
+Admin panel lives inside the Telegram Mini App behind `ADMIN_IDS` access.
 
-MVP admin actions:
+Current admin actions:
 
-- validate/import CSV data pack;
-- create/update events and participants;
-- attach participants to events;
 - enter/update Day 1 and Day 2 discipline results;
-- publish provisional/official standings;
+- publish Day 1, Day 2, or overall/final standings;
 - finish event and award fan points.
 
-## Planned Result Endpoints
+Still planned:
 
-Not implemented yet. Needed for two-day Dygyn Games result updates.
-
-### `GET /api/events/{event_id}/results`
-
-Return Day 1, Day 2, overall standings, final winners, status, and last updated time.
-
-Query options:
-
-```http
-?day=1
-?day=2
-?phase=final
-```
-
-### `POST /api/admin/events/{event_id}/discipline-results`
-
-Admin upserts per-athlete discipline results for Day 1 or Day 2.
-
-### `POST /api/admin/events/{event_id}/standings`
-
-Admin publishes provisional or official standings after Day 1, Day 2, or final finish.
-
-### `POST /api/admin/events/{event_id}/finish`
-
-Admin marks final official winners and triggers fan-score awarding.
+- validate/import CSV data pack from UI;
+- create/update events and participants;
+- attach participants to events.
 
 ## Error Behavior
 

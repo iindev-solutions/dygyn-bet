@@ -18,6 +18,7 @@
 - Games — arena hero, event list, event detail, 1–3 participant choices, 100-point allocation controls, share actions.
 - Support — support statistics and fan leaderboard.
 - Players — participant cards, detail view, profile fields, and discipline-result tables.
+- Admin — `ADMIN_IDS`-only live operations: Day 1/Day 2 discipline results, standings, finish event.
 - Rules — product rules and no-money notice.
 
 ## Auth Behavior
@@ -94,7 +95,8 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 6. Distribute exactly 100 confidence points.
 7. Save the vote through the sticky save action.
 8. Confirm toast and updated statistics.
-9. Copy share text or download the story card.
+9. If admin, open Admin tab and test a provisional result/standing on a non-production DB first.
+10. Copy share text or download the story card.
 10. Open support tab.
 11. Open players tab.
 12. Open rules tab and verify no-money warning.

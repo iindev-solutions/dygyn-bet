@@ -16,11 +16,16 @@ from .db import (
     admin_add_history,
     admin_create_event,
     admin_create_player,
+    admin_finish_event,
     admin_settle_event,
+    admin_upsert_discipline_result,
+    admin_upsert_standing,
     get_event,
+    get_event_results,
     get_player,
     init_db,
     leaderboard,
+    list_disciplines,
     list_events,
     list_players,
     seed_demo,
@@ -92,6 +97,38 @@ class SettleIn(BaseModel):
     results: list[ResultItemIn]
 
 
+class DisciplineResultIn(BaseModel):
+    day_number: int = Field(ge=1, le=2)
+    participant_id: int | None = None
+    player_id: int | None = None
+    discipline_id: str
+    result_text: str = ""
+    result_value: float | None = None
+    result_unit: str = ""
+    place: int | None = Field(default=None, ge=1)
+    points: float | None = None
+    status: str = "provisional"
+    source_url: str = ""
+    notes: str = ""
+
+
+class StandingIn(BaseModel):
+    day_number: int = Field(default=0, ge=0, le=2)
+    participant_id: int | None = None
+    player_id: int | None = None
+    place: int = Field(ge=1)
+    total_points: float | None = None
+    is_winner: bool = False
+    status: str = "provisional"
+    source_url: str = ""
+    notes: str = ""
+
+
+class FinishEventIn(BaseModel):
+    winner_participant_id: int | None = None
+    winner_player_id: int | None = None
+
+
 @app.middleware("http")
 async def simple_rate_limit(request: Request, call_next):
     if request.url.path.startswith("/static"):
@@ -142,10 +179,13 @@ def current_user(x_telegram_init_data: str | None = Header(default=None)) -> dic
     return user
 
 
-def admin_user(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+def is_admin(user: dict[str, Any]) -> bool:
     tg_id = int(user["telegram_id"])
-    is_dev_admin = settings.allow_dev_login and tg_id == 1000001
-    if tg_id not in settings.admin_ids and not is_dev_admin:
+    return tg_id in settings.admin_ids or (settings.allow_dev_login and tg_id == 1000001)
+
+
+def admin_user(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    if not is_admin(user):
         raise HTTPException(status_code=403, detail="Нужны права администратора")
     return user
 
@@ -162,7 +202,9 @@ def health() -> dict[str, Any]:
 
 @app.get("/api/me")
 def me(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"user": user}
+    data = dict(user)
+    data["is_admin"] = is_admin(user)
+    return {"user": data}
 
 
 @app.get("/api/events")
@@ -210,6 +252,11 @@ def save_event_prediction(event_id: int, data: PredictionIn, user: dict[str, Any
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     event = get_event(settings.db_path, event_id, user_id=int(user["id"]))
     return {"picks": picks, "event": event}
+
+
+@app.get("/api/disciplines")
+def disciplines(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"disciplines": list_disciplines(settings.db_path)}
 
 
 @app.get("/api/players")
@@ -266,6 +313,79 @@ def api_add_history(player_id: int, data: HistoryCreateIn, admin: dict[str, Any]
 def api_create_event(data: EventCreateIn, admin: dict[str, Any] = Depends(admin_user)) -> dict[str, Any]:
     try:
         event = admin_create_event(settings.db_path, data.title, data.starts_at, data.description, data.player_ids)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"event": event}
+
+
+@app.get("/api/events/{event_id}/results")
+def event_results(event_id: int, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    event = get_event(settings.db_path, event_id, user_id=int(user["id"]))
+    if not event:
+        raise HTTPException(status_code=404, detail="Событие не найдено")
+    return {"results": get_event_results(settings.db_path, event_id)}
+
+
+@app.post("/api/admin/events/{event_id}/discipline-results")
+def api_upsert_discipline_result(
+    event_id: int,
+    data: DisciplineResultIn,
+    admin: dict[str, Any] = Depends(admin_user),
+) -> dict[str, Any]:
+    player_id = data.participant_id or data.player_id
+    if not player_id:
+        raise HTTPException(status_code=400, detail="Участник обязателен")
+    try:
+        results = admin_upsert_discipline_result(
+            settings.db_path,
+            event_id=event_id,
+            day_number=data.day_number,
+            player_id=int(player_id),
+            discipline_id=data.discipline_id,
+            result_text=data.result_text,
+            result_value=data.result_value,
+            result_unit=data.result_unit,
+            place=data.place,
+            points=data.points,
+            status=data.status,
+            source_url=data.source_url,
+            notes=data.notes,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"results": results}
+
+
+@app.post("/api/admin/events/{event_id}/standings")
+def api_upsert_standing(event_id: int, data: StandingIn, admin: dict[str, Any] = Depends(admin_user)) -> dict[str, Any]:
+    player_id = data.participant_id or data.player_id
+    if not player_id:
+        raise HTTPException(status_code=400, detail="Участник обязателен")
+    try:
+        results = admin_upsert_standing(
+            settings.db_path,
+            event_id=event_id,
+            day_number=data.day_number,
+            player_id=int(player_id),
+            place=data.place,
+            total_points=data.total_points,
+            is_winner=data.is_winner,
+            status=data.status,
+            source_url=data.source_url,
+            notes=data.notes,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"results": results}
+
+
+@app.post("/api/admin/events/{event_id}/finish")
+def api_finish_event(event_id: int, data: FinishEventIn, admin: dict[str, Any] = Depends(admin_user)) -> dict[str, Any]:
+    winner_id = data.winner_participant_id or data.winner_player_id
+    if not winner_id:
+        raise HTTPException(status_code=400, detail="Победитель обязателен")
+    try:
+        event = admin_finish_event(settings.db_path, event_id, int(winner_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"event": event}

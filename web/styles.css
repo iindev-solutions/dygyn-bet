@@ -88,7 +88,7 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
   gap: 8px;
   width: min(520px, 100%);
   padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
@@ -395,6 +395,35 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   letter-spacing: .05em;
 }
 .result-table small { color: var(--hint); }
+.admin-form {
+  display: grid;
+  gap: 10px;
+}
+.admin-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--hint);
+  font-size: 13px;
+  font-weight: 800;
+}
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, .06);
+  color: var(--text);
+}
+.admin-form textarea { min-height: 74px; resize: vertical; }
+.admin-form option { color: #10131a; }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
 .toast {
   position: fixed;
   left: 14px;
@@ -422,4 +451,5 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); }
   .share-actions { grid-template-columns: 1fr; }
   .chips { grid-template-columns: repeat(2, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
 }

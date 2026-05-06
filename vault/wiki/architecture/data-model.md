@@ -147,9 +147,9 @@ Constraint:
 
 - `UNIQUE(year, event_title, player_id, discipline_id)`.
 
-## Planned Two-Day Result Model
+## Two-Day Result Model
 
-Not implemented yet. Needed for live Day 1/Day 2 updates during Dygyn Games.
+Implemented for live Day 1/Day 2 updates during Dygyn Games.
 
 ### `event_days`
 
@@ -159,7 +159,7 @@ Fields:
 
 - `event_id`.
 - `day_number` — `1` or `2`.
-- `title`, `starts_at`, `status`.
+- `title`, `starts_at`, `status`, `updated_at`.
 
 ### `event_discipline_results`
 
@@ -167,12 +167,16 @@ Per-athlete results entered during/after each day.
 
 Fields:
 
-- `event_id`, `event_day_id`, `player_id`, `discipline_id`.
+- `event_id`, `day_number`, `player_id`, `discipline_id`.
 - `result_text` — display value, e.g. `5:40`, `50 reps`.
 - `result_value` — sortable numeric value, e.g. seconds/reps.
-- `place`, `points`.
+- `result_unit`, `place`, `points`.
 - `status` — `provisional` or `official`.
 - `source_url`, `notes`, `updated_at`.
+
+Constraint:
+
+- `UNIQUE(event_id, day_number, player_id, discipline_id)`.
 
 ### `event_standings`
 
@@ -180,10 +184,14 @@ Overall/day standings and final winners.
 
 Fields:
 
-- `event_id`, `day_number` nullable for final/overall.
+- `event_id`, `day_number` where `0` means overall/final, `1`/`2` mean day standings.
 - `player_id`, `place`, `total_points`, `is_winner`.
 - `status` — `provisional` or `official`.
-- `source_url`, `updated_at`.
+- `source_url`, `notes`, `updated_at`.
+
+Constraint:
+
+- `UNIQUE(event_id, day_number, player_id)`.
 
 Fan leaderboard scoring should use only final official standings.
 

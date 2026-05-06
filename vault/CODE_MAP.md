@@ -14,8 +14,8 @@
 
 ## Backend: `app/`
 
-- `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/prediction/leaderboard/admin API endpoints.
-- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point prediction items, results, sources, disciplines, discipline results, history, leaderboard, demo seed.
+- `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/prediction/live-results/leaderboard/admin API endpoints.
+- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point prediction items, final results, live two-day results/standings, sources, disciplines, discipline results, history, leaderboard, demo seed.
 - `app/config.py` — environment loading and immutable `Settings` dataclass.
 - `app/import_data.py` — validates/imports `data/import/dygyn_2026/` CSV pack into SQLite sources, disciplines, players, event links, history, and discipline-result tables.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
@@ -24,8 +24,8 @@
 
 ## Frontend: `web/`
 
-- `web/index.html` — Telegram Mini App shell with tabs: events, stats, players, rules.
-- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, 100-point allocation prediction flow, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
+- `web/index.html` — Telegram Mini App shell with tabs: events, stats, players, admin, rules.
+- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, 100-point allocation prediction flow, live two-day results rendering/admin forms, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
 - `web/styles.css` — Dygyn Fan Arena dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
 
 ## Scripts
@@ -63,14 +63,14 @@
 
 1. User loads events.
 2. User opens event details.
-3. User selects up to three participants and confidence points.
-4. Backend checks event exists, status is `open`, start time is future, and every selected player belongs to event.
-5. Backend replaces current user's event picks and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
+3. User selects 1–3 participants and distributes exactly 100 confidence points.
+4. Backend checks event exists, status is `open`, close time is future, point total is 100, and every selected player belongs to event.
+5. Backend replaces current user's event prediction items and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
 
-### Settlement Flow
+### Live Result/Admin Flow
 
-1. Admin posts results.
-2. Backend deletes old results for event.
-3. Backend inserts submitted result rows.
-4. Event status becomes `settled`.
-5. Pick rows for first-place player receive `awarded_points = confidence_points`; others become 0.
+1. Admin enters Day 1/Day 2 discipline results from the TMA admin tab.
+2. Admin publishes Day 1, Day 2, or overall standings as provisional/official.
+3. Public event detail shows live results and last updated time.
+4. Admin finishes event by choosing the official winner.
+5. Event status becomes `settled`; pick rows for the winner receive `awarded_points = confidence_points`, others become 0.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-06 — Admin Live Results Flow
+
+- Added live two-day result tables: event days, event discipline results, and event standings.
+- Added public `GET /api/events/{event_id}/results` and `GET /api/disciplines`.
+- Added admin APIs for Day 1/Day 2 discipline results, standings, and final finish/award.
+- Added admin-only TMA tab visible via `ADMIN_IDS`; supports entering discipline results, standings, and final winner.
+- Public event detail now renders live results/standings when present.
+- Added DB flow test for live results and finish scoring.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; direct live admin DB smoke; `git diff --check`.
+- Not verified: full `python -m pytest` because local environment lacks pytest.
+- Next: deploy to VPS and set real `ADMIN_IDS`.
+
 ## 2026-05-06 — VPS Deploy with Imported Data
 
 - Deployed latest app to `/opt/dygyn-bet` on `iind-vps`.
