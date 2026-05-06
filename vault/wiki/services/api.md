@@ -145,6 +145,47 @@ Set results and award fan points to users who picked first place.
 }
 ```
 
+## Planned Admin Panel
+
+Admin panel is required and should live inside the Telegram Mini App behind `ADMIN_IDS` access.
+
+MVP admin actions:
+
+- validate/import CSV data pack;
+- create/update events and participants;
+- attach participants to events;
+- enter/update Day 1 and Day 2 discipline results;
+- publish provisional/official standings;
+- finish event and award fan points.
+
+## Planned Result Endpoints
+
+Not implemented yet. Needed for two-day Dygyn Games result updates.
+
+### `GET /api/events/{event_id}/results`
+
+Return Day 1, Day 2, overall standings, final winners, status, and last updated time.
+
+Query options:
+
+```http
+?day=1
+?day=2
+?phase=final
+```
+
+### `POST /api/admin/events/{event_id}/discipline-results`
+
+Admin upserts per-athlete discipline results for Day 1 or Day 2.
+
+### `POST /api/admin/events/{event_id}/standings`
+
+Admin publishes provisional or official standings after Day 1, Day 2, or final finish.
+
+### `POST /api/admin/events/{event_id}/finish`
+
+Admin marks final official winners and triggers fan-score awarding.
+
 ## Error Behavior
 
 - `401` for invalid/missing Telegram auth.

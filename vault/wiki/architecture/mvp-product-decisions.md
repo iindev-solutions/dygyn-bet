@@ -41,6 +41,13 @@
 - Bot stays simple: `/start`, open Mini App, participants, make prediction, rating, rules.
 - Large tables and voting flows belong in the Mini App, not Telegram chat messages.
 
+## Admin UX
+
+- Admin panel is required, not optional.
+- Admin should be inside the Mini App and visible only to `ADMIN_IDS`.
+- MVP admin tasks: import/validate CSV data pack, manage events, manage participants, attach participants to events, update Day 1/Day 2 discipline results, publish provisional/official standings, finish event, and trigger final fan-score awarding.
+- Admin operations need confirmation and audit-friendly timestamps; avoid editing DB manually during live games.
+
 ## Participant Detail and Discipline Stats
 
 - Each participant should have a detail page with profile, support stats, and verified sport history.
@@ -50,6 +57,15 @@
   - `result_value`: e.g. `340` seconds, `50` reps.
 - Required discipline metadata: code, name, unit, sort order, whether lower value is better.
 - Every real result needs a source URL or source note.
+
+## Two-Day Event Results
+
+- Dygyn Games run across two days.
+- App must support result updates after Day 1, Day 2, and final finish.
+- Predictions close before the event/`closes_at`; day results are informational until final official finish.
+- UI should show Day 1, Day 2, overall standings, final winners, `provisional/official` state, and last updated time.
+- Admin must be able to enter or correct discipline results during/after each day.
+- Fan leaderboard points are awarded only after final official winner is set, not from provisional day standings.
 
 ## Data Needed
 

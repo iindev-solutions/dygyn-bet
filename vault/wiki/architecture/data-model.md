@@ -99,6 +99,55 @@ Fields:
 - `source_url` — required in practice for real data provenance.
 - `created_at`.
 
+## Planned Canonical Result Model
+
+Not implemented yet. Needed for `new_brief.md` alignment and two-day Dygyn Games updates.
+
+### `disciplines`
+
+Seven Dygyn disciplines.
+
+Fields:
+
+- `code`, `name`, `unit`, `sort_order`.
+- `lower_is_better` — e.g. time disciplines rank lower values higher.
+
+### `event_days`
+
+Two-day competition structure.
+
+Fields:
+
+- `event_id`.
+- `day_number` — `1` or `2`.
+- `title`, `starts_at`, `status`.
+
+### `event_discipline_results`
+
+Per-athlete results entered during/after each day.
+
+Fields:
+
+- `event_id`, `event_day_id`, `player_id`, `discipline_id`.
+- `result_text` — display value, e.g. `5:40`, `50 reps`.
+- `result_value` — sortable numeric value, e.g. seconds/reps.
+- `place`, `points`.
+- `status` — `provisional` or `official`.
+- `source_url`, `notes`, `updated_at`.
+
+### `event_standings`
+
+Overall/day standings and final winners.
+
+Fields:
+
+- `event_id`, `day_number` nullable for final/overall.
+- `player_id`, `place`, `total_points`, `is_winner`.
+- `status` — `provisional` or `official`.
+- `source_url`, `updated_at`.
+
+Fan leaderboard scoring should use only final official standings.
+
 ## Demo Data
 
 `seed_demo()` creates four demo participants, one open demo event, and demo history when the database has no players.

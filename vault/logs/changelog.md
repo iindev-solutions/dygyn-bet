@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-06 — Import Data Pack Reviewed
+
+- Reviewed CSV/XLSX data pack and renamed folder to `data/import/dygyn_2026/`.
+- Data includes 7 disciplines, one 2026 event, 16 qualified participants, 16 event links, 2025 overall results, 112 discipline result rows, 14 partial 2026 qualifier result rows, and 9 sources.
+- Validation found no duplicate core keys, no broken source/discipline/event/participant references, and 2025 overall sums match discipline-place totals.
+- Noted import risks: current DB still demo, 2025 result rows use names not participant IDs, `ё/е` and alias matching needed, raw result coverage is partial, and some qualifier result values are text/range values.
+- Recorded admin panel as mandatory for imports, events, participants, Day 1/Day 2 results, standings, and final finish.
+- Updated `vault/QUICK_START.md`, `vault/CODE_MAP.md`, sprint, MVP decisions, and API notes.
+- Verified: CSV validation script and `git diff --check` passed.
+
+## 2026-05-06 — Two-Day Results Requirement
+
+- Recorded that Dygyn Games run across two days.
+- Added target support for Day 1, Day 2, overall/final results, provisional/official state, and final winners.
+- Clarified fan-score awarding should happen only after final official winner.
+- Updated README, quick start, MVP decisions, data-model plan, and planned API notes.
+- Verified: `git diff --check` passed.
+
 ## 2026-05-06 — README Rewrite
 
 - Rewrote `README.md` again as a short product-only description.

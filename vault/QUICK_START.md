@@ -32,18 +32,21 @@ Read this first. Read deep docs only when task needs them.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
 - Target product mechanic: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
 - Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
+- Dygyn Games are a two-day event; target app must show Day 1, Day 2, overall/final results, provisional/official state, and final winners.
+- Admin panel is mandatory: `ADMIN_IDS`-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and final finish.
 - `ADMIN_IDS` still needed from user.
-- Real participants/results still demo; must replace with verified sources.
+- Real participants/results still demo in DB; import data pack now exists under `data/import/dygyn_2026/` with 2026 participants, 7 disciplines, 2025 results, partial 2026 qualifier results, and sources.
 
 ## Next Best Tasks
 
-1. Confirm 100-point allocation model details, then implement backend-first.
-2. Add brief backend gaps: `closes_at`, fixed allocation validation, event stats/leaderboard/profile, admin close/finish aliases.
-3. Add participant discipline stats model/import: disciplines + per-athlete/year results with source URLs.
-4. Add brief frontend gaps: Home/Forecast/Stats/Rating/Profile structure and allocation UI + athlete stat tables.
-5. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.
-6. Replace demo data with real verified Dygyn data.
-7. Mobile QA in Telegram.
+1. Commit current docs/import-data pack after final review.
+2. Build import validator/importer for `data/import/dygyn_2026/`.
+3. Implement backend schema/API: 100-point allocation, `closes_at`, stats, leaderboard/profile, discipline results, two-day standings.
+4. Add mandatory admin-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and finish.
+5. Add public frontend screens: Home/Forecast/Stats/Rating/Profile + athlete stat/result tables.
+6. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.
+7. Build CSV import/validation from `data/import/dygyn_2026/` and replace demo DB data.
+8. Mobile QA in Telegram.
 
 ## Read Deep Docs Only If Needed
 
