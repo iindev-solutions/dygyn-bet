@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-07 — Simple Helmet Favicon
+
+- Replaced overloaded favicon with a simple bootur helmet mark only.
+- Removed favicon ornament lines, circle, and any text; kept dark square background for contrast.
+- Optimized SVG favicon to 3.7KB.
+- Verified: favicon SVG has no `circle`, `stroke`, or text nodes.
+
 ## 2026-05-07 — A1 Direction Favicon
 
 - Chose A1 poster direction as the current redesign base.
