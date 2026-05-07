@@ -73,7 +73,8 @@ async function loadMe() {
   const data = await api('/api/me');
   state.me = data.user;
   const name = [data.user.first_name, data.user.last_name].filter(Boolean).join(' ') || data.user.username || data.user.telegram_id;
-  $('#userLine').textContent = `Вы вошли как ${name}`;
+  const userLine = $('#userLine');
+  if (userLine) userLine.textContent = `Пользователь: ${name}`;
   $('#adminTabBtn').hidden = !data.user.is_admin;
 }
 
@@ -204,15 +205,16 @@ function renderEventsList() {
   }
   const selected = state.selectedEvent;
   const hero = selected ? renderEventHero(selected) : '';
-  const eventPicker = state.events.map(e => `
+  const eventPicker = state.events.length > 1 ? state.events.map(e => `
     <button class="choice ${selected?.id === e.id ? 'selected' : ''}" data-event-id="${e.id}">
       <span>${escapeHtml(e.title)}<br><small>${formatDate(e.starts_at)} · ${e.participant_count} участников · ${e.pick_count} голосов</small></span>
       <strong>${statusLabel(e.status)}</strong>
     </button>
-  `).join('');
+  `).join('') : '';
+  const eventPickerSection = eventPicker ? `<article class="card"><h2>События</h2><div class="choices">${eventPicker}</div></article>` : '';
 
   const detail = selected ? renderEventDetail(selected) : '';
-  box.innerHTML = `${hero}<article class="card"><h2>События</h2><div class="choices">${eventPicker}</div></article>${detail}`;
+  box.innerHTML = `${hero}${eventPickerSection}${detail}`;
   bindEventScreenActions(box);
 }
 
@@ -239,16 +241,15 @@ function renderEventHero(event) {
     <article class="card event-card">
       <div class="row">
         <span class="badge">${statusLabel(event.status)}</span>
-        <span class="badge blue">Игры Дыгына — голосование</span>
+        <span class="muted">${formatDate(event.starts_at)}</span>
       </div>
-      <h2 style="margin-top:18px">${escapeHtml(event.title)}</h2>
-      <p class="muted">Голосование и поддержка участников</p>
+      <h2>${escapeHtml(event.title)}</h2>
       <div class="stat-grid">
         <div class="stat-box"><strong>${event.participant_count || event.participants?.length || 0}</strong><span>участников</span></div>
         <div class="stat-box"><strong>${event.totals?.picks || 0}</strong><span>голосов</span></div>
-        <div class="stat-box"><strong>${formatDate(event.starts_at)}</strong><span>старт</span></div>
+        <div class="stat-box"><strong>100</strong><span>очков</span></div>
       </div>
-      <div class="history" style="margin-top:14px"><h3>Сейчас болеют за</h3>${supportRows}</div>
+      <div class="history compact-support"><h3>Поддержка</h3>${supportRows}</div>
     </article>
   `;
 }
@@ -267,8 +268,8 @@ function renderEventDetail(event) {
     <article class="card">
       <div class="row">
         <div>
-          <h2>Кто победит?</h2>
-          <p class="muted">Выберите до ${MAX_PICKS} участников · ${draftIds.length}/${MAX_PICKS}</p>
+          <h2>Выберите топ-2</h2>
+          <p class="muted">${draftIds.length}/${MAX_PICKS} участников · всего 100 очков</p>
         </div>
         <span class="badge">${statusLabel(event.status)}</span>
       </div>
@@ -778,7 +779,7 @@ function escapeHtml(value) {
 
 async function boot() {
   document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-  $('#refreshBtn').addEventListener('click', async () => {
+  $('#refreshBtn')?.addEventListener('click', async () => {
     await loadEvents();
     toast('Обновлено');
   });

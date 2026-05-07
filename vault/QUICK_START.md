@@ -6,7 +6,7 @@ Read this first. Read deep docs only when task needs them.
 
 - Product: Telegram Mini App voting for Dygyn Games.
 - Public URL: `https://iindiinda.duckdns.org/dygyn-bet/`.
-- Style: `Игры Дыгына — голосование` — dark sports cards, gold accent, no casino vibe. Root `DESIGN.md` is canonical visual identity for agents.
+- Style: A1 ceremonial poster direction — dark sports cards, SVG Yakut ornament strip, gold accent, no casino vibe. Root `DESIGN.md` is canonical visual identity for agents.
 - User flow: open bot → TMA → choose 1–2 participants → distribute confidence points → save → share story card.
 - Legal line: votes only. No money, odds, deposits, withdrawals, payouts, prizes with value.
 
@@ -25,8 +25,8 @@ Read this first. Read deep docs only when task needs them.
 
 - 100-point allocation voting works locally: one vote uses a 100-point scale; votes are limited to top 2 participants and must total 100 points.
 - Story-card sharing works.
-- Игры Дыгына — голосование UI deployed.
-- Latest VPS deploy done: top-2 voting fix deployed, votes/results cleared after DB backup, services active, VPS tests passed.
+- A1-style redesign first pass deployed: ceremonial hero, SVG ornament strip, no visible login line/refresh/no-money notice in top screen.
+- Latest VPS deploy done: A1 redesign first pass deployed, services active, VPS tests passed.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.

@@ -18,22 +18,24 @@ Character:
 
 - dark;
 - fast;
+- ceremonial A1 poster direction;
 - sports-oriented;
 - Telegram-native;
 - no casino/betting vibe;
-- light Yakut festive accent through warm gold, used sparingly.
+- Yakut SVG ornament accents through warm gold, used sparingly.
 
 ## Design Principles
 
 Do:
 
+- use a ceremonial app hero with SVG ornament strip and temporary photo preview;
 - use event cards;
 - show large support percentages;
 - show participant cards with progress bars;
 - make the main action obvious;
 - keep copy short;
 - show support and leaderboard clearly;
-- keep no-money positioning visible.
+- keep no-money positioning in rules/legal copy, not noisy top-screen copy.
 
 Do not use:
 
@@ -71,16 +73,17 @@ Avoid:
 Core palette:
 
 ```css
---bg: #0f1115;
---card: #171a21;
---card-2: #1f2430;
---text: #f4f6fb;
---muted: #9aa3b2;
---accent: #f2b84b;
---accent-2: #2ea6ff;
+--bg: #07090d;
+--card: #111419;
+--card-2: #1b2029;
+--text: #f8f1e4;
+--muted: #b4a996;
+--accent: #d9a441;
+--brown: #7a4b00;
+--accent-2: #5eb6ff;
 --success: #40c979;
 --danger: #ff5c6c;
---border: rgba(255,255,255,.08);
+--border: rgba(255,224,161,.16);
 ```
 
 Gold is for main actions, badges, and highlights only. Do not flood the interface with gold.
@@ -93,13 +96,16 @@ Purpose: user instantly understands what to do.
 
 Content:
 
+- SVG Yakut ornament strip;
+- temporary photo preview area;
 - product title;
 - active event card;
 - event status;
 - participant count;
 - vote count;
 - top support preview;
-- open/select action.
+- open/select action;
+- no visible user-login line or refresh button in the hero.
 
 ### Event Screen
 

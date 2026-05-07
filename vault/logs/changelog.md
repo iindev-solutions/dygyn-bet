@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-07 — A1 Main Frontend Redesign Pass
+
+- Started applying selected A1 ceremonial poster direction to the live Mini App.
+- Replaced noisy top header with SVG Yakut ornament strip, temporary photo preview, short title, and concise voting promise.
+- Removed visible login line, refresh button, and top no-money notice from the main screen; legal/no-money copy remains in rules.
+- Simplified event hero copy, hides event picker when only one event exists, and retitled voting block to `Выберите топ-2`.
+- Updated root design guide and vault design direction for A1/SVG ornament direction.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`; top-noise search clean.
+
 ## 2026-05-07 — Simple Helmet Favicon
 
 - Replaced overloaded favicon with a simple bootur helmet mark only.

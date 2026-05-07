@@ -118,7 +118,7 @@ components:
 
 Игры Дыгына — голосование is a dark, premium sports interface for users following the Dygyn Games. It must feel like a Telegram-native voting app for support, voting, athlete stats, and live results — never like a casino or bookmaker.
 
-The mood is compact, confident, and athletic: dark cards, sharp hierarchy, warm gold accents, clear progress bars, and readable result tables. The product should feel local and ceremonial through restraint, not decoration overload.
+Current direction: A1 ceremonial poster. The mood is compact, confident, and ceremonial: dark cards, one hero photo area, SVG Yakut ornament accents, warm gold, clear progress bars, and readable result tables. Local identity should come from restrained SVG ornaments and the bootur helmet mark, not decoration overload.
 
 ## Colors
 
@@ -143,7 +143,7 @@ Gold must be used sparingly. It marks what matters; it must not flood the UI.
 
 Use the system sans stack for speed and Telegram-native feel. Typography should be bold enough for sports energy but not loud.
 
-- **H1:** Very bold, tight, used for product/event title.
+- **H1:** Very bold, tight, used for the ceremonial product/event title.
 - **H2:** Card titles and screen sections.
 - **Body:** Clear 16px reading text.
 - **Label:** Small uppercase metadata, badges, and eyebrow text.
@@ -152,7 +152,7 @@ Avoid decorative fonts unless a future brand package explicitly supplies them.
 
 ## Layout
 
-Mobile-first. Main width is capped at 520px and centered. Screens are built from stacked cards with 13–14px gaps and a fixed bottom navigation.
+Mobile-first. Main width is capped at 520px and centered. The top starts with a ceremonial A1 hero: SVG ornament strip, photo/preview area, short title, and one clear voting promise. Screens are built from stacked cards with 13–14px gaps and a fixed bottom navigation.
 
 Core layout rules:
 
@@ -167,7 +167,7 @@ Core layout rules:
 Use soft depth, not glossy effects.
 
 - Cards use subtle borders and low dark shadows.
-- Hero cards can use a faint radial gold/blue glow.
+- Hero cards can use a faint radial gold glow and SVG ornament masks.
 - Sticky save/admin actions use blur and a dark translucent background.
 - Avoid neon casino glow, spinning effects, flashing gradients, or red/green betting patterns.
 
@@ -185,6 +185,7 @@ The system is rounded and card-based.
 
 Primary components:
 
+- **App hero:** SVG Yakut ornament strip, temporary photo preview, short title, and no user/debug copy.
 - **Event hero:** Event title, status, participant count, vote count, top support preview.
 - **Participant card:** Name, region, support stats, selected state, confidence allocation.
 - **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total.
@@ -201,7 +202,7 @@ Components should use existing tokens before adding new styles.
 Do:
 
 - Use support, vote, confidence points, rating points, leaderboard.
-- Keep the no-money boundary visible in product copy.
+- Keep the no-money boundary in rules/legal copy, not as noisy top-screen copy.
 - Show athlete stats and live results in clear tables.
 - Make selected states unmistakable.
 - Prefer simple controls over clever interactions.
@@ -213,4 +214,4 @@ Don't:
 - Add red/green betting psychology or odds boards.
 - Hide the allocation total from the voting screen.
 - Make admin operations ambiguous; finishing an event must require confirmation.
-- Overuse gold, glow, animations, or ornamental patterns.
+- Overuse gold, glow, animations, or ornamental patterns; ornaments must stay as sparse SVG accents.

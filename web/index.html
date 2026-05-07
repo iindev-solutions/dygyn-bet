@@ -11,18 +11,18 @@
 </head>
 <body>
   <main class="app">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Игры Дыгына — голосование</p>
-        <h1>Игры Дыгына</h1>
-        <p id="userLine" class="muted">Загрузка пользователя...</p>
+    <header class="app-hero">
+      <div class="hero-ornament" aria-hidden="true"></div>
+      <div class="hero-photo">
+        <img src="static/assets/dygyn-logo.jpeg" alt="Дыгын Оонньуулара" />
       </div>
-      <button id="refreshBtn" class="ghost">Обновить</button>
+      <div class="hero-copy">
+        <p class="eyebrow">Дыгын Оонньуулара</p>
+        <h1>Игры Дыгына</h1>
+        <p class="hero-subtitle">Выберите топ-2 участников и распределите 100 очков.</p>
+      </div>
+      <p id="userLine" class="sr-only">Загрузка пользователя...</p>
     </header>
-
-    <section class="notice">
-      <strong>Голосование без денег.</strong> Выберите до двух участников и поделитесь выбором в сторис.
-    </section>
 
     <nav class="tabs" aria-label="Разделы">
       <button data-tab="events" class="active">Игры</button>
