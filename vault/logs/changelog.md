@@ -7,6 +7,7 @@
 - Added project SVG favicon and web manifest using the Dygyn logo mark.
 - Linked favicon/manifest in the main Mini App and favicon in the redesign preview.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; favicon link smoke; `git diff --check`.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; favicon/manifest return 200; main index links favicon; A1 preview has SVG logo overlay.
 
 ## 2026-05-07 — A-Direction SVG Redesign Variants
 
