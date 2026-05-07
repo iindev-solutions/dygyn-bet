@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-06 — VPS Admin ID Configured
+
+- Added user Telegram numeric ID to VPS `ADMIN_IDS` in `/opt/dygyn-bet/.env`.
+- Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both active.
+- Verified public health OK and `ADMIN_IDS` count is 1.
+- Next: reopen Mini App in Telegram and QA admin tab.
+
 ## 2026-05-06 — Admin Live Results Flow
 
 - Added live two-day result tables: event days, event discipline results, and event standings.

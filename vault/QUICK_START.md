@@ -33,16 +33,16 @@ Read this first. Read deep docs only when task needs them.
 - Product mechanic implemented locally: one event prediction = distribute exactly 100 virtual confidence points across 1–3 participants.
 - Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
 - Dygyn Games are a two-day event; app now has live Day 1, Day 2, overall/final results model and public rendering.
-- Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned. VPS `ADMIN_IDS` is currently empty.
+- Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned. VPS `ADMIN_IDS` is configured.
 - `ADMIN_IDS` still needed from user.
 - Production DB now has imported Dygyn 2026 data: 16 active participants, 7 disciplines, 126 discipline result rows.
 - Backend and frontend expose participant detail with imported discipline-result tables.
 
 ## Next Best Tasks
 
-1. Add real `ADMIN_IDS` on VPS so admin tab is visible to user.
-2. QA in Telegram bot/Mini App on mobile: event, participant tables, 100-point prediction, admin result forms.
-3. Implement profile and event-specific leaderboard/stats APIs.
+1. QA in Telegram bot/Mini App on mobile: event, participant tables, 100-point prediction, admin result forms.
+2. Implement profile and event-specific leaderboard/stats APIs.
+3. Add admin UI for imports/events/participants management.
 4. Add mandatory admin-only TMA tab for imports, events, participants, Day 1/Day 2 results, standings, and finish.
 5. Add public frontend screens: Home/Forecast/Stats/Rating/Profile + athlete stat/result tables.
 6. Get user Telegram numeric ID → add to `ADMIN_IDS` on VPS.
