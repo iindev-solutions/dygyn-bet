@@ -5,6 +5,7 @@
 - Added numeric input beside each allocation slider so users can type confidence points directly.
 - Kept slider control and 100-point validation unchanged.
 - Verified: `node --check web/app.js`; `git diff --check`.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; health OK; public static JS contains `allocation-number`.
 
 ## 2026-05-07 — Top-2 Voting Reset
 
