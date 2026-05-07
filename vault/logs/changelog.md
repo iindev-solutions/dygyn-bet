@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-07 — Redesign Preview Skeletons
+
+- Added static redesign preview with three mobile skeleton directions: ceremonial entry, sports grid, ornament minimalism.
+- Added provided Dygyn logo/photo and Yakut ornament assets under `web/assets/` for preview use.
+- Kept production Mini App unchanged while exploring visual direction.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`.
+
 ## 2026-05-07 — Allocation Number Input
 
 - Added numeric input beside each allocation slider so users can type confidence points directly.
