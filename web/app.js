@@ -286,14 +286,22 @@ function renderParticipantChoice(event, participant, index, draftIdSet, canPick)
   const percent = supportPercent(event, participant);
   const selected = draftIdSet.has(Number(participant.id));
   const allocation = getDraftAllocations(event)[Number(participant.id)];
+  const sideValue = selected ? allocation : `${percent}%`;
+  const sideLabel = selected ? 'мой голос' : 'поддержка';
   return `
     <button class="participant-card ${selected ? 'selected' : ''}" data-pick-player="${participant.id}" ${canPick ? '' : 'disabled'}>
-      <span>
-        <strong><span class="rank-dot">${index + 1}</span>${escapeHtml(participant.name)}</strong><br>
-        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ` · мой голос ${allocation}` : ''}</small>
-        <span class="progress"><span style="width:${percent}%"></span></span>
+      <span class="participant-main">
+        <span class="rank-dot">${index + 1}</span>
+        <span class="participant-copy">
+          <strong>${escapeHtml(participant.name)}</strong>
+          <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков</small>
+          <span class="progress"><span style="width:${percent}%"></span></span>
+        </span>
       </span>
-      <span class="percent">${selected ? `${allocation}` : `${percent}%`}</span>
+      <span class="participant-side">
+        <span class="percent">${sideValue}</span>
+        <small>${sideLabel}</small>
+      </span>
     </button>
   `;
 }

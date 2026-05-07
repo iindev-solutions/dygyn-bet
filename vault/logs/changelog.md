@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-07 — A1 Participant/Nav Polish
+
+- Cleaned participant voting cards with clearer rank, name/meta, progress, and right-side support/my-vote value.
+- Restyled bottom tab bar as a compact floating dock with A1 dark/gold palette.
+- Moved sticky save bar above the new dock spacing.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`; markup/style smoke for participant card and dock classes.
+
 ## 2026-05-07 — A1 Main Frontend Redesign Pass
 
 - Started applying selected A1 ceremonial poster direction to the live Mini App.
