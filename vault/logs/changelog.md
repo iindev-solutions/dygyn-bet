@@ -7,6 +7,7 @@
 - Renamed event hero CSS/function references away from arena terminology.
 - Updated README, bot copy, DESIGN.md, vault docs, old wiki copy, and visible TMA text.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`; branding search has no old-brand matches.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 8 passed; services active; public HTML/static use `Игры Дыгына — голосование`; server old-brand search passed.
 
 ## 2026-05-06 — DESIGN.md Added
 
