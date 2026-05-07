@@ -64,8 +64,8 @@
 
 1. User loads events.
 2. User opens event details.
-3. User selects 1–3 participants and distributes confidence points on a 100-point scale.
-4. Backend checks event exists, status is `open`, close time is future, point total is 100 or equal `33/33/33`, and every selected player belongs to event.
+3. User selects 1–2 participants and distributes confidence points on a 100-point scale.
+4. Backend checks event exists, status is `open`, close time is future, point total is 100, and every selected player belongs to event.
 5. Backend replaces current user's event vote items and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
 
 ### Live Result/Admin Flow

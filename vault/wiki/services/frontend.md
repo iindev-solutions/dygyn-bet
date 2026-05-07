@@ -15,7 +15,7 @@
 
 ## Tabs
 
-- Games — event hero, event list, event detail, 1–3 participant choices, 100-point allocation controls, equal `33/33/33` split, share actions.
+- Games — event hero, event list, event detail, 1–2 participant choices, 100-point allocation controls, share actions.
 - Support — support statistics and leaderboard.
 - Players — participant cards, detail view, profile fields, and discipline-result tables.
 - Admin — `ADMIN_IDS`-only live operations: Day 1/Day 2 discipline results, standings, finish event.
@@ -91,8 +91,8 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 2. Confirm user line loads.
 3. Confirm event hero card renders.
 4. Select event.
-5. Pick 1–3 participants.
-6. Distribute 100 confidence points, or use `33/33/33` for three participants equally.
+5. Pick 1–2 participants.
+6. Distribute 100 confidence points.
 7. Save the vote through the sticky save action.
 8. Confirm toast and updated statistics.
 9. If admin, open Admin tab and test a provisional result/standing on a non-production DB first.

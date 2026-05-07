@@ -11,7 +11,7 @@ Turn the existing Dygyn Telegram Mini App into a reliable voting product with cl
 | 0.1 | Add vault-first project memory | DONE |
 | 0.2 | Keep old `wiki/` as historical source docs | DONE |
 | 0.3 | Replace demo players/events with verified real data | TODO |
-| 0.3a | Allow up to three participant picks per user/event | DONE |
+| 0.3a | Allow up to two participant picks per user/event | DONE |
 | 0.3b | Add Instagram Stories manual share card | DONE |
 | 0.4 | Validate Telegram launch flow with real bot token and HTTPS URL | TODO |
 | 0.5 | Add or improve admin data-entry workflow | TODO |
@@ -48,4 +48,4 @@ Turn the existing Dygyn Telegram Mini App into a reliable voting product with cl
 - Product can run locally with `ALLOW_DEV_LOGIN=true`.
 - Production config has `ALLOW_DEV_LOGIN=false`, real `BOT_TOKEN`, real `ADMIN_IDS`, and HTTPS `WEB_APP_URL`.
 - All real sports data has manually checked sources.
-- Voting model enforces a 100-point confidence scale across 1–3 participants; equal three-way split is `33/33/33` with 1 unawarded remainder.
+- Voting model enforces a 100-point confidence scale across 1–2 participants.

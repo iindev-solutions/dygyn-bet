@@ -187,7 +187,7 @@ Primary components:
 
 - **Event hero:** Event title, status, participant count, vote count, top support preview.
 - **Participant card:** Name, region, support stats, selected state, confidence allocation.
-- **Confidence allocator:** 1–3 selected participants, 100-point scale, visible valid/invalid total; equal three-way split is `33/33/33` with 1 point unawarded.
+- **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total.
 - **Support progress:** Gold gradient bar over dark track.
 - **Leaderboard row:** Rank, user name, pick count, score badge.
 - **Participant detail:** Photo, bio, strengths, prior Dygyn note, result tables by year/event.

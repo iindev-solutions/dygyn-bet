@@ -9,7 +9,6 @@ from app.db import (
     admin_settle_event,
     admin_upsert_discipline_result,
     admin_upsert_standing,
-    connect,
     get_event,
     init_db,
     set_picks,
@@ -51,8 +50,8 @@ def test_pick_and_settle_flow(tmp_path):
     assert settled["my_picks"][0]["awarded_points"] == 60
 
 
-def test_equal_three_way_vote_awards_33_without_remainder(tmp_path):
-    db_path = str(tmp_path / "equal_three.sqlite3")
+def test_vote_limited_to_top_two_with_100_points(tmp_path):
+    db_path = str(tmp_path / "top_two.sqlite3")
     init_db(db_path)
     players = [admin_create_player(db_path, f"Игрок {index}") for index in range(1, 4)]
     event = admin_create_event(
@@ -62,62 +61,29 @@ def test_equal_three_way_vote_awards_33_without_remainder(tmp_path):
         "",
         [player["id"] for player in players],
     )
-    user = upsert_user(db_path, TelegramUser(id=779, first_name="Equal"))
+    user = upsert_user(db_path, TelegramUser(id=779, first_name="TopTwo"))
 
-    with pytest.raises(ValueError, match="33/33/33"):
+    with pytest.raises(ValueError, match="максимум двух"):
         set_picks(
             db_path,
             event["id"],
             user["id"],
             [],
-            allocations={players[0]["id"]: 34, players[1]["id"]: 33, players[2]["id"]: 32},
+            allocations={players[0]["id"]: 34, players[1]["id"]: 33, players[2]["id"]: 33},
         )
+    with pytest.raises(ValueError, match="ровно 100"):
+        set_picks(db_path, event["id"], user["id"], [], allocations={players[0]["id"]: 50, players[1]["id"]: 49})
 
     picks = set_picks(
         db_path,
         event["id"],
         user["id"],
         [],
-        allocations={players[0]["id"]: 33, players[1]["id"]: 33, players[2]["id"]: 33},
+        allocations={players[0]["id"]: 50, players[1]["id"]: 50},
     )
-    assert [pick["confidence_points"] for pick in picks] == [33, 33, 33]
+    assert [pick["confidence_points"] for pick in picks] == [50, 50]
     detailed = get_event(db_path, event["id"], user_id=user["id"])
-    assert detailed["totals"]["points"] == 99
-
-    admin_settle_event(db_path, event["id"], [{"player_id": players[2]["id"], "place": 1, "score": 42}])
-    settled = get_event(db_path, event["id"], user_id=user["id"])
-    awarded = {pick["player_id"]: pick["awarded_points"] for pick in settled["my_picks"]}
-    assert awarded[players[2]["id"]] == 33
-
-
-def test_init_db_migrates_old_equal_three_remainder(tmp_path):
-    db_path = str(tmp_path / "migrate_equal.sqlite3")
-    init_db(db_path)
-    players = [admin_create_player(db_path, f"Игрок {index}") for index in range(1, 4)]
-    event = admin_create_event(
-        db_path,
-        "Финал",
-        (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
-        "",
-        [player["id"] for player in players],
-    )
-    user = upsert_user(db_path, TelegramUser(id=780, first_name="Migrate"))
-
-    with connect(db_path) as conn:
-        for player, confidence, awarded in zip(players, [34, 33, 33], [34, 0, 0]):
-            conn.execute(
-                """
-                INSERT INTO picks (event_id, user_id, player_id, confidence_points, awarded_points)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (event["id"], user["id"], player["id"], confidence, awarded),
-            )
-
-    init_db(db_path)
-    migrated = get_event(db_path, event["id"], user_id=user["id"])
-    assert [pick["confidence_points"] for pick in migrated["my_picks"]] == [33, 33, 33]
-    assert [pick["awarded_points"] for pick in migrated["my_picks"]] == [33, 0, 0]
-    assert migrated["totals"]["points"] == 99
+    assert detailed["totals"]["points"] == 100
 
 
 def test_live_results_and_finish_flow(tmp_path):

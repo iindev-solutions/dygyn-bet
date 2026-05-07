@@ -6,8 +6,8 @@
 - Existing Russian `wiki/` docs were studied and summarized into English canonical vault docs.
 - Codebase is a FastAPI + aiogram + vanilla JS Telegram Mini App product.
 - Current database is SQLite and seeds demo players/events automatically when empty.
-- App currently allows a user to select up to three participants per event.
-- Target MVP model from `new_brief.md`: one vote per user/event, 100-point confidence scale across 1–3 participants; equal three-way split is `33/33/33` with 1 unawarded remainder.
+- App currently allows a user to select up to two participants per event.
+- Target MVP model from `new_brief.md`: one vote per user/event, 100-point confidence scale across 1–2 participants.
 - `POST /api/picks` currently accepts `player_ids` and replaces current user's picks for the event.
 - Frontend includes share text, native share, and generated PNG story card for manual Instagram Stories repost.
 - Frontend now follows Игры Дыгына — голосование direction: dark sports cards, bottom navigation, support progress bars, confidence chips, and sticky save action.

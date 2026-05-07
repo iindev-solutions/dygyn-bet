@@ -103,7 +103,7 @@ Content:
 
 ### Event Screen
 
-Purpose: choose up to three participants.
+Purpose: choose up to two participants.
 
 Content:
 

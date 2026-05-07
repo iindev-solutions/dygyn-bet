@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-07 — Top-2 Voting Reset
+
+- Changed voting model to maximum two participants per event vote.
+- Removed equal three-way special case; backend now requires 1–2 participants and exactly 100 total confidence points.
+- Updated TMA allocation UI, bot rules, README, brief, design guide, tests, and vault/API/frontend/data-model docs.
+- Production cleanup requested: clear votes plus result/live-result tables after DB backup during deploy.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; top-2 DB smoke; `design.md lint DESIGN.md`. Full local pytest still unavailable: `No module named pytest`.
+
 ## 2026-05-07 — Equal Three-Way Vote Split
 
 - Changed equal split for three selected participants from `34/33/33` to `33/33/33`.

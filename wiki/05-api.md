@@ -28,7 +28,7 @@ X-Telegram-Init-Data: <window.Telegram.WebApp.initData>
 
 ## POST /api/picks
 
-Создать или заменить выбор пользователя: от 1 до 3 участников.
+Создать или заменить выбор пользователя: от 1 до 2 участников.
 
 ```json
 {

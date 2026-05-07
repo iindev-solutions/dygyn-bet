@@ -73,8 +73,8 @@ Request:
 Rules:
 
 - one vote per user/event;
-- vote contains 1–3 participants;
-- confidence points must be positive and sum to exactly 100, except equal three-way `33/33/33`;
+- vote contains 1–2 participants;
+- confidence points must be positive and sum to exactly 100;
 - event must exist;
 - event status must be `open`;
 - current time must be before event `closes_at` or fallback `starts_at`;
@@ -83,7 +83,7 @@ Rules:
 
 ### `POST /api/picks`
 
-Legacy-compatible endpoint. Prefer `/api/events/{event_id}/prediction` for new code. It accepts either `allocations` or old `player_ids/confidence_points`, and uses the same 100-point/equal-`33/33/33` validation.
+Legacy-compatible endpoint. Prefer `/api/events/{event_id}/prediction` for new code. It accepts either `allocations` or old `player_ids/confidence_points`, and uses the same 100-point validation.
 
 ### `GET /api/players`
 

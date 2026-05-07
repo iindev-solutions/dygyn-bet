@@ -67,7 +67,7 @@ Imported metadata:
 
 ## `picks`
 
-Vote item rows. One user/event vote is represented by 1–3 rows.
+Vote item rows. One user/event vote is represented by 1–2 rows.
 
 Fields:
 
@@ -85,8 +85,8 @@ Constraint:
 Application rules:
 
 - one logical vote per user/event;
-- maximum three selected participants per user/event;
-- selected rows for a user/event must sum to exactly 100 confidence points, except equal three-way split `33/33/33` where the 1-point remainder is unawarded;
+- maximum two selected participants per user/event;
+- selected rows for a user/event must sum to exactly 100 confidence points;
 - vote can change only before `closes_at`.
 
 ## `results`

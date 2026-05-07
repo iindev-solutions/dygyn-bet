@@ -5,7 +5,7 @@
 - Keep vault-first project memory current.
 - Run locally with dev login.
 - Configure real Telegram bot token and HTTPS URL.
-- Implement canonical `new_brief.md` alignment: 100-point voting scale across 1–3 participants.
+- Implement canonical `new_brief.md` alignment: 100-point voting scale across 1–2 participants.
 - Replace demo participants/events with verified Dygyn Games data.
 - Add source URLs for every real history/discipline result record.
 - Test auth, event list, vote creation/update, stats, player list, leaderboard.

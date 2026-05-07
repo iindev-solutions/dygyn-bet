@@ -235,9 +235,8 @@ def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
-MAX_PICKS_PER_EVENT = 3
+MAX_PICKS_PER_EVENT = 2
 REQUIRED_CONFIDENCE_TOTAL = 100
-EQUAL_THREE_CONFIDENCE_POINTS = REQUIRED_CONFIDENCE_TOTAL // MAX_PICKS_PER_EVENT
 
 
 def init_db(db_path: str) -> None:
@@ -245,7 +244,6 @@ def init_db(db_path: str) -> None:
         conn.executescript(SCHEMA)
         migrate_picks_unique_constraint(conn)
         migrate_schema_extensions(conn)
-        migrate_equal_three_pick_remainder(conn)
 
 
 def add_missing_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
@@ -356,39 +354,6 @@ def get_user_by_telegram_id(db_path: str, telegram_id: int) -> dict[str, Any] | 
     with connect(db_path) as conn:
         row = conn.execute("SELECT * FROM users WHERE telegram_id=?", (telegram_id,)).fetchone()
         return dict(row) if row else None
-
-
-def migrate_equal_three_pick_remainder(conn: sqlite3.Connection) -> None:
-    groups = conn.execute(
-        """
-        SELECT event_id, user_id
-        FROM picks
-        GROUP BY event_id, user_id
-        HAVING COUNT(*) = 3
-           AND SUM(confidence_points) = ?
-           AND SUM(CASE WHEN confidence_points = ? THEN 1 ELSE 0 END) = 2
-           AND SUM(CASE WHEN confidence_points = ? THEN 1 ELSE 0 END) = 1
-        """,
-        (REQUIRED_CONFIDENCE_TOTAL, EQUAL_THREE_CONFIDENCE_POINTS, EQUAL_THREE_CONFIDENCE_POINTS + 1),
-    ).fetchall()
-    for group in groups:
-        conn.execute(
-            """
-            UPDATE picks
-            SET confidence_points = ?,
-                awarded_points = CASE WHEN awarded_points = ? THEN ? ELSE awarded_points END,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE event_id = ? AND user_id = ? AND confidence_points = ?
-            """,
-            (
-                EQUAL_THREE_CONFIDENCE_POINTS,
-                EQUAL_THREE_CONFIDENCE_POINTS + 1,
-                EQUAL_THREE_CONFIDENCE_POINTS,
-                group["event_id"],
-                group["user_id"],
-                EQUAL_THREE_CONFIDENCE_POINTS + 1,
-            ),
-        )
 
 
 def list_disciplines(db_path: str) -> list[dict[str, Any]]:
@@ -546,7 +511,7 @@ def normalize_pick_allocations(
     if not items:
         raise ValueError("Выберите хотя бы одного участника")
     if len(items) > MAX_PICKS_PER_EVENT:
-        raise ValueError("Можно выбрать максимум трёх участников")
+        raise ValueError("Можно выбрать максимум двух участников")
 
     seen: set[int] = set()
     normalized: list[tuple[int, int]] = []
@@ -561,12 +526,8 @@ def normalize_pick_allocations(
         normalized.append((player_id, points))
 
     total = sum(points for _, points in normalized)
-    equal_three_split = (
-        len(normalized) == MAX_PICKS_PER_EVENT
-        and all(points == EQUAL_THREE_CONFIDENCE_POINTS for _, points in normalized)
-    )
-    if total != REQUIRED_CONFIDENCE_TOTAL and not equal_three_split:
-        raise ValueError("Распределите ровно 100 очков уверенности или 33/33/33 для трёх участников поровну")
+    if total != REQUIRED_CONFIDENCE_TOTAL:
+        raise ValueError("Распределите ровно 100 очков уверенности")
     return normalized
 
 

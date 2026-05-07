@@ -48,9 +48,9 @@ class PickAllocationIn(BaseModel):
 
 class PickIn(BaseModel):
     event_id: int
-    player_ids: list[int] = Field(default_factory=list, max_length=3)
+    player_ids: list[int] = Field(default_factory=list, max_length=2)
     confidence_points: int | None = Field(default=None, ge=1, le=100)
-    allocations: list[PickAllocationIn] = Field(default_factory=list, max_length=3)
+    allocations: list[PickAllocationIn] = Field(default_factory=list, max_length=2)
 
 
 class PredictionItemIn(BaseModel):
@@ -60,7 +60,7 @@ class PredictionItemIn(BaseModel):
 
 
 class PredictionIn(BaseModel):
-    items: list[PredictionItemIn] = Field(min_length=1, max_length=3)
+    items: list[PredictionItemIn] = Field(min_length=1, max_length=2)
 
 
 class EventCreateIn(BaseModel):
