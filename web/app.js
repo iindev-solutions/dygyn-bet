@@ -203,7 +203,7 @@ function renderEventsList() {
     return;
   }
   const selected = state.selectedEvent;
-  const hero = selected ? renderArenaHero(selected) : '';
+  const hero = selected ? renderEventHero(selected) : '';
   const eventPicker = state.events.map(e => `
     <button class="choice ${selected?.id === e.id ? 'selected' : ''}" data-event-id="${e.id}">
       <span>${escapeHtml(e.title)}<br><small>${formatDate(e.starts_at)} · ${e.participant_count} участников · ${e.pick_count} голосов</small></span>
@@ -229,20 +229,20 @@ function bindEventScreenActions(scope) {
   $('#storyCardBtn')?.addEventListener('click', downloadStoryCard);
 }
 
-function renderArenaHero(event) {
+function renderEventHero(event) {
   const leaders = topSupport(event, 3);
   const supportRows = leaders.length ? leaders.map(p => {
     const percent = supportPercent(event, p);
     return `<div class="history-item"><div class="row"><strong>${escapeHtml(p.name)}</strong><span>${percent}%</span></div><div class="progress"><span style="width:${percent}%"></span></div></div>`;
   }).join('') : '<p class="muted">Поддержка появится после первых голосов.</p>';
   return `
-    <article class="card arena-card">
+    <article class="card event-card">
       <div class="row">
         <span class="badge">${statusLabel(event.status)}</span>
-        <span class="badge blue">Dygyn Fan Arena</span>
+        <span class="badge blue">Игры Дыгына — голосование</span>
       </div>
       <h2 style="margin-top:18px">${escapeHtml(event.title)}</h2>
-      <p class="muted">Фан-прогнозы и поддержка участников</p>
+      <p class="muted">Голосование и поддержка участников</p>
       <div class="stat-grid">
         <div class="stat-box"><strong>${event.participant_count || event.participants?.length || 0}</strong><span>участников</span></div>
         <div class="stat-box"><strong>${event.totals?.picks || 0}</strong><span>голосов</span></div>
@@ -273,7 +273,7 @@ function renderEventDetail(event) {
         <span class="badge">${statusLabel(event.status)}</span>
       </div>
       <div class="support-list">${participants || '<div class="empty">Участники не добавлены.</div>'}</div>
-      ${canPick ? renderConfidenceBlock(draftIds) : '<p class="muted">Прогнозы закрыты.</p>'}
+      ${canPick ? renderConfidenceBlock(draftIds) : '<p class="muted">Голосование закрыто.</p>'}
       ${renderShareBlock(event, draftIds)}
       ${results}
       ${renderLiveResults(event.live_results)}
@@ -289,7 +289,7 @@ function renderParticipantChoice(event, participant, index, draftIdSet, canPick)
     <button class="participant-card ${selected ? 'selected' : ''}" data-pick-player="${participant.id}" ${canPick ? '' : 'disabled'}>
       <span>
         <strong><span class="rank-dot">${index + 1}</span>${escapeHtml(participant.name)}</strong><br>
-        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ` · мой прогноз ${allocation}` : ''}</small>
+        <small>${escapeHtml(participant.region || 'регион не указан')} · ${participant.pick_count} голосов · ${points} очков${selected ? ` · мой голос ${allocation}` : ''}</small>
         <span class="progress"><span style="width:${percent}%"></span></span>
       </span>
       <span class="percent">${selected ? `${allocation}` : `${percent}%`}</span>
@@ -318,7 +318,7 @@ function renderConfidenceBlock(draftIds) {
       <div class="allocation-list">${rows}</div>
       ${draftIds.length > 1 ? '<button id="rebalanceAllocationsBtn" class="ghost wide" type="button">Распределить поровну</button>' : ''}
       <div class="bottom-bar">
-        <button id="savePicksBtn" class="primary wide" ${isValid ? '' : 'disabled'}>Сохранить прогноз</button>
+        <button id="savePicksBtn" class="primary wide" ${isValid ? '' : 'disabled'}>Сохранить голос</button>
       </div>
     </div>
   `;
@@ -380,13 +380,13 @@ async function sendPicks() {
   });
   state.selectedEvent = data.event;
   state.draftAllocationsByEvent[data.event.id] = allocationsFromPicks(data.event.my_picks || []);
-  toast('Прогноз сохранён');
+  toast('Голос сохранён');
   await loadEvents();
 }
 
 function buildShareText() {
   const names = getPickedSummaries(state.selectedEvent);
-  return `Мой прогноз на Игры Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
+  return `Мой голос на Игры Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
 }
 
 async function copyShareText() {
@@ -403,7 +403,7 @@ async function nativeShare() {
   const text = buildShareText();
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Фан-прогнозы Игр Дыгына', text, url: publicAppUrl() });
+      await navigator.share({ title: 'Голосование Игр Дыгына', text, url: publicAppUrl() });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;
@@ -436,12 +436,12 @@ function downloadStoryCard() {
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 78px Arial';
-  wrapCanvasText(ctx, 'Dygyn Fan Arena', 90, 220, 900, 92);
+  wrapCanvasText(ctx, 'Игры Дыгына — голосование', 90, 220, 900, 92);
   ctx.font = '700 44px Arial';
   wrapCanvasText(ctx, event?.title || 'Голосование', 90, 460, 900, 56);
 
   ctx.font = '900 54px Arial';
-  ctx.fillText('Мой прогноз:', 90, 720);
+  ctx.fillText('Мой голос:', 90, 720);
   ctx.font = '800 64px Arial';
   names.forEach((name, index) => {
     wrapCanvasText(ctx, `${index + 1}. ${name}`, 120, 830 + index * 170, 840, 72);

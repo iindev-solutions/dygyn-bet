@@ -57,7 +57,7 @@ Returns detailed event with:
 
 ### `POST /api/events/{event_id}/prediction`
 
-Canonical prediction endpoint.
+Canonical vote endpoint.
 
 Request:
 
@@ -72,8 +72,8 @@ Request:
 
 Rules:
 
-- one prediction per user/event;
-- prediction contains 1–3 participants;
+- one vote per user/event;
+- vote contains 1–3 participants;
 - confidence points must be positive and sum to exactly 100;
 - event must exist;
 - event status must be `open`;
@@ -112,7 +112,7 @@ Returns seven Dygyn disciplines with display metadata.
 
 ### `GET /api/leaderboard`
 
-Returns top 100 users ordered by fan score, correct picks, and pick count.
+Returns top 100 users ordered by rating score, correct picks, and pick count.
 
 ## Admin Endpoints
 
@@ -194,7 +194,7 @@ Upsert Day 1, Day 2, or overall/final standings row. `day_number=0` means overal
 
 ### `POST /api/admin/events/{event_id}/finish`
 
-Set official winner, mark event settled, and award fan points.
+Set official winner, mark event settled, and award rating points.
 
 ```json
 {"winner_participant_id": 1}
@@ -227,7 +227,7 @@ Current admin actions:
 
 - enter/update Day 1 and Day 2 discipline results;
 - publish Day 1, Day 2, or overall/final standings;
-- finish event and award fan points.
+- finish event and award rating points.
 
 Still planned:
 

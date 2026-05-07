@@ -2,7 +2,7 @@
 
 ## Goal
 
-Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product with clear project memory in `vault/`.
+Turn the existing Dygyn Telegram Mini App into a reliable voting product with clear project memory in `vault/`.
 
 ## Current Tasks
 
@@ -21,8 +21,8 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.9 | Deploy preview to `iindiinda.duckdns.org/dygyn-bet/` | DONE |
 | 0.10 | Configure real admin Telegram IDs on VPS | TODO |
 | 0.11 | Split API and bot into separate systemd services | DONE |
-| 0.12 | Add Dygyn Fan Arena design direction | DONE |
-| 0.13 | Restyle frontend toward sports fan arena UI | DONE |
+| 0.12 | Add Игры Дыгына — голосование design direction | DONE |
+| 0.13 | Restyle frontend toward sports voting UI | DONE |
 | 0.14 | Switch vault workflow to compact QUICK_START mode | DONE |
 | 0.15 | Record `new_brief.md` as canonical MVP brief | DONE |
 | 0.16 | Design target 100-point allocation model | DONE |
@@ -31,11 +31,11 @@ Turn the existing Dygyn Telegram Mini App into a reliable fan-prediction product
 | 0.19 | Add mandatory admin-only TMA tab for live result/finish operations | DONE |
 | 0.20 | Add CSV import validator/importer for Dygyn 2026 data pack | DONE |
 | 0.21 | Expose participant discipline stats in API/frontend | DONE |
-| 0.22 | Implement 100-point allocation prediction model | DONE |
+| 0.22 | Implement 100-point allocation voting model | DONE |
 
 ## Current Priority
 
-1. Keep product legally safe: fan votes only, no money.
+1. Keep product legally safe: votes only, no money.
 2. Apply import to dev/prod DB after backup.
 3. Add real `ADMIN_IDS` on VPS and QA admin tab.
 4. Add backend profile and event-specific leaderboard/stats APIs.

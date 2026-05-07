@@ -39,4 +39,4 @@ Add or decide:
 
 ## Telegram ID Limitation
 
-Telegram ID is not proof of real-world identity. One person can theoretically use several Telegram accounts. This is acceptable for fan voting. It is not acceptable for real-money flows, which would require KYC, age checks, and legal infrastructure.
+Telegram ID is not proof of real-world identity. One person can theoretically use several Telegram accounts. This is acceptable for voting. It is not acceptable for real-money flows, which would require KYC, age checks, and legal infrastructure.

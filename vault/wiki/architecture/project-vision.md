@@ -2,24 +2,24 @@
 
 ## Product
 
-`dygyn-bet` is a Telegram Mini App for fan predictions around the Dygyn Games.
+`dygyn-bet` is a Telegram Mini App for voting around the Dygyn Games.
 
-Despite the repository name, the product must behave as a fan voting/prediction service, not a betting product.
+Despite the repository name, the product must behave as a voting service, not a betting product.
 
 ## Target Users
 
 - Telegram users interested in the Dygyn Games.
-- Fans who want to support a participant and see community sentiment.
+- Users who want to support a participant and see community sentiment.
 - Administrators who enter participants, events, history, and final results.
 
 ## Core Problem
 
-Fans need a lightweight way inside Telegram to:
+Users need a lightweight way inside Telegram to:
 
 - pick who they support in an event;
 - express confidence with virtual points;
 - see support distribution across participants;
-- compare fan scores after official results are manually entered.
+- compare rating scores after official results are manually entered.
 
 ## Primary Workflow
 
@@ -32,7 +32,7 @@ Fans need a lightweight way inside Telegram to:
 7. User can share text or download an Instagram Stories card for manual repost.
 8. App shows vote counts, confidence totals, percentages, player history, and leaderboard.
 8. Admin enters results after an event.
-9. Correct picks receive fan points.
+9. Correct picks receive rating points.
 
 ## In Scope
 
@@ -40,8 +40,8 @@ Fans need a lightweight way inside Telegram to:
 - Telegram Mini App frontend.
 - Server-side Telegram initData verification.
 - SQLite storage.
-- One prediction per user/event with 1–3 participants inside it.
-- Exactly 100 virtual confidence points distributed per event prediction.
+- One vote per user/event with 1–3 participants inside it.
+- Exactly 100 virtual confidence points distributed per event vote.
 - Event locking after close time, start time, or admin status change.
 - Participant history and discipline-level stats with source URLs.
 - Admin APIs for players, history, events, and settlement.
@@ -52,7 +52,7 @@ Fans need a lightweight way inside Telegram to:
 - Deposits or withdrawals.
 - Odds.
 - Paid entry.
-- Monetary or property-value prizes for predictions.
+- Monetary or property-value prizes for voting results.
 - Bookmaker mechanics.
 - KYC or age verification.
 - Automatic official-result scraping.
@@ -60,4 +60,4 @@ Fans need a lightweight way inside Telegram to:
 
 ## Non-Negotiable Product Boundary
 
-Use terms like prediction, vote, fan points, confidence points, support. Avoid product logic or UI based on bet, deposit, withdrawal, odds, win, payout, or balance unless a separate legal decision changes the product model.
+Use terms like vote, rating points, confidence points, support. Avoid product logic or UI based on bet, deposit, withdrawal, odds, win, payout, or balance unless a separate legal decision changes the product model.

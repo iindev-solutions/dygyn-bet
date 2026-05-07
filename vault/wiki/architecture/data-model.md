@@ -39,7 +39,7 @@ Fields:
 
 ## `events`
 
-Prediction/voting events.
+Voting events.
 
 Fields:
 
@@ -67,7 +67,7 @@ Imported metadata:
 
 ## `picks`
 
-Prediction item rows. One user/event prediction is represented by 1–3 rows.
+Vote item rows. One user/event vote is represented by 1–3 rows.
 
 Fields:
 
@@ -75,7 +75,7 @@ Fields:
 - `user_id`.
 - `player_id`.
 - `confidence_points` — virtual points allocated to this participant.
-- `awarded_points` — fan points after settlement.
+- `awarded_points` — rating points after settlement.
 - `created_at`, `updated_at`.
 
 Constraint:
@@ -84,10 +84,10 @@ Constraint:
 
 Application rules:
 
-- one logical prediction per user/event;
+- one logical vote per user/event;
 - maximum three selected participants per user/event;
 - all selected rows for a user/event must sum to exactly 100 confidence points;
-- prediction can change only before `closes_at`.
+- vote can change only before `closes_at`.
 
 ## `results`
 
@@ -193,7 +193,7 @@ Constraint:
 
 - `UNIQUE(event_id, day_number, player_id)`.
 
-Fan leaderboard scoring should use only final official standings.
+Leaderboard scoring should use only final official standings.
 
 ## Demo Data
 

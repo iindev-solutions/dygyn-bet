@@ -1,9 +1,17 @@
 # Changelog
 
+## 2026-05-07 — Removed Old Voting Branding
+
+- Replaced old English sports-brand naming with `Игры Дыгына — голосование` across UI, docs, and design guide.
+- Removed old sports-brand wording from current user-facing copy; product positioning is now simple participant voting.
+- Renamed event hero CSS/function references away from arena terminology.
+- Updated README, bot copy, DESIGN.md, vault docs, old wiki copy, and visible TMA text.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`; branding search has no old-brand matches.
+
 ## 2026-05-06 — DESIGN.md Added
 
 - Added root `DESIGN.md` following Google Labs `design.md` format: YAML design tokens plus markdown rationale.
-- Captured Dygyn Fan Arena palette, typography, layout, components, and do/don't rules.
+- Captured Игры Дыгына — голосование palette, typography, layout, components, and do/don't rules.
 - Updated quick start and code map.
 - Verified: `design.md lint DESIGN.md` passed with 0 errors/0 warnings; `git diff --check` passed.
 
@@ -40,11 +48,11 @@
 
 ## 2026-05-06 — 100-Point Prediction Allocation
 
-- Changed prediction model to enforce exactly 100 confidence points across 1–3 participants per user/event.
+- Changed voting model to enforce exactly 100 confidence points across 1–3 participants per user/event.
 - Added canonical `POST /api/events/{event_id}/prediction` endpoint; kept legacy `/api/picks` with same 100-point validation.
-- Added `closes_at` fallback validation: prediction closes at `closes_at` or `starts_at`.
-- Updated event totals and leaderboard counts to count logical predictions/users instead of pick rows.
-- Updated frontend prediction UI to allocate 100 points, rebalance evenly, and save only when total is 100.
+- Added `closes_at` fallback validation: voting closes at `closes_at` or `starts_at`.
+- Updated event totals and leaderboard counts to count logical votes/users instead of pick rows.
+- Updated frontend voting UI to allocate 100 points, rebalance evenly, and save only when total is 100.
 - Updated tests and vault docs.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; direct 100-point DB flow smoke; `git diff --check`.
 - Not verified: full `python -m pytest` because local environment lacks pytest.
@@ -84,7 +92,7 @@
 
 - Recorded that Dygyn Games run across two days.
 - Added target support for Day 1, Day 2, overall/final results, provisional/official state, and final winners.
-- Clarified fan-score awarding should happen only after final official winner.
+- Clarified rating-score awarding should happen only after final official winner.
 - Updated README, quick start, MVP decisions, data-model plan, and planned API notes.
 - Verified: `git diff --check` passed.
 
@@ -92,7 +100,7 @@
 
 - Rewrote `README.md` again as a short product-only description.
 - Removed local setup, admin curl examples, implementation status, source/data instructions, and excess MVP/TMA wording.
-- Kept core product idea, 100-point prediction model, participant stats, visual style, and no-money boundary.
+- Kept core product idea, 100-point vote model, participant stats, visual style, and no-money boundary.
 - Polished opening copy and legal boundary wording before push.
 - Updated `vault/QUICK_START.md` and `vault/CODE_MAP.md`.
 - Verified: `git diff --check` passed.
@@ -102,7 +110,7 @@
 - Reviewed `new_brief.md` against current app and vault docs.
 - User declared `new_brief.md` canonical MVP brief.
 - Recorded decisions in `vault/wiki/architecture/mvp-product-decisions.md`.
-- Target prediction model: one user/event prediction with exactly 100 virtual points distributed across 1–3 participants.
+- Target voting model: one user/event vote with exactly 100 virtual points distributed across 1–3 participants.
 - Recorded user vision: minimal Telegram bot/TMA with athlete detail pages and verified tabular stats for all 7 Dygyn disciplines by year/event.
 - Updated project vision, roadmap, sprint, resume plan, code map, and quick start.
 - Next: implement backend-first brief alignment.
@@ -251,14 +259,14 @@
 - Test bot `/start` in Telegram.
 - Test Mini App voting on mobile.
 
-## 2026-05-06 — Dygyn Fan Arena Frontend Pass
+## 2026-05-06 — Игры Дыгына — голосование Frontend Pass
 
 ### Done
 
 - Added `ref.md` as the root design reference after cleaning launch-phase wording.
 - Added canonical English design direction at `vault/wiki/architecture/design-direction.md`.
-- Restyled frontend toward Dygyn Fan Arena: dark sports UI, warm gold accent, arena hero, bottom navigation, participant cards, support progress bars, confidence chips, sticky save action.
-- Changed stats tab into support statistics plus fan leaderboard.
+- Restyled frontend toward Игры Дыгына — голосование: dark sports UI, warm gold accent, event hero, bottom navigation, participant cards, support progress bars, confidence chips, sticky save action.
+- Changed stats tab into support statistics plus leaderboard.
 - Updated frontend and code-map vault docs.
 
 ### Verified
@@ -278,7 +286,7 @@
 - VPS tests passed: 4 tests.
 - Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both are active.
 - Public health check passed at `/dygyn-bet/health`.
-- Public HTML shows `Dygyn Fan Arena` and updated no-money copy.
+- Public HTML shows `Игры Дыгына — голосование` and updated no-money copy.
 
 ### Next
 
@@ -291,7 +299,7 @@
 
 - Removed launch-phase wording from user-facing UI, bot messages, README, and project docs.
 - Renamed old scope doc to `wiki/01-scope.md`.
-- Kept product meaning unchanged: fan predictions, no money.
+- Kept product meaning unchanged: predictions, no money.
 
 ### Verified
 

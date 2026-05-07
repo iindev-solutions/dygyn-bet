@@ -1,4 +1,4 @@
-# Design Direction — Dygyn Fan Arena
+# Design Direction — Игры Дыгына — голосование
 
 ## Source Reference
 
@@ -6,12 +6,12 @@ Root file `ref.md` contains the working visual/product reference in Russian. Thi
 
 ## Positioning
 
-The product must feel like a sports fan prediction arena, not a bookmaker.
+The product must feel like a sports voting app, not a bookmaker.
 
 Target style name:
 
 ```text
-Dygyn Fan Arena
+Игры Дыгына — голосование
 ```
 
 Character:
@@ -32,7 +32,7 @@ Do:
 - show participant cards with progress bars;
 - make the main action obvious;
 - keep copy short;
-- show fan support and leaderboard clearly;
+- show support and leaderboard clearly;
 - keep no-money positioning visible.
 
 Do not use:
@@ -49,10 +49,10 @@ Do not use:
 
 Use:
 
-- prediction;
-- fan pick;
+- vote;
+- voting;
 - confidence points;
-- fan support;
+- support;
 - leaderboard;
 - performance history.
 
@@ -116,7 +116,7 @@ Content:
 
 ### Support Stats
 
-Purpose: show who fans support.
+Purpose: show who users support.
 
 Content:
 
@@ -139,7 +139,7 @@ Content:
 - discipline results when data model is expanded;
 - source URLs.
 
-### Fan Leaderboard
+### Leaderboard
 
 Purpose: gamification.
 
@@ -157,7 +157,7 @@ Implemented first visual pass:
 
 - dark sports UI;
 - bottom navigation;
-- arena hero card;
+- event hero card;
 - participant support cards;
 - progress bars;
 - confidence chips;

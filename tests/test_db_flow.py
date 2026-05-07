@@ -81,7 +81,7 @@ def test_live_results_and_finish_flow(tmp_path):
     )
     assert standings["standings"][0]["place"] == 1
 
-    user = upsert_user(db_path, TelegramUser(id=778, first_name="Fan"))
+    user = upsert_user(db_path, TelegramUser(id=778, first_name="User"))
     set_picks(db_path, event["id"], user["id"], [], allocations={player_id: 100})
     admin_finish_event(db_path, event["id"], player_id)
     finished = get_event(db_path, event["id"], user_id=user["id"])

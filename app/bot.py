@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, W
 def _keyboard(web_app_url: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Открыть прогнозы", web_app=WebAppInfo(url=web_app_url))],
+            [InlineKeyboardButton(text="Открыть голосование", web_app=WebAppInfo(url=web_app_url))],
             [InlineKeyboardButton(text="Статистика", web_app=WebAppInfo(url=f"{web_app_url.rstrip('/')}/#stats"))],
         ]
     )
@@ -21,7 +21,7 @@ async def run_polling(bot_token: str, web_app_url: str) -> None:
     @dp.message(CommandStart())
     async def start(message: Message) -> None:
         await message.answer(
-            "Привет! Это фан-прогнозы по Играм Дыгына. "
+            "Привет! Это голосование по Играм Дыгына. "
             "Здесь нет денежных ставок: только голосование, очки уверенности и статистика болельщиков.",
             reply_markup=_keyboard(web_app_url),
         )
@@ -38,7 +38,7 @@ async def run_polling(bot_token: str, web_app_url: str) -> None:
             "2. Выбор можно менять до закрытия события.\n"
             "3. Очки уверенности виртуальные, денег и выигрышей нет.\n"
             "4. После сохранения можно скачать карточку для сторис.\n"
-            "5. После внесения результата начисляются фан-очки."
+            "5. После внесения результата начисляются очки рейтинга."
         )
 
     @dp.message(F.web_app_data)

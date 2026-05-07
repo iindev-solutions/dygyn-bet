@@ -2,7 +2,7 @@
 
 ## Product Stance
 
-The project must operate as a fan-prediction/voting service with no money.
+The project must operate as a prediction/voting service with no money.
 
 Allowed concepts:
 
@@ -10,7 +10,7 @@ Allowed concepts:
 - vote;
 - support;
 - confidence points;
-- fan points;
+- rating points;
 - leaderboard;
 - badges;
 - public support statistics.
@@ -40,10 +40,10 @@ A money stake or prize-bearing wager can become regulated gambling/bookmaker act
 Prefer:
 
 - prediction;
-- fan pick;
+- prediction;
 - vote;
 - confidence points;
-- fan points;
+- rating points;
 - support percentage;
 - leaderboard.
 

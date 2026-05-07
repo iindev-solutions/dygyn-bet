@@ -44,7 +44,7 @@ X-Telegram-Init-Data: <window.Telegram.WebApp.initData>
 
 ## GET /api/leaderboard
 
-Рейтинг пользователей по начисленным фан-очкам.
+Рейтинг пользователей по начисленным очкам рейтинга.
 
 ## POST /api/admin/players
 

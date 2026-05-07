@@ -546,12 +546,12 @@ def set_picks(
         if not event:
             raise ValueError("Событие не найдено")
         if event["status"] != "open":
-            raise ValueError("Прогнозы по этому событию уже закрыты")
+            raise ValueError("Голосование по этому событию уже закрыто")
         close_value = event["closes_at"] or event["starts_at"]
         closes_at = parse_datetime(str(close_value))
         if closes_at <= datetime.now(timezone.utc):
             conn.execute("UPDATE events SET status='locked' WHERE id=?", (event_id,))
-            raise ValueError("Событие уже началось, прогнозы закрыты")
+            raise ValueError("Событие уже началось, голосование закрыто")
         rows = conn.execute(
             f"SELECT player_id FROM event_participants WHERE event_id=? AND player_id IN ({','.join('?' for _ in unique_player_ids)})",
             (event_id, *unique_player_ids),
@@ -889,8 +889,8 @@ def seed_demo(db_path: str) -> None:
         cur = conn.execute(
             "INSERT INTO events (title, description, starts_at, status) VALUES (?, ?, ?, 'open')",
             (
-                "Игры Дыгына 2026 — финал, демо-прогноз",
-                "Фан-прогнозы без денег. Данные участников демонстрационные.",
+                "Игры Дыгына 2026 — финал, демо-голосование",
+                "Голосование без денег. Данные участников демонстрационные.",
                 starts,
             ),
         )

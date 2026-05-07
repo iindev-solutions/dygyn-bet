@@ -8,26 +8,26 @@
 ## Product Shape
 
 - Telegram bot is a minimal, polished entry point.
-- Telegram Mini App contains the rich UI: events, participants, prediction, stats, rating, profile.
-- Product remains fan predictions/support only: no money, odds, deposits, withdrawals, payouts, or valuable prizes.
+- Telegram Mini App contains the rich UI: events, participants, voting, stats, rating, profile.
+- Product remains voting/support only: no money, odds, deposits, withdrawals, payouts, or valuable prizes.
 
-## Prediction Model
+## Voting Model
 
-- One prediction per user per event.
-- One prediction can contain 1–3 selected participants.
+- One vote per user per event.
+- One vote can contain 1–3 selected participants.
 - Each user has exactly 100 virtual confidence points per event.
 - User distributes the 100 points across selected participants.
 - Valid examples: `100`, `70/30`, `50/30/20`, `34/33/33`.
 - Backend must validate: event is open, not past `closes_at`, user not blocked, participants belong to event, 1–3 participants, all points positive, sum is exactly 100.
-- User may change the prediction only before `closes_at`.
+- User may change the vote only before `closes_at`.
 
 ## Support Stats
 
-- `total_predictions` = number of users who saved a prediction for the event.
-- `supporters_count` = number of predictions containing a participant.
+- `total_predictions` = number of users who saved a vote for the event.
+- `supporters_count` = number of votes containing a participant.
 - `confidence_sum` = sum of points allocated to a participant.
 - `support_percent` = participant `confidence_sum / total_confidence * 100`.
-- UI wording: support, prediction, fan points, confidence points. Avoid betting/casino wording.
+- UI wording: support, vote, rating points, confidence points. Avoid betting/casino wording.
 
 ## Scoring
 
@@ -38,14 +38,14 @@
 
 ## Bot UX
 
-- Bot stays simple: `/start`, open Mini App, participants, make prediction, rating, rules.
+- Bot stays simple: `/start`, open Mini App, participants, vote, rating, rules.
 - Large tables and voting flows belong in the Mini App, not Telegram chat messages.
 
 ## Admin UX
 
 - Admin panel is required, not optional.
 - Admin should be inside the Mini App and visible only to `ADMIN_IDS`.
-- MVP admin tasks: import/validate CSV data pack, manage events, manage participants, attach participants to events, update Day 1/Day 2 discipline results, publish provisional/official standings, finish event, and trigger final fan-score awarding.
+- MVP admin tasks: import/validate CSV data pack, manage events, manage participants, attach participants to events, update Day 1/Day 2 discipline results, publish provisional/official standings, finish event, and trigger final rating-score awarding.
 - Admin operations need confirmation and audit-friendly timestamps; avoid editing DB manually during live games.
 
 ## Participant Detail and Discipline Stats
@@ -62,10 +62,10 @@
 
 - Dygyn Games run across two days.
 - App must support result updates after Day 1, Day 2, and final finish.
-- Predictions close before the event/`closes_at`; day results are informational until final official finish.
+- Voting closes before the event/`closes_at`; day results are informational until final official finish.
 - UI should show Day 1, Day 2, overall standings, final winners, `provisional/official` state, and last updated time.
 - Admin must be able to enter or correct discipline results during/after each day.
-- Fan leaderboard points are awarded only after final official winner is set, not from provisional day standings.
+- Leaderboard points are awarded only after final official winner is set, not from provisional day standings.
 
 ## Data Needed
 
@@ -80,14 +80,14 @@
 
 - Expected scale: likely a few thousand users; possible peak 10k–15k voters.
 - Current FastAPI + SQLite + nginx + VPS setup is enough for this scale.
-- 15k voters with up to 3 selected participants means about 45k prediction-item rows per event, which is small for SQLite.
+- 15k voters with up to 3 selected participants means about 45k vote-item rows per event, which is small for SQLite.
 - Required ops: WAL, indexes, POST rate limit, DB backup before deploy/result settlement, no frontend-trusted user IDs.
 - Move to PostgreSQL only after heavier analytics, many concurrent writes, or roughly 100k+ users.
 
 ## Implementation Order
 
-1. Backend-first prediction allocation model and validation.
-2. `closes_at`, event stats, event leaderboard, profile/prediction history APIs.
+1. Backend-first vote allocation model and validation.
+2. `closes_at`, event stats, event leaderboard, profile/vote history APIs.
 3. Admin close/finish/result endpoints and CSV import path.
 4. Frontend 5-screen brief alignment with 100-point allocation UI.
 5. Participant detail pages and discipline-stat tables.

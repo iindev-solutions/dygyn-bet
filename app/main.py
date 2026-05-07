@@ -34,7 +34,7 @@ from .db import (
 )
 from .telegram_auth import TelegramAuthError, TelegramUser, telegram_user_from_init_data, validate_init_data
 
-app = FastAPI(title="Dygyn Fan Picks", version="0.1.0")
+app = FastAPI(title="Игры Дыгына — голосование", version="0.1.0")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "web"), name="static")
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)

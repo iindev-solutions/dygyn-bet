@@ -3,8 +3,8 @@
 ## Root
 
 - `AGENTS.md` — vault-first project rules for coding agents.
-- `README.md` — short Russian product description: fan app idea, 100-point prediction model, participant stats, visual style, legal boundary.
-- `DESIGN.md` — machine-readable and human-readable Dygyn Fan Arena visual identity for coding agents.
+- `README.md` — short Russian product description: voting app idea, 100-point vote model, participant stats, visual style, legal boundary.
+- `DESIGN.md` — machine-readable and human-readable Игры Дыгына — голосование visual identity for coding agents.
 - `new_brief.md` — Russian canonical MVP brief for product/UI/backend direction.
 - `data/import/dygyn_2026/` — CSV/XLSX import data pack: sources, disciplines, 2026 event/participants, 2025 overall and discipline results, partial 2026 qualifier results.
 - `.env.example` — configuration template for bot token, web app URL, admins, dev login, polling, SQLite path, Telegram auth age.
@@ -16,7 +16,7 @@
 ## Backend: `app/`
 
 - `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/prediction/live-results/leaderboard/admin API endpoints.
-- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point prediction items, final results, live two-day results/standings, sources, disciplines, discipline results, history, leaderboard, demo seed.
+- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point vote items, final results, live two-day results/standings, sources, disciplines, discipline results, history, leaderboard, demo seed.
 - `app/config.py` — environment loading and immutable `Settings` dataclass.
 - `app/import_data.py` — validates/imports `data/import/dygyn_2026/` CSV pack into SQLite sources, disciplines, players, event links, history, and discipline-result tables.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
@@ -26,8 +26,8 @@
 ## Frontend: `web/`
 
 - `web/index.html` — Telegram Mini App shell with tabs: events, stats, players, admin, rules.
-- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, arena event rendering, 100-point allocation prediction flow, live two-day results rendering/admin forms, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
-- `web/styles.css` — Dygyn Fan Arena dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
+- `web/app.js` — vanilla JS client: Telegram WebApp init, prefix-safe API wrapper, event rendering, 100-point allocation voting flow, live two-day results rendering/admin forms, support stats, leaderboard, player cards/details with discipline tables, story-card sharing, HTML escaping, toast.
+- `web/styles.css` — Игры Дыгына — голосование dark sports UI: card layout, bottom navigation, progress bars, confidence chips, sticky save action.
 
 ## Scripts
 
@@ -66,7 +66,7 @@
 2. User opens event details.
 3. User selects 1–3 participants and distributes exactly 100 confidence points.
 4. Backend checks event exists, status is `open`, close time is future, point total is 100, and every selected player belongs to event.
-5. Backend replaces current user's event prediction items and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
+5. Backend replaces current user's event vote items and stores one row per selected participant using `UNIQUE(event_id, user_id, player_id)`.
 
 ### Live Result/Admin Flow
 

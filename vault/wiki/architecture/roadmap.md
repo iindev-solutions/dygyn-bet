@@ -8,7 +8,7 @@
 - Implement canonical `new_brief.md` alignment: 100 points distributed across 1–3 participants.
 - Replace demo participants/events with verified Dygyn Games data.
 - Add source URLs for every real history/discipline result record.
-- Test auth, event list, prediction creation/update, stats, player list, leaderboard.
+- Test auth, event list, vote creation/update, stats, player list, leaderboard.
 - Test admin APIs for player/event/result management.
 
 ## Phase 2 — Content and Admin Operations
@@ -18,15 +18,15 @@
 - Add participant photos.
 - Add participant detail pages with all 7 Dygyn discipline stat tables.
 - Add stricter source tracking.
-- Add notification before prediction close.
+- Add notification before voting close.
 
 ## Phase 3 — Social Mechanics
 
 - Improve Instagram Stories sharing after mobile tests.
-- Share prediction to Telegram.
+- Share vote to Telegram.
 - Friend or region leaderboards.
 - Reactions or comments.
-- Public page showing fan support distribution.
+- Public page showing support distribution.
 
 ## Phase 4 — Reliability
 

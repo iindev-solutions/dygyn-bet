@@ -42,7 +42,7 @@ All content inside `vault/` must be written in English.
 
 ## Product Rule
 
-This product is a fan-prediction/voting service only. Do not add real-money betting, deposits, withdrawals, odds, paid entry, or prizes with monetary value without a legal decision.
+This product is a prediction/voting service only. Do not add real-money betting, deposits, withdrawals, odds, paid entry, or prizes with monetary value without a legal decision.
 
 ## Token Rule
 

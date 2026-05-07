@@ -1,7 +1,7 @@
 ---
 version: alpha
-name: Dygyn Fan Arena
-description: Dark sports fan arena visual identity for the Dygyn Games Telegram Mini App.
+name: Игры Дыгына — голосование
+description: Dark sports voting visual identity for the Dygyn Games Telegram Mini App.
 colors:
   primary: "#0F1115"
   secondary: "#171A21"
@@ -68,7 +68,7 @@ components:
     textColor: "{colors.neutral}"
     rounded: "{rounded.lg}"
     padding: 16px
-  arena-card:
+  event-card:
     backgroundColor: "{colors.card-elevated}"
     textColor: "{colors.neutral}"
     rounded: "{rounded.lg}"
@@ -116,7 +116,7 @@ components:
 
 ## Overview
 
-Dygyn Fan Arena is a dark, premium sports interface for fans of the Dygyn Games. It must feel like a Telegram-native arena for support, predictions, athlete stats, and live results — never like a casino or bookmaker.
+Игры Дыгына — голосование is a dark, premium sports interface for users following the Dygyn Games. It must feel like a Telegram-native voting app for support, voting, athlete stats, and live results — never like a casino or bookmaker.
 
 The mood is compact, confident, and athletic: dark cards, sharp hierarchy, warm gold accents, clear progress bars, and readable result tables. The product should feel local and ceremonial through restraint, not decoration overload.
 
@@ -185,7 +185,7 @@ The system is rounded and card-based.
 
 Primary components:
 
-- **Arena hero:** Event title, status, participant count, prediction count, top support preview.
+- **Event hero:** Event title, status, participant count, vote count, top support preview.
 - **Participant card:** Name, region, support stats, selected state, confidence allocation.
 - **Confidence allocator:** 1–3 selected participants, exactly 100 total points, visible valid/invalid total.
 - **Support progress:** Gold gradient bar over dark track.
@@ -200,7 +200,7 @@ Components should use existing tokens before adding new styles.
 
 Do:
 
-- Use support, prediction, confidence points, fan points, leaderboard.
+- Use support, vote, confidence points, rating points, leaderboard.
 - Keep the no-money boundary visible in product copy.
 - Show athlete stats and live results in clear tables.
 - Make selected states unmistakable.
@@ -211,6 +211,6 @@ Don't:
 
 - Use bet, odds, payout, deposit, withdrawal, balance, jackpot, casino, win money, or bookmaker language.
 - Add red/green betting psychology or odds boards.
-- Hide the 100-point total from the prediction screen.
+- Hide the 100-point total from the voting screen.
 - Make admin operations ambiguous; finishing an event must require confirmation.
 - Overuse gold, glow, animations, or ornamental patterns.
