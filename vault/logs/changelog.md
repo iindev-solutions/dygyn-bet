@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-06 — DESIGN.md Added
+
+- Added root `DESIGN.md` following Google Labs `design.md` format: YAML design tokens plus markdown rationale.
+- Captured Dygyn Fan Arena palette, typography, layout, components, and do/don't rules.
+- Updated quick start and code map.
+- Verified: `design.md lint DESIGN.md` passed with 0 errors/0 warnings; `git diff --check` passed.
+
 ## 2026-05-06 — VPS Admin ID Configured
 
 - Added user Telegram numeric ID to VPS `ADMIN_IDS` in `/opt/dygyn-bet/.env`.

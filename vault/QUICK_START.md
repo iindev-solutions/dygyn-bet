@@ -6,7 +6,7 @@ Read this first. Read deep docs only when task needs them.
 
 - Product: Telegram Mini App fan predictions for Dygyn Games.
 - Public URL: `https://iindiinda.duckdns.org/dygyn-bet/`.
-- Style: `Dygyn Fan Arena` — dark sports cards, gold accent, no casino vibe.
+- Style: `Dygyn Fan Arena` — dark sports cards, gold accent, no casino vibe. Root `DESIGN.md` is canonical visual identity for agents.
 - User flow: open bot → TMA → choose 1–3 participants → distribute 100 confidence points → save → share story card.
 - Legal line: fan votes only. No money, odds, deposits, withdrawals, payouts, prizes with value.
 

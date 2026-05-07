@@ -4,6 +4,7 @@
 
 - `AGENTS.md` — vault-first project rules for coding agents.
 - `README.md` — short Russian product description: fan app idea, 100-point prediction model, participant stats, visual style, legal boundary.
+- `DESIGN.md` — machine-readable and human-readable Dygyn Fan Arena visual identity for coding agents.
 - `new_brief.md` — Russian canonical MVP brief for product/UI/backend direction.
 - `data/import/dygyn_2026/` — CSV/XLSX import data pack: sources, disciplines, 2026 event/participants, 2025 overall and discipline results, partial 2026 qualifier results.
 - `.env.example` — configuration template for bot token, web app URL, admins, dev login, polling, SQLite path, Telegram auth age.
