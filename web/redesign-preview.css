@@ -75,13 +75,33 @@ h3 { font-size: 23px; margin-top: 10px; }
 .ornament-2 { -webkit-mask-image: url("./assets/ornament-yakut-2.svg"); mask-image: url("./assets/ornament-yakut-2.svg"); -webkit-mask-size: auto 100%; mask-size: auto 100%; }
 .ornament-3 { -webkit-mask-image: url("./assets/ornament-yakut-3.svg"); mask-image: url("./assets/ornament-yakut-3.svg"); -webkit-mask-size: auto 100%; mask-size: auto 100%; }
 .poster-photo {
+  position: relative;
+  display: grid;
+  place-items: center;
   height: 218px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 26px;
   background: #0b0f12;
 }
-.poster-photo img { width: 100%; height: 100%; object-fit: cover; }
+.poster-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .42;
+  filter: saturate(.9) contrast(1.1) blur(1px);
+  transform: scale(1.03);
+}
+.poster-mark {
+  position: relative;
+  z-index: 1;
+  width: 118px;
+  max-height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 30px rgba(0,0,0,.62));
+}
 .poster-copy { margin-top: 18px; }
 .glass-event {
   position: absolute;

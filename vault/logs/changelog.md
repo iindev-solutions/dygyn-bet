@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-07 — A1 Direction Favicon
+
+- Chose A1 poster direction as the current redesign base.
+- Updated A1 preview to use SVG logo mark from A2 over the temporary photo preview, with A1 SVG ornament mask.
+- Added project SVG favicon and web manifest using the Dygyn logo mark.
+- Linked favicon/manifest in the main Mini App and favicon in the redesign preview.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; favicon link smoke; `git diff --check`.
+
 ## 2026-05-07 — A-Direction SVG Redesign Variants
 
 - Reworked redesign preview into three A-direction ceremonial variants: A1 poster, A2 logo seal, A3 event card.
