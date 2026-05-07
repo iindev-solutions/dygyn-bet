@@ -7,6 +7,7 @@
 - Updated TMA allocation UI, bot rules, README, brief, design guide, tests, and vault/API/frontend/data-model docs.
 - Production cleanup requested: clear votes plus result/live-result tables after DB backup during deploy.
 - Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; top-2 DB smoke; `design.md lint DESIGN.md`. Full local pytest still unavailable: `No module named pytest`.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; DB backed up; cleared `picks`, `results`, `event_standings`, `event_discipline_results`, `event_days`; event status is open; public static JS uses `MAX_PICKS = 2`.
 
 ## 2026-05-07 — Equal Three-Way Vote Split
 
