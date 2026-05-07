@@ -6,6 +6,7 @@
 - Removed favicon ornament lines, circle, and any text; kept dark square background for contrast.
 - Optimized SVG favicon to 3.7KB.
 - Verified: favicon SVG has no `circle`, `stroke`, or text nodes.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; favicon returns 200 and stays 3.7KB.
 
 ## 2026-05-07 — A1 Direction Favicon
 
