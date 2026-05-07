@@ -307,8 +307,11 @@ function renderConfidenceBlock(draftIds) {
     const value = allocations[playerId] || 1;
     return `
       <div class="allocation-row">
-        <div class="row"><strong>${escapeHtml(participant?.name || playerId)}</strong><span>${value}</span></div>
-        <input type="range" min="1" max="100" value="${value}" data-allocation-player="${playerId}" />
+        <div class="row"><strong>${escapeHtml(participant?.name || playerId)}</strong><span>${value} очков</span></div>
+        <div class="allocation-control">
+          <input type="range" min="1" max="100" value="${value}" data-allocation-player="${playerId}" />
+          <input class="allocation-number" type="number" inputmode="numeric" min="1" max="100" value="${value}" data-allocation-player="${playerId}" aria-label="Очки: ${escapeHtml(participant?.name || String(playerId))}" />
+        </div>
       </div>
     `;
   }).join('') || '<p class="muted">Выберите участника — ему автоматически достанутся 100 очков.</p>';

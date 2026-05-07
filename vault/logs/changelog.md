@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-07 — Allocation Number Input
+
+- Added numeric input beside each allocation slider so users can type confidence points directly.
+- Kept slider control and 100-point validation unchanged.
+- Verified: `node --check web/app.js`; `git diff --check`.
+
 ## 2026-05-07 — Top-2 Voting Reset
 
 - Changed voting model to maximum two participants per event vote.

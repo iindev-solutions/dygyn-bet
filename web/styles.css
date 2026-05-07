@@ -265,7 +265,27 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
-.confidence input { width: 100%; accent-color: var(--accent); }
+.confidence input { accent-color: var(--accent); }
+.confidence input[type="range"] { width: 100%; }
+.allocation-control {
+  display: grid;
+  grid-template-columns: 1fr 78px;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+.allocation-number {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, .22);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
 .allocation-list {
   display: grid;
   gap: 10px;
