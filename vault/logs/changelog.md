@@ -8,6 +8,7 @@
 - Simplified event hero copy, hides event picker when only one event exists, and retitled voting block to `Выберите топ-2`.
 - Updated root design guide and vault design direction for A1/SVG ornament direction.
 - Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`; top-noise search clean.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; health OK; public index has A1 hero, no top refresh/no-money notice, CSS uses SVG ornament, app JS has `Выберите топ-2`.
 
 ## 2026-05-07 — Simple Helmet Favicon
 
