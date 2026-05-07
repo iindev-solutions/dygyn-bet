@@ -41,6 +41,7 @@ class Settings:
     admin_ids: list[int] = None  # type: ignore[assignment]
     allow_dev_login: bool = _bool("ALLOW_DEV_LOGIN", True)
     enable_polling: bool = _bool("ENABLE_POLLING", False)
+    seed_demo: bool = _bool("SEED_DEMO", False)
     auth_max_age_seconds: int = int(os.getenv("AUTH_MAX_AGE_SECONDS", "86400"))
     rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
     rate_limit_max_requests: int = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "90"))

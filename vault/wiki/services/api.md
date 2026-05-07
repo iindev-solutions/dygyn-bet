@@ -20,10 +20,10 @@ Serves `web/index.html`.
 
 ### `GET /health`
 
-Returns:
+Returns app version plus DB and disk checks:
 
 ```json
-{"ok": true, "version": "0.1.0"}
+{"ok": true, "version": "0.1.0", "db": {"ok": true, "players": 16, "events": 1}, "disk_free_mb": 12345}
 ```
 
 ## User Endpoints
@@ -102,6 +102,10 @@ Returns participant profile detail with:
 
 Alias for player detail, matching the canonical brief wording.
 
+### `GET /api/participants/{player_id}/avatar`
+
+Public same-origin avatar proxy for known participant photos used by the PNG story-card canvas. It only fetches the stored `avatar_url` for that participant, checks image content type/size, and returns a cacheable image response.
+
 ### `GET /api/events/{event_id}/results`
 
 Return Day 1, Day 2, overall/final standings, discipline results, final winners, and last updated time.
@@ -116,7 +120,7 @@ Returns top 100 users ordered by rating score, correct picks, and pick count.
 
 ## Admin Endpoints
 
-Admin means current Telegram ID is listed in `ADMIN_IDS`, or local dev admin is active.
+Admin means current Telegram ID is listed in `ADMIN_IDS`, or local dev admin is active. Admin mutations are written to `admin_audit_logs`. Admin `source_url` fields accept only empty, `http://`, or `https://` values.
 
 ### `POST /api/admin/players`
 
@@ -194,7 +198,7 @@ Upsert Day 1, Day 2, or overall/final standings row. `day_number=0` means overal
 
 ### `POST /api/admin/events/{event_id}/finish`
 
-Set official winner, mark event settled, and award rating points.
+Set official winner, mark event settled, and award rating points. Uses a SQLite write lock and refuses already-settled events.
 
 ```json
 {"winner_participant_id": 1}
@@ -202,7 +206,7 @@ Set official winner, mark event settled, and award rating points.
 
 ### `POST /api/admin/events/{event_id}/settle`
 
-Legacy final result endpoint. Prefer `/finish` for the canonical live-results flow.
+Legacy final result endpoint. Prefer `/finish` for the canonical live-results flow. Requires exactly one first-place winner, validates event participants, uses a SQLite write lock, and refuses already-settled events.
 
 ## Import CLI
 

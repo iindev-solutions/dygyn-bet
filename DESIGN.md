@@ -187,11 +187,13 @@ Primary components:
 
 - **App hero:** SVG Yakut ornament strip, temporary photo preview, short title, and no user/debug copy.
 - **Event hero:** Event title, status, participant count, vote count, top support preview.
-- **Participant card:** Name, region, support stats, selected state, confidence allocation.
+- **Voting participant card:** Name, region, support stats, selected state, confidence allocation.
+- **Players tab card:** Large athlete photo, origin, short description, and one `Открыть статистику` action; no summary stat grid in the list card.
 - **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total, number input, slider, and quick presets (`100`, `70/30`, `50/50`).
 - **Support progress:** Gold gradient bar over dark track.
 - **Leaderboard row:** Rank, user name, pick count, score badge.
-- **Participant detail:** Photo, bio, strengths, prior Dygyn note, result tables by year/event.
+- **Participant detail:** Photo, bio, title/debut/history badges, strengths, prior Dygyn note, overall rank/points summary, result tables by year/event.
+- **Story card:** 1080×1920 PNG for manual Instagram Stories upload with selected participant photo(s), name, origin, confidence points, and app URL.
 - **Live results block:** Day 1, Day 2, overall standings, provisional/official state, last updated time.
 - **Admin form:** Plain operational UI for entering discipline results, standings, and final winner.
 

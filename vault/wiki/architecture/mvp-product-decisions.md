@@ -9,7 +9,7 @@
 
 - Telegram bot is a minimal, polished entry point.
 - Telegram Mini App contains the rich UI: events, participants, voting, stats, rating, profile.
-- Product remains voting/support only: no money, odds, deposits, withdrawals, payouts, or valuable prizes.
+- Product remains voting/support only: no money, odds, deposits, withdrawals, payouts, or valuable prizes until a legal decision approves any sponsor-prize mechanic.
 
 ## Voting Model
 
@@ -80,7 +80,7 @@
 
 - Expected scale: likely a few thousand users; possible peak 10k–15k voters.
 - Current FastAPI + SQLite + nginx + VPS setup is enough for this scale.
-- 15k voters with up to 3 selected participants means about 45k vote-item rows per event, which is small for SQLite.
+- 15k voters with up to 2 selected participants means about 30k vote-item rows per event, which is small for SQLite.
 - Required ops: WAL, indexes, POST rate limit, DB backup before deploy/result settlement, no frontend-trusted user IDs.
 - Move to PostgreSQL only after heavier analytics, many concurrent writes, or roughly 100k+ users.
 

@@ -440,6 +440,10 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   gap: 8px;
 }
 .share-actions button { border-radius: 15px; }
+.story-help {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
 .history {
   display: grid;
   gap: 8px;
@@ -467,15 +471,36 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   color: var(--accent);
   font-weight: 950;
 }
-.player-card .details-btn { margin-top: 14px; }
+.player-card {
+  display: grid;
+  gap: 12px;
+}
+.player-card h2 { margin-bottom: 5px; }
+.player-card p { margin-bottom: 0; }
+.player-card .details-btn { margin-top: 2px; }
 .player-photo {
-  width: 58px;
-  height: 58px;
-  flex: 0 0 auto;
+  width: 100%;
+  height: clamp(180px, 58vw, 260px);
   border: 1px solid rgba(242, 184, 75, .28);
-  border-radius: 18px;
+  border-radius: 22px;
   object-fit: cover;
+  object-position: center top;
   background: rgba(255, 255, 255, .06);
+}
+.player-photo-fallback {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 42px;
+  font-weight: 950;
+  background: rgba(242, 184, 75, .12);
+}
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  text-decoration: none;
 }
 .profile-head {
   display: grid;
@@ -483,6 +508,15 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   gap: 14px;
   align-items: center;
   margin-top: 14px;
+}
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.profile-badge {
+  background: rgba(242, 184, 75, .18);
 }
 .profile-photo {
   width: 92px;
@@ -521,6 +555,7 @@ h3 { font-size: 17px; margin-bottom: 8px; }
   letter-spacing: .05em;
 }
 .result-table small { color: var(--hint); }
+.result-summary { margin-bottom: 0; }
 .admin-form {
   display: grid;
   gap: 10px;

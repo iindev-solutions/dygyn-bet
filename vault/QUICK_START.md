@@ -24,9 +24,9 @@ Read this first. Read deep docs only when task needs them.
 ## Current State
 
 - 100-point allocation voting works locally: one vote uses a 100-point scale; votes are limited to top 2 participants and must total 100 points.
-- Story-card sharing works.
+- Story-card sharing works; generated Instagram story cards include selected participant photo(s).
 - A1-style redesign first pass deployed: ceremonial hero, SVG ornament strip, no visible login line/refresh/no-money notice in top screen.
-- Latest VPS deploy done: A1 redesign first pass deployed, services active, VPS tests passed.
+- Latest VPS deploy done: participant detail/table cleanup + story share flow cleanup + story cards with participant photos + quick launch hardening + photo-forward Players tab deployed, services active, VPS tests passed.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
@@ -36,11 +36,15 @@ Read this first. Read deep docs only when task needs them.
 - Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned. VPS `ADMIN_IDS` is configured.
 - Production DB now has imported Dygyn 2026 data: 16 active participants, 7 disciplines, 126 discipline result rows.
 - Backend and frontend expose participant detail with imported discipline-result tables.
+- Players tab is photo-forward: large athlete photo, origin, short description, and a single stats/detail button; detailed view holds full profile/stat/history info.
+- Hardening update deployed: prod demo seeding disabled by default, admin source URLs validated, index cache-busted/no-store, richer health checks, admin audit log table, hardened settle/finish, SQLite backup script.
+- Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
+- Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
 
 ## Next Best Tasks
 
 1. QA in Telegram bot/Mini App on mobile: event, participant tables, 100-point vote, admin result forms.
-2. Implement profile and event-specific leaderboard/stats APIs.
+2. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
 3. Add admin UI for imports/events/participants management.
 4. Add public frontend screens: Home/Vote/Stats/Rating/Profile + athlete stat/result tables.
 

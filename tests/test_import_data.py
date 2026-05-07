@@ -45,6 +45,8 @@ def test_import_dygyn_pack(tmp_path):
     assert boris_detail is not None
     assert len(boris_detail["discipline_results"]) == 7
     assert boris_detail["discipline_results"][0]["discipline_name"]
+    assert all("[import:" not in row.get("notes", "") for row in boris_detail["history"])
+    assert all(not row["result_text"].endswith(" место") for row in boris_detail["discipline_results"])
 
     with connect(db_path) as conn:
         rows = conn.execute(

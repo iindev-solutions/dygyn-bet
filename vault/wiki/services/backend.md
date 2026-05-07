@@ -6,7 +6,7 @@
 - Serve static Mini App files from `web/`.
 - Validate Telegram Mini App auth.
 - Manage SQLite schema and data access.
-- Seed demo data for empty local database.
+- Seed demo data only when explicitly enabled for local/dev.
 - Run API service.
 - Bot polling can run in a separate systemd service via `app.bot_runner`.
 - Enforce basic rate limiting and admin checks.
@@ -29,7 +29,9 @@ From `.env.example`:
 - `ADMIN_IDS` — comma-separated Telegram numeric IDs.
 - `ALLOW_DEV_LOGIN` — local browser dev login; must be `false` in production.
 - `ENABLE_POLLING` — run aiogram polling inside FastAPI process. For VPS deployment, keep this `false` and run `app.bot_runner` as a separate service.
+- `SEED_DEMO` — local/dev demo seed flag; production must keep this `false`.
 - `DB_PATH` — SQLite DB path.
+- `BACKUP_DIR`, `BACKUP_KEEP` — defaults for `scripts/backup_sqlite.py`.
 - `AUTH_MAX_AGE_SECONDS` — max age for Telegram initData.
 - `RATE_LIMIT_WINDOW_SECONDS` — rate window.
 - `RATE_LIMIT_MAX_REQUESTS` — max requests per window.
@@ -61,8 +63,8 @@ docker compose up --build
 - Set real `BOT_TOKEN`.
 - Set real `ADMIN_IDS`.
 - Decide whether polling is acceptable or switch to webhook.
-- Ensure `data/` is persistent and backed up.
-- Replace demo data before launch.
+- Ensure `data/` is persistent and backed up; use `python scripts/backup_sqlite.py --db <db> --out-dir <dir>` from cron/systemd timer.
+- Keep `SEED_DEMO=false`; replace demo data before launch.
 - Consider PostgreSQL when usage or ops requirements grow.
 
 ## Tests
@@ -73,4 +75,4 @@ Run:
 pytest
 ```
 
-Current tests cover Telegram initData validation and basic DB pick/settle flow.
+Current tests cover Telegram initData validation, DB pick/settle flow, import validation, source URL validation, and hardened settle behavior.

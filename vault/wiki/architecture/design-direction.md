@@ -132,18 +132,19 @@ Content:
 - confidence point total;
 - progress bars.
 
-### Participant Card
+### Players Tab Card
 
-Purpose: show past results.
+Purpose: quick athlete recognition and entry to detail.
 
 Content:
 
+- large athlete photo;
 - name;
-- region/ulus;
-- recent years;
-- placements;
-- discipline results when data model is expanded;
-- source URLs.
+- region/ulus and city/village when known;
+- short description;
+- one `Open statistics` action.
+
+Do not show a summary stat grid in the list card. Put full stats, history, source URLs, and discipline tables in the detail view.
 
 ### Leaderboard
 

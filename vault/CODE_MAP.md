@@ -15,9 +15,9 @@
 
 ## Backend: `app/`
 
-- `app/main.py` — FastAPI app, static web mount, rate limit middleware, startup DB seed, optional bot polling, auth dependencies, user/event/player/prediction/live-results/leaderboard/admin API endpoints.
-- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point vote items, final results, live two-day results/standings, sources, disciplines, discipline results, history, leaderboard, demo seed.
-- `app/config.py` — environment loading and immutable `Settings` dataclass.
+- `app/main.py` — FastAPI app, static web mount, rate limit middleware, optional demo seed, optional bot polling, auth dependencies, user/event/player/avatar/prediction/live-results/leaderboard/admin API endpoints.
+- `app/db.py` — SQLite schema and persistence functions: users, players, events, participants, 100-point vote items, final results, live two-day results/standings, sources, disciplines, discipline results, history, leaderboard, admin audit logs, health checks, demo seed.
+- `app/config.py` — environment loading and immutable `Settings` dataclass, including prod-safe demo seed flag.
 - `app/import_data.py` — validates/imports `data/import/dygyn_2026/` CSV pack into SQLite sources, disciplines, players, event links, history, and discipline-result tables.
 - `app/telegram_auth.py` — Telegram Mini App initData HMAC validation, `TelegramUser`, test initData helper.
 - `app/bot.py` — aiogram polling bot with `/start`, `/app`, `/rules`, and Mini App buttons.
@@ -32,11 +32,13 @@
 ## Scripts
 
 - `scripts/import_dygyn_data.py` — CLI for validating or applying the Dygyn 2026 import data pack.
+- `scripts/backup_sqlite.py` — CLI for consistent SQLite backups with old-backup pruning.
 
 ## Tests: `tests/`
 
 - `tests/test_telegram_auth.py` — validates signed initData, rejects tampering and expired auth data.
 - `tests/test_db_flow.py` — exercises pick creation and event settlement flow in temporary SQLite DB.
+- `tests/test_hardening.py` — covers admin source URL validation and hardened settle/finish behavior.
 - `tests/test_import_data.py` — validates CSV pack and imports it into a temporary SQLite DB.
 
 ## Docs

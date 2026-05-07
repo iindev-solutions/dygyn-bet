@@ -253,7 +253,14 @@ def _purge_demo_data(conn) -> None:
 
 def _delete_previous_import_rows(conn) -> None:
     pattern = f"%{IMPORT_MARKER}%"
-    conn.execute("DELETE FROM player_history WHERE notes LIKE ?", (pattern,))
+    conn.execute(
+        """
+        DELETE FROM player_history
+        WHERE notes LIKE ?
+           OR (competition=? AND source_url LIKE ?)
+        """,
+        (pattern, "Игры Дыгына 2025 — общий зачёт", "https://dygyn.com/posts/2025/%"),
+    )
     conn.execute("DELETE FROM player_discipline_results WHERE notes LIKE ?", (pattern,))
 
 
@@ -481,8 +488,7 @@ def _import_event_participants(conn, rows: list[dict[str, str]], player_ids: dic
 def _import_2025_overall(conn, rows: list[dict[str, str]], name_to_player_id: dict[str, int]) -> int:
     for row in rows:
         player_id = _get_or_create_player_by_name(conn, row["participant"], name_to_player_id)
-        place_parts = [f"{key.removesuffix('_place')}={row[key]}" for key in row if key.endswith("_place")]
-        notes = f"{IMPORT_MARKER} Discipline places: {', '.join(place_parts)}"
+        notes = ""
         conn.execute(
             """
             INSERT INTO player_history (player_id, year, competition, place, score, notes, source_url)
@@ -505,7 +511,7 @@ def _import_2025_discipline_results(conn, rows: list[dict[str, str]], name_to_pl
     count = 0
     for row in rows:
         player_id = _get_or_create_player_by_name(conn, row["participant"], name_to_player_id)
-        result_text = row.get("result_value", "").strip() or f"{row.get('place', '')} место"
+        result_text = row.get("result_value", "").strip()
         _upsert_discipline_result(
             conn,
             player_id=player_id,
@@ -531,7 +537,7 @@ def _import_qualifier_results(conn, rows: list[dict[str, str]], name_to_player_i
     count = 0
     for row in rows:
         player_id = _get_or_create_player_by_name(conn, row["participant"], name_to_player_id)
-        result_text = row.get("result_value", "").strip() or (f"{row.get('place')} место" if row.get("place") else "")
+        result_text = row.get("result_value", "").strip()
         _upsert_discipline_result(
             conn,
             player_id=player_id,

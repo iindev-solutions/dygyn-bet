@@ -101,6 +101,9 @@ ALLOW_DEV_LOGIN=false
 ENABLE_POLLING=false
 DB_PATH=/opt/dygyn-bet/data/dygyn.sqlite3
 AUTH_MAX_AGE_SECONDS=86400
+SEED_DEMO=false
+BACKUP_DIR=/opt/dygyn-bet/backups
+BACKUP_KEEP=48
 ```
 
 Current note: `ADMIN_IDS` still needs the real admin Telegram numeric ID.
@@ -114,7 +117,7 @@ Completed on 2026-05-06:
 - `systemctl status dygyn-bet-bot`: active/running.
 - API service restart after split polling/API: ~0.2s.
 - `nginx -t`: successful.
-- `curl https://iindiinda.duckdns.org/dygyn-bet/health`: `{"ok":true,"version":"0.1.0"}`.
+- `curl https://iindiinda.duckdns.org/dygyn-bet/health`: returns `ok`, app version, DB counts, and disk free MB.
 - `curl https://iindiinda.duckdns.org/dygyn-bet/`: HTML served.
 - `curl -I https://iindiinda.duckdns.org/dygyn-bet/static/app.js`: 200.
 - `curl https://iindiinda.duckdns.org/dygyn-bet/api/me` without Telegram auth: 401 expected.

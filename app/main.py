@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+import shutil
 import time
 from collections import defaultdict, deque
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
+import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .config import BASE_DIR, settings
 from .db import (
@@ -17,9 +20,11 @@ from .db import (
     admin_create_event,
     admin_create_player,
     admin_finish_event,
+    admin_log_action,
     admin_settle_event,
     admin_upsert_discipline_result,
     admin_upsert_standing,
+    db_health,
     get_event,
     get_event_results,
     get_player,
@@ -39,6 +44,43 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "web"), name="static")
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
 _bot_task: asyncio.Task[Any] | None = None
+
+
+def validate_public_url(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    parsed = urlparse(text)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("source_url должен быть http(s)-ссылкой")
+    return text
+
+
+def log_admin_action(admin: dict[str, Any], action: str, entity_type: str, entity_id: int | None, payload: dict[str, Any] | list[Any]) -> None:
+    try:
+        admin_log_action(settings.db_path, int(admin["id"]), action, entity_type, entity_id, payload)
+    except Exception:
+        # Audit logging must not turn a completed admin operation into a user-facing 500.
+        pass
+
+
+def fetch_public_image(url: str) -> tuple[bytes, str]:
+    image_url = validate_public_url(url)
+    if not image_url:
+        raise ValueError("Фото не указано")
+    with httpx.Client(timeout=8, follow_redirects=True) as client:
+        res = client.get(image_url, headers={"User-Agent": "dygyn-bet/0.1 image-proxy"})
+    if res.status_code >= 400:
+        raise ValueError("Фото недоступно")
+    final_url = urlparse(str(res.url))
+    if final_url.scheme not in {"http", "https"}:
+        raise ValueError("Некорректная ссылка на фото")
+    content_type = res.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if not content_type.startswith("image/"):
+        raise ValueError("Ссылка ведёт не на изображение")
+    if len(res.content) > 5 * 1024 * 1024:
+        raise ValueError("Фото слишком большое")
+    return res.content, content_type
 
 
 class PickAllocationIn(BaseModel):
@@ -85,6 +127,11 @@ class HistoryCreateIn(BaseModel):
     notes: str = ""
     source_url: str = ""
 
+    @field_validator("source_url")
+    @classmethod
+    def source_url_must_be_public(cls, value: str) -> str:
+        return validate_public_url(value)
+
 
 class ResultItemIn(BaseModel):
     player_id: int
@@ -111,6 +158,11 @@ class DisciplineResultIn(BaseModel):
     source_url: str = ""
     notes: str = ""
 
+    @field_validator("source_url")
+    @classmethod
+    def source_url_must_be_public(cls, value: str) -> str:
+        return validate_public_url(value)
+
 
 class StandingIn(BaseModel):
     day_number: int = Field(default=0, ge=0, le=2)
@@ -122,6 +174,11 @@ class StandingIn(BaseModel):
     status: str = "provisional"
     source_url: str = ""
     notes: str = ""
+
+    @field_validator("source_url")
+    @classmethod
+    def source_url_must_be_public(cls, value: str) -> str:
+        return validate_public_url(value)
 
 
 class FinishEventIn(BaseModel):
@@ -147,7 +204,8 @@ async def simple_rate_limit(request: Request, call_next):
 @app.on_event("startup")
 async def on_startup() -> None:
     init_db(settings.db_path)
-    seed_demo(settings.db_path)
+    if settings.seed_demo:
+        seed_demo(settings.db_path)
     global _bot_task
     if settings.enable_polling and settings.bot_token:
         from .bot import run_polling
@@ -192,12 +250,19 @@ def admin_user(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 
 @app.get("/")
 def index() -> FileResponse:
-    return FileResponse(BASE_DIR / "web" / "index.html")
+    return FileResponse(BASE_DIR / "web" / "index.html", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    return {"ok": True, "version": app.version}
+    db = db_health(settings.db_path)
+    disk = shutil.disk_usage(Path(settings.db_path).parent)
+    return {
+        "ok": bool(db.get("ok")),
+        "version": app.version,
+        "db": db,
+        "disk_free_mb": disk.free // 1024 // 1024,
+    }
 
 
 @app.get("/api/me")
@@ -277,6 +342,22 @@ def participant_detail(player_id: int, user: dict[str, Any] = Depends(current_us
     return player_detail(player_id, user)
 
 
+@app.get("/api/participants/{player_id}/avatar")
+def participant_avatar(player_id: int) -> Response:
+    player = get_player(settings.db_path, player_id)
+    if not player or not player.get("avatar_url"):
+        raise HTTPException(status_code=404, detail="Фото не найдено")
+    try:
+        content, content_type = fetch_public_image(str(player["avatar_url"]))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return Response(
+        content,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
 @app.get("/api/leaderboard")
 def api_leaderboard(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {"leaderboard": leaderboard(settings.db_path)}
@@ -288,6 +369,7 @@ def api_create_player(data: PlayerCreateIn, admin: dict[str, Any] = Depends(admi
         player = admin_create_player(settings.db_path, data.name, data.region, data.bio, data.avatar_url)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "create_player", "player", int(player["id"]), data.model_dump())
     return {"player": player}
 
 
@@ -306,6 +388,7 @@ def api_add_history(player_id: int, data: HistoryCreateIn, admin: dict[str, Any]
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "add_history", "player", player_id, data.model_dump())
     return {"history": history}
 
 
@@ -315,6 +398,7 @@ def api_create_event(data: EventCreateIn, admin: dict[str, Any] = Depends(admin_
         event = admin_create_event(settings.db_path, data.title, data.starts_at, data.description, data.player_ids)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "create_event", "event", int(event["id"]), data.model_dump())
     return {"event": event}
 
 
@@ -353,6 +437,7 @@ def api_upsert_discipline_result(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "upsert_discipline_result", "event", event_id, data.model_dump())
     return {"results": results}
 
 
@@ -376,6 +461,7 @@ def api_upsert_standing(event_id: int, data: StandingIn, admin: dict[str, Any] =
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "upsert_standing", "event", event_id, data.model_dump())
     return {"results": results}
 
 
@@ -388,13 +474,16 @@ def api_finish_event(event_id: int, data: FinishEventIn, admin: dict[str, Any] =
         event = admin_finish_event(settings.db_path, event_id, int(winner_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "finish_event", "event", event_id, data.model_dump())
     return {"event": event}
 
 
 @app.post("/api/admin/events/{event_id}/settle")
 def api_settle_event(event_id: int, data: SettleIn, admin: dict[str, Any] = Depends(admin_user)) -> dict[str, Any]:
     try:
-        event = admin_settle_event(settings.db_path, event_id, [item.model_dump() for item in data.results])
+        payload = [item.model_dump() for item in data.results]
+        event = admin_settle_event(settings.db_path, event_id, payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_admin_action(admin, "settle_event", "event", event_id, payload)
     return {"event": event}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -196,9 +197,20 @@ CREATE TABLE IF NOT EXISTS player_history (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS admin_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action TEXT NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER,
+    payload_json TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created ON admin_audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_event_discipline_results_event ON event_discipline_results(event_id, day_number);
 CREATE INDEX IF NOT EXISTS idx_event_standings_event ON event_standings(event_id, day_number);
 """
@@ -221,9 +233,10 @@ def parse_datetime(value: str) -> datetime:
 @contextmanager
 def connect(db_path: str) -> Iterator[sqlite3.Connection]:
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path, timeout=30, check_same_thread=False)
+    conn = sqlite3.connect(db_path, timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=30000")
     try:
         yield conn
         conn.commit()
@@ -233,6 +246,33 @@ def connect(db_path: str) -> Iterator[sqlite3.Connection]:
 
 def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
+
+
+def db_health(db_path: str) -> dict[str, Any]:
+    with connect(db_path) as conn:
+        conn.execute("SELECT 1").fetchone()
+        players = conn.execute("SELECT COUNT(*) AS c FROM players WHERE is_active=1").fetchone()["c"]
+        events = conn.execute("SELECT COUNT(*) AS c FROM events").fetchone()["c"]
+        return {"ok": True, "players": int(players), "events": int(events)}
+
+
+def admin_log_action(
+    db_path: str,
+    admin_user_id: int | None,
+    action: str,
+    entity_type: str,
+    entity_id: int | None = None,
+    payload: dict[str, Any] | list[Any] | None = None,
+) -> None:
+    payload_json = json.dumps(payload or {}, ensure_ascii=False, sort_keys=True, default=str)
+    with connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO admin_audit_logs (admin_user_id, action, entity_type, entity_id, payload_json)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (admin_user_id, action.strip(), entity_type.strip(), entity_id, payload_json),
+        )
 
 
 MAX_PICKS_PER_EVENT = 2
@@ -805,9 +845,12 @@ def admin_upsert_standing(
 
 def admin_finish_event(db_path: str, event_id: int, winner_player_id: int) -> dict[str, Any]:
     with connect(db_path) as conn:
+        conn.execute("BEGIN IMMEDIATE")
         event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         if not event:
             raise ValueError("Событие не найдено")
+        if event["status"] == "settled":
+            raise ValueError("Событие уже завершено")
         validate_event_player(conn, event_id, winner_player_id)
         conn.execute("DELETE FROM results WHERE event_id=?", (event_id,))
         conn.execute(
@@ -842,29 +885,42 @@ def admin_settle_event(db_path: str, event_id: int, results: list[dict[str, Any]
     if not results:
         raise ValueError("Нужен хотя бы один результат")
     with connect(db_path) as conn:
+        conn.execute("BEGIN IMMEDIATE")
         event = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         if not event:
             raise ValueError("Событие не найдено")
-        conn.execute("DELETE FROM results WHERE event_id=?", (event_id,))
-        winner_id: int | None = None
+        if event["status"] == "settled":
+            raise ValueError("Событие уже завершено")
+        seen_players: set[int] = set()
+        winner_ids: list[int] = []
+        normalized_results: list[dict[str, Any]] = []
         for item in results:
             place = int(item.get("place", 0))
             player_id = int(item.get("player_id", 0))
             if place < 1 or player_id < 1:
                 raise ValueError("Некорректный результат")
+            if player_id in seen_players:
+                raise ValueError("Участник указан дважды")
+            validate_event_player(conn, event_id, player_id)
+            seen_players.add(player_id)
             if place == 1:
-                winner_id = player_id
+                winner_ids.append(player_id)
+            normalized_results.append({"player_id": player_id, "place": place, "score": item.get("score"), "prize_text": str(item.get("prize_text") or "")})
+        if len(winner_ids) != 1:
+            raise ValueError("Нужен ровно один победитель")
+        conn.execute("DELETE FROM results WHERE event_id=?", (event_id,))
+        for item in normalized_results:
             conn.execute(
                 "INSERT INTO results (event_id, player_id, place, score, prize_text) VALUES (?, ?, ?, ?, ?)",
-                (event_id, player_id, place, item.get("score"), str(item.get("prize_text") or "")),
+                (event_id, item["player_id"], item["place"], item["score"], item["prize_text"]),
             )
         conn.execute("UPDATE events SET status='settled' WHERE id=?", (event_id,))
         conn.execute("UPDATE picks SET awarded_points=0 WHERE event_id=?", (event_id,))
-        if winner_id is not None:
-            conn.execute(
-                "UPDATE picks SET awarded_points=confidence_points WHERE event_id=? AND player_id=?",
-                (event_id, winner_id),
-            )
+        winner_id = winner_ids[0]
+        conn.execute(
+            "UPDATE picks SET awarded_points=confidence_points WHERE event_id=? AND player_id=?",
+            (event_id, winner_id),
+        )
         row = conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
         return dict(row)
 

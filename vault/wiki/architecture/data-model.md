@@ -121,6 +121,18 @@ Fields:
 - `source_url` — required in practice for real data provenance.
 - `created_at`.
 
+## `admin_audit_logs`
+
+Basic admin mutation audit trail.
+
+Fields:
+
+- `admin_user_id` — internal user ID when known.
+- `action` — operation name, e.g. `finish_event`.
+- `entity_type`, `entity_id` — target entity.
+- `payload_json` — compact request payload snapshot.
+- `created_at`.
+
 ## `disciplines`
 
 Seven Dygyn disciplines.
@@ -138,7 +150,7 @@ Per-athlete discipline history imported from the data pack.
 Fields:
 
 - `player_id`, `year`, `event_title`, `discipline_id`.
-- `result_text` — display value, e.g. `5:40`, `>102`, `1 место`.
+- `result_text` — raw display result when published, e.g. `5:40`, `>102`, `67`; place-only text should not be stored here because `place` has its own column.
 - `result_value` — sortable numeric value when possible.
 - `result_unit`, `place`, `points`, `overall_rank`, `overall_points`.
 - `source_id`, `source_url`, `notes`, `updated_at`.
@@ -197,6 +209,6 @@ Leaderboard scoring should use only final official standings.
 
 ## Demo Data
 
-`seed_demo()` creates four demo participants, one open demo event, and demo history when the database has no players.
+`seed_demo()` creates four demo participants, one open demo event, and demo history when the database has no players. Startup calls it only when `SEED_DEMO=true`; production must keep `SEED_DEMO=false`.
 
 Before public launch, demo names and demo history must be replaced with verified data and source URLs.

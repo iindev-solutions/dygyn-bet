@@ -17,7 +17,7 @@
 
 - Games — event hero, event list, event detail, 1–2 participant choices, 100-point allocation controls, share actions.
 - Support — support statistics and leaderboard.
-- Players — participant cards, detail view, profile fields, and discipline-result tables.
+- Players — photo-forward participant cards with origin/short description, plus detail view for profile fields, title/debut/history badges, sources, performance history, and discipline-result tables.
 - Admin — `ADMIN_IDS`-only live operations: Day 1/Day 2 discipline results, standings, finish event.
 - Rules — product rules and no-money notice.
 
@@ -84,6 +84,8 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 - native Web Share when available;
 - copy-to-clipboard share text;
 - generated PNG story card for manual Instagram Stories upload.
+
+Current story card includes selected participant photo(s), names, origin/region, and confidence points. Images are loaded through the same-origin known-participant avatar endpoint to avoid canvas/CORS export failures; initials are used as fallback. The card avoids showing the public duckdns URL; the frontend tries native file sharing for the PNG first, then falls back to download plus Instagram Stories instructions.
 
 ## Manual Smoke Check
 

@@ -7,7 +7,6 @@ if (tg) {
 const scriptPath = new URL(document.currentScript.src).pathname;
 const appBasePath = scriptPath.replace(/\/static\/app\.js$/, '');
 const appUrl = (path) => `${appBasePath}${path}`;
-const publicAppUrl = () => `${window.location.origin}${appBasePath || ''}/`;
 
 const MAX_PICKS = 2;
 const TOTAL_CONFIDENCE_POINTS = 100;
@@ -133,6 +132,15 @@ function getPickedNames(event = state.selectedEvent) {
 function getPickedSummaries(event = state.selectedEvent) {
   const allocations = getDraftAllocations(event);
   return getDraftPlayerIds(event).map(id => `${getParticipantById(id, event)?.name || id} — ${allocations[id]} очков`);
+}
+
+function getPickedParticipants(event = state.selectedEvent) {
+  const allocations = getDraftAllocations(event);
+  return getDraftPlayerIds(event).map(id => {
+    const participant = getParticipantById(id, event);
+    if (!participant) return null;
+    return { ...participant, confidence_points: allocations[id] || 0 };
+  }).filter(Boolean);
 }
 
 function getTotalPoints(event) {
@@ -382,13 +390,14 @@ function renderShareBlock(event, draftIds) {
   return `
     <div class="share-card">
       <h3>Поделиться выбором</h3>
-      <p class="muted">Скачайте карточку и загрузите её в Instagram Stories вручную.</p>
+      <p class="muted">Нажмите кнопку: приложение откроет меню «Поделиться» или скачает PNG.</p>
       <p><strong>Мой выбор:</strong> ${names}</p>
       <div class="share-actions">
         <button id="nativeShareBtn" class="ghost">Поделиться</button>
         <button id="copyShareBtn" class="ghost">Скопировать</button>
-        <button id="storyCardBtn" class="primary">Карточка</button>
+        <button id="storyCardBtn" class="primary">Сторис PNG</button>
       </div>
+      <p id="storyHelp" class="muted story-help">Дальше: Instagram → Stories → выбрать PNG из галереи/загрузок.</p>
     </div>
   `;
 }
@@ -419,7 +428,7 @@ async function sendPicks() {
 
 function buildShareText() {
   const names = getPickedSummaries(state.selectedEvent);
-  return `Мой голос на Игры Дыгына: ${names.join(', ')}. Голосуй тоже: ${publicAppUrl()}`;
+  return `Мой голос на Игры Дыгына: ${names.join(', ')}`;
 }
 
 async function copyShareText() {
@@ -436,7 +445,7 @@ async function nativeShare() {
   const text = buildShareText();
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Голосование Игр Дыгына', text, url: publicAppUrl() });
+      await navigator.share({ title: 'Голосование Игр Дыгына', text });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;
@@ -445,51 +454,189 @@ async function nativeShare() {
   await copyShareText();
 }
 
-function downloadStoryCard() {
+async function downloadStoryCard() {
   const event = state.selectedEvent;
-  const names = getPickedSummaries(event);
-  const canvas = document.createElement('canvas');
-  canvas.width = 1080;
-  canvas.height = 1920;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#f2b84b');
-  gradient.addColorStop(.38, '#1f2430');
-  gradient.addColorStop(1, '#0f1115');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const picks = getPickedParticipants(event);
+  if (!event || !picks.length) {
+    toast('Сначала выберите участника');
+    return;
+  }
+  const btn = $('#storyCardBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const images = await Promise.all(picks.map(p => loadCanvasImage(appUrl(`/api/participants/${p.id}/avatar`))));
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#f2b84b');
+    gradient.addColorStop(.28, '#1f2430');
+    gradient.addColorStop(1, '#0f1115');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'rgba(255,255,255,.12)';
-  ctx.beginPath();
-  ctx.arc(900, 220, 260, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(120, 1620, 320, 0, Math.PI * 2);
-  ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.12)';
+    ctx.beginPath();
+    ctx.arc(920, 230, 270, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(120, 1660, 340, 0, Math.PI * 2);
+    ctx.fill();
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 78px Arial';
-  wrapCanvasText(ctx, 'Игры Дыгына — голосование', 90, 220, 900, 92);
-  ctx.font = '700 44px Arial';
-  wrapCanvasText(ctx, event?.title || 'Голосование', 90, 460, 900, 56);
+    ctx.fillStyle = '#10131a';
+    ctx.font = '900 34px Arial';
+    ctx.fillText('ДЫГЫН ООННЬУУЛАРА', 90, 116);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 78px Arial';
+    wrapCanvasText(ctx, 'Мой голос', 90, 220, 900, 88);
+    ctx.font = '700 42px Arial';
+    wrapCanvasText(ctx, event.title || 'Игры Дыгына', 90, 390, 900, 54);
 
-  ctx.font = '900 54px Arial';
-  ctx.fillText('Мой голос:', 90, 720);
-  ctx.font = '800 64px Arial';
-  names.forEach((name, index) => {
-    wrapCanvasText(ctx, `${index + 1}. ${name}`, 120, 830 + index * 170, 840, 72);
+    if (picks.length === 1) {
+      drawStoryPick(ctx, picks[0], images[0], 90, 520, 900, 760, 0);
+    } else {
+      drawStoryPick(ctx, picks[0], images[0], 90, 505, 900, 500, 0);
+      drawStoryPick(ctx, picks[1], images[1], 90, 1045, 900, 500, 1);
+    }
+
+    ctx.fillStyle = '#f8f1e4';
+    ctx.font = '800 42px Arial';
+    wrapCanvasText(ctx, 'Игры Дыгына — голосование', 90, 1660, 900, 54);
+    ctx.font = '600 34px Arial';
+    wrapCanvasText(ctx, 'Telegram Mini App', 90, 1760, 900, 46);
+
+    await shareOrDownloadStoryCard(canvas);
+  } catch (e) {
+    toast(e.message || 'Не удалось собрать карточку');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function shareOrDownloadStoryCard(canvas) {
+  const blob = await canvasToBlob(canvas);
+  const file = new File([blob], 'dygyn-story-card.png', { type: 'image/png' });
+  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+    try {
+      await navigator.share({ files: [file], title: 'Игры Дыгына', text: 'Моя сторис-карточка' });
+      setStoryHelp('Если Instagram не выбран: сохраните PNG и откройте Instagram → Stories → Галерея.');
+      toast('Выберите Instagram Stories в меню');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        setStoryHelp('Отмена. Можно нажать «Сторис PNG» ещё раз и выбрать Instagram или сохранить файл.');
+        return;
+      }
+    }
+  }
+  downloadBlob(blob, 'dygyn-story-card.png');
+  setStoryHelp('PNG скачан. Дальше: Instagram → Stories → Галерея/Загрузки → выбрать карточку.');
+  toast('PNG скачан — открой Instagram Stories');
+}
+
+function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Не удалось создать PNG'));
+    }, 'image/png');
   });
+}
 
-  ctx.font = '700 42px Arial';
-  wrapCanvasText(ctx, 'Голосуй тоже в Telegram Mini App', 90, 1510, 900, 56);
-  ctx.font = '600 34px Arial';
-  wrapCanvasText(ctx, publicAppUrl(), 90, 1640, 900, 46);
-
+function downloadBlob(blob, filename) {
   const link = document.createElement('a');
-  link.download = 'dygyn-story-card.png';
-  link.href = canvas.toDataURL('image/png');
+  const url = URL.createObjectURL(blob);
+  link.download = filename;
+  link.href = url;
   link.click();
-  toast('Карточка готова для сторис');
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function setStoryHelp(message) {
+  const el = $('#storyHelp');
+  if (el) el.textContent = message;
+}
+
+function loadCanvasImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function drawStoryPick(ctx, participant, image, x, y, width, height, index) {
+  ctx.save();
+  roundedCanvasPath(ctx, x, y, width, height, 44);
+  ctx.fillStyle = 'rgba(15,17,21,.88)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(242,184,75,.55)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.restore();
+
+  const photoHeight = height - 190;
+  if (image) {
+    drawCoverImage(ctx, image, x + 22, y + 22, width - 44, photoHeight, 34);
+  } else {
+    drawStoryFallback(ctx, participant, x + 22, y + 22, width - 44, photoHeight, 34);
+  }
+
+  ctx.fillStyle = '#f2b84b';
+  ctx.font = '900 32px Arial';
+  ctx.fillText(`${index + 1}. ${participant.confidence_points || 0} очков`, x + 42, y + height - 132);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 52px Arial';
+  wrapCanvasText(ctx, participant.name, x + 42, y + height - 78, width - 84, 58);
+  ctx.fillStyle = '#b4a996';
+  ctx.font = '700 30px Arial';
+  wrapCanvasText(ctx, participant.region || 'регион не указан', x + 42, y + height - 22, width - 84, 36);
+}
+
+function drawCoverImage(ctx, image, x, y, width, height, radius) {
+  const scale = Math.max(width / image.width, height / image.height);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = Math.max(0, (image.height - sourceHeight) * .18);
+  ctx.save();
+  roundedCanvasPath(ctx, x, y, width, height, radius);
+  ctx.clip();
+  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+  ctx.restore();
+}
+
+function drawStoryFallback(ctx, participant, x, y, width, height, radius) {
+  ctx.save();
+  roundedCanvasPath(ctx, x, y, width, height, radius);
+  ctx.fillStyle = 'rgba(242,184,75,.16)';
+  ctx.fill();
+  ctx.fillStyle = '#f2b84b';
+  ctx.font = '900 112px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials(participant.name), x + width / 2, y + height / 2);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.restore();
+}
+
+function roundedCanvasPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -550,21 +697,63 @@ async function loadPlayer(playerId) {
   renderPlayerDetail(data.player);
 }
 
+function playerOrigin(player) {
+  const region = player.region || '';
+  const place = player.city_or_village || '';
+  if (region && place && region !== place) return `${region} · ${place}`;
+  return region || place || 'регион не указан';
+}
+
+function visibleHistoryNote(item) {
+  const note = String(item?.notes || '').trim();
+  return note.startsWith('[import:') ? '' : note;
+}
+
+function pluralRu(count, one, few, many) {
+  const n = Math.abs(Number(count || 0));
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+function renderPlayerBadges(player) {
+  const summary = player.summary || {};
+  const historyCount = Number(summary.history_count || 0);
+  const wins = Number(summary.wins || 0);
+  const podiums = Number(summary.podiums || 0);
+  const note = `${player.previous_dygyn_note || ''} ${player.short_description || ''}`.toLowerCase();
+  const badges = [];
+  if (wins > 0 || /победител|чемпион/.test(note)) badges.push('Титульный участник');
+  else if (podiums > 0 || /приз[её]р|серебр|бронз|2 место|3 место/.test(note)) badges.push('Призёр Игр');
+  if (/дебют/.test(note)) badges.push('Дебют');
+  if (historyCount > 0) badges.push(`${historyCount} ${pluralRu(historyCount, 'выступление', 'выступления', 'выступлений')} в базе`);
+  return badges.length ? `<div class="profile-badges">${badges.map(label => `<span class="badge profile-badge">${escapeHtml(label)}</span>`).join('')}</div>` : '';
+}
+
+function renderPlayerHistory(history) {
+  const rows = (history || []).map(item => {
+    const note = visibleHistoryNote(item);
+    return `
+      <div class="history-item">
+        <div class="row"><strong>${escapeHtml(item.competition)}</strong><span>${escapeHtml(String(item.year))}</span></div>
+        <p class="muted">${item.place ? `${item.place} место` : 'место не указано'}${item.score ? ` · ${item.score} очков` : ''}</p>
+        ${note ? `<p>${escapeHtml(note)}</p>` : ''}
+      </div>
+    `;
+  }).join('');
+  return rows ? `<div class="history"><h3>История выступлений</h3>${rows}</div>` : '';
+}
+
 function renderPlayersList() {
   $('#playersList').innerHTML = state.players.map(p => `
     <article class="card player-card">
-      <div class="row">
-        <div>
-          <h2>${escapeHtml(p.name)}</h2>
-          <p class="muted">${escapeHtml(p.region || 'регион не указан')}</p>
-        </div>
-        ${p.avatar_url ? `<img class="player-photo" src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<span class="avatar">${escapeHtml(initials(p.name))}</span>`}
-      </div>
-      <p>${escapeHtml(p.short_description || p.bio || '')}</p>
-      <div class="stat-grid">
-        <div class="stat-box"><strong>${p.summary?.wins || 0}</strong><span>побед</span></div>
-        <div class="stat-box"><strong>${p.summary?.podiums || 0}</strong><span>топ-3</span></div>
-        <div class="stat-box"><strong>${p.summary?.discipline_results_count || 0}</strong><span>результатов</span></div>
+      ${p.avatar_url ? `<img class="player-photo" src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.name)}" loading="lazy">` : `<span class="player-photo player-photo-fallback">${escapeHtml(initials(p.name))}</span>`}
+      <div class="player-card-copy">
+        <h2>${escapeHtml(p.name)}</h2>
+        <p class="muted">${escapeHtml(playerOrigin(p))}</p>
+        ${(p.short_description || p.bio) ? `<p>${escapeHtml(p.short_description || p.bio)}</p>` : ''}
       </div>
       <button class="ghost wide details-btn" data-player-id="${p.id}">Открыть статистику</button>
     </article>
@@ -577,6 +766,9 @@ function renderPlayersList() {
 function renderPlayerDetail(player) {
   const groups = groupDisciplineResults(player.discipline_results || []);
   const tables = groups.map(group => renderDisciplineTable(group.title, group.rows)).join('') || '<p class="muted">Статистика по видам пока не загружена.</p>';
+  const badges = renderPlayerBadges(player);
+  const history = renderPlayerHistory(player.history);
+  const showBio = player.bio && player.bio !== player.short_description;
   $('#playersList').innerHTML = `
     <article class="card player-detail">
       <button class="ghost" id="backToPlayersBtn">← Участники</button>
@@ -584,18 +776,17 @@ function renderPlayerDetail(player) {
         ${player.avatar_url ? `<img class="profile-photo" src="${escapeHtml(player.avatar_url)}" alt="${escapeHtml(player.name)}" loading="lazy">` : `<span class="profile-photo avatar">${escapeHtml(initials(player.name))}</span>`}
         <div>
           <h2>${escapeHtml(player.name)}</h2>
-          <p class="muted">${escapeHtml(player.region || 'регион не указан')}</p>
-          ${player.city_or_village ? `<p class="muted">${escapeHtml(player.city_or_village)}</p>` : ''}
+          <p class="muted">${escapeHtml(playerOrigin(player))}</p>
         </div>
       </div>
-      <p>${escapeHtml(player.short_description || player.bio || '')}</p>
+      ${badges}
+      ${player.short_description ? `<p>${escapeHtml(player.short_description)}</p>` : ''}
+      ${showBio ? `<div class="history-item"><strong>Биография</strong><br><span class="muted">${escapeHtml(player.bio)}</span></div>` : ''}
+      ${player.qualification_route ? `<div class="history-item"><strong>Отбор</strong><br><span class="muted">${escapeHtml(player.qualification_route)}</span></div>` : ''}
       ${player.strengths ? `<div class="history-item"><strong>Сильные стороны</strong><br><span class="muted">${escapeHtml(player.strengths)}</span></div>` : ''}
       ${player.previous_dygyn_note ? `<div class="history-item"><strong>Опыт Игр Дыгына</strong><br><span class="muted">${escapeHtml(player.previous_dygyn_note)}</span></div>` : ''}
-      <div class="stat-grid">
-        <div class="stat-box"><strong>${player.summary?.wins || 0}</strong><span>побед</span></div>
-        <div class="stat-box"><strong>${player.summary?.podiums || 0}</strong><span>топ-3</span></div>
-        <div class="stat-box"><strong>${player.summary?.discipline_events_count || 0}</strong><span>турниров</span></div>
-      </div>
+      ${history}
+      ${player.source_url ? `<a class="ghost wide source-link" href="${escapeHtml(player.source_url)}" target="_blank" rel="noopener noreferrer">Источник данных</a>` : ''}
     </article>
     ${tables}
   `;
@@ -624,9 +815,10 @@ function renderDisciplineTable(title, rows) {
   return `
     <article class="card">
       <h2>${escapeHtml(title)}</h2>
+      ${renderOverallResultSummary(rows)}
       <div class="table-wrap">
         <table class="result-table">
-          <thead><tr><th>Вид</th><th>Результат</th><th>Место</th><th>Очки</th></tr></thead>
+          <thead><tr><th>Вид</th><th>Результат</th><th>Место в виде</th><th>Очки вида</th></tr></thead>
           <tbody>${body}</tbody>
         </table>
       </div>
@@ -634,10 +826,26 @@ function renderDisciplineTable(title, rows) {
   `;
 }
 
+function renderOverallResultSummary(rows) {
+  const row = rows.find(item => item.overall_rank || item.overall_points);
+  if (!row) return '';
+  const rank = row.overall_rank ? `${row.overall_rank} место` : 'место не указано';
+  const points = row.overall_points !== null && row.overall_points !== undefined ? ` · ${row.overall_points} очков` : '';
+  return `<p class="muted result-summary">Общий зачёт: ${escapeHtml(rank + points)}</p>`;
+}
+
+function isPlaceOnlyResult(text) {
+  return /^\d+\s*место$/i.test(String(text || '').trim());
+}
+
 function formatResultValue(row) {
-  if (row.result_text) return row.result_text;
+  const text = String(row.result_text || '').trim();
+  if (text && !isPlaceOnlyResult(text)) {
+    if (row.result_value !== null && row.result_value !== undefined && row.result_unit) return `${row.result_value} ${row.result_unit}`.trim();
+    return text;
+  }
   if (row.result_value !== null && row.result_value !== undefined) return `${row.result_value} ${row.result_unit || ''}`.trim();
-  return '—';
+  return 'не опубликован';
 }
 
 function initials(name) {

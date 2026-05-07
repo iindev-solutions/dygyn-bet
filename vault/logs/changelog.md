@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-05-07 — Participant Detail Signal Cleanup
+
+- Removed low-value `wins/top-3/tournaments` stat grid from participant detail.
+- Added compact profile badges for titled/prize/debut/history signals instead of generic counters.
+- Improved discipline tables: raw result no longer duplicates place-only text; group summary shows overall rank/points; table labels clarify discipline place/points.
+- Updated import logic to stop writing place-only `result_text`; cleaned production DB place-only result text rows after backup.
+- Verified locally: import result cleanup smoke; `python -m py_compile app/*.py tests/*.py scripts/*.py`; `node --check web/app.js`; `git diff --check`.
+- Deployment follow-up: DB backed up; production DB cleaned 108 place-only result rows and has 0 import history markers; deployed to VPS; VPS `pytest` 16 passed; services active; public JS has profile-table cleanup.
+
+## 2026-05-07 — Story Share Flow Cleanup
+
+- Removed public URL text from share copy and generated story PNG.
+- Changed story-card action to share the PNG through the native file share sheet when available, otherwise download it and show next-step Instagram instructions.
+- Hid imported technical notes like `[import:dygyn_2026] Discipline places...` from participant history UI and stopped writing those details in future imports.
+- Cache-busted frontend assets to `20260507-story-flow`.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/*.py`; `node --check web/app.js`; `git diff --check`; URL/import-note search clean outside regression test. Full local pytest unavailable: `No module named pytest`.
+- Deployment follow-up: DB backed up; deployed to VPS; VPS `pytest` 16 passed; services active; health OK; public JS has story-flow share logic and no public URL/import technical note text.
+
+## 2026-05-07 — Story Card Participant Photos
+
+- Added public known-participant avatar proxy at `/api/participants/{player_id}/avatar` for same-origin canvas rendering; no arbitrary URL proxy.
+- Updated Instagram story card generation to include selected participant photo(s), names, origin, and confidence points; keeps initials fallback when photo fails.
+- Cache-busted frontend assets to `20260507-story-photo`.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/*.py`; `node --check web/app.js`; `git diff --check`.
+- Deployment follow-up: DB backed up; deployed to VPS; VPS `pytest` 16 passed; services active; health OK; public index has story-photo cache bust; public avatar proxy returns image for active participant.
+
+## 2026-05-07 — Quick Launch Hardening
+
+- Disabled startup demo seeding by default with `SEED_DEMO=false`; production must opt out explicitly/implicitly.
+- Added `http(s)` validation for admin `source_url` fields.
+- Added cache-busted static links and no-store `index.html` response.
+- Added richer `/health` DB/disk checks, admin audit log table, SQLite backup script, and hardened finish/settle write lock/single-winner/no-resettle rules.
+- Added hardening tests for URL validation and settle behavior.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/*.py`; `node --check web/app.js`; DB hardening smoke; backup smoke; `git diff --check`. Full local pytest unavailable: `No module named pytest`.
+- Deployment follow-up: DB backed up; deployed to VPS; VPS `pytest` 16 passed; backup script OK; services active; health returns DB/disk checks; public index has cache-busted JS/CSS.
+
+## 2026-05-07 — Photo-Forward Participant Cards
+
+- Simplified Players tab cards: large athlete photo, origin, short description, and one stats/detail button only.
+- Moved participant stats/history emphasis into detail view; detail now includes route, bio when distinct, strengths, Dygyn note, summary stats, history, source link, and discipline tables.
+- Verified locally: `node --check web/app.js`; `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `git diff --check`.
+- Deployment follow-up: DB backed up; deployed to VPS; VPS `pytest` 9 passed; services active; health OK; public JS/CSS contain photo-forward participant changes.
+
 ## 2026-05-07 — Allocation Presets and Dock Fix
 
 - Added quick allocation presets: `100`, `50/50`, `70/30`, `30/70`.
