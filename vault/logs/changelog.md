@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-07 — A-Direction SVG Redesign Variants
+
+- Reworked redesign preview into three A-direction ceremonial variants: A1 poster, A2 logo seal, A3 event card.
+- Added optimized SVG logo and three SVG ornament assets under `web/assets/`; kept source SVGs in `data/`.
+- Uses SVG ornaments as CSS masks/background accents instead of raster ornament strips.
+- Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`.
+
 ## 2026-05-07 — Redesign Preview Skeletons
 
 - Added static redesign preview with three mobile skeleton directions: ceremonial entry, sports grid, ornament minimalism.
