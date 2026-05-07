@@ -6,6 +6,7 @@
 - Added provided Dygyn logo/photo and Yakut ornament assets under `web/assets/` for preview use.
 - Kept production Mini App unchanged while exploring visual direction.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`.
+- Deployment follow-up: deployed preview to VPS; VPS `pytest` 9 passed; services active; preview HTML/CSS/assets return 200.
 
 ## 2026-05-07 — Allocation Number Input
 
