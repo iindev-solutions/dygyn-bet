@@ -9,6 +9,7 @@
 - Switched live UI font stack to a ceremonial serif style for a more local/Yakut-themed feel.
 - Updated DESIGN.md and vault design direction.
 - Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; health OK; public JS has presets and CSS has flush dock/font/preset styles.
 
 ## 2026-05-07 — A1 Participant/Nav Polish
 
