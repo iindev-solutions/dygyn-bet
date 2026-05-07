@@ -86,7 +86,7 @@ Core palette:
 --border: rgba(255,224,161,.16);
 ```
 
-Gold is for main actions, badges, and highlights only. Do not flood the interface with gold.
+Gold is for main actions, badges, and highlights only. Do not flood the interface with gold. Current live direction uses a ceremonial serif stack for a stronger local feel.
 
 ## Screen Model
 
@@ -116,8 +116,8 @@ Content:
 - event title/status;
 - participant cards;
 - support percentage and progress bar;
-- confidence points controls;
-- sticky/obvious save button;
+- confidence points controls with number input, slider, and quick presets;
+- sticky/obvious save button above the bottom dock;
 - share card actions after selection.
 
 ### Support Stats

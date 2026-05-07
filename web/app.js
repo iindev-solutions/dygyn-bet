@@ -197,6 +197,18 @@ function rebalanceDraftAllocations() {
   renderEventsList();
 }
 
+function applyAllocationPreset(preset) {
+  if (!state.selectedEvent) return;
+  const ids = getDraftPlayerIds();
+  if (!ids.length) return;
+  const parts = String(preset || '').split('/').map(Number);
+  if (parts.length !== ids.length || parts.some(points => !Number.isFinite(points))) return;
+  const allocations = {};
+  ids.forEach((playerId, index) => { allocations[playerId] = parts[index]; });
+  state.draftAllocationsByEvent[state.selectedEvent.id] = allocations;
+  renderEventsList();
+}
+
 function renderEventsList() {
   const box = $('#eventsList');
   if (!state.events.length) {
@@ -223,6 +235,9 @@ function bindEventScreenActions(scope) {
   scope.querySelectorAll('[data-pick-player]').forEach(btn => btn.addEventListener('click', () => toggleDraftPick(Number(btn.dataset.pickPlayer))));
   scope.querySelectorAll('[data-allocation-player]').forEach(input => input.addEventListener('change', () => {
     setDraftAllocation(Number(input.dataset.allocationPlayer), Number(input.value));
+  }));
+  scope.querySelectorAll('[data-allocation-preset]').forEach(btn => btn.addEventListener('click', () => {
+    applyAllocationPreset(btn.dataset.allocationPreset);
   }));
   $('#rebalanceAllocationsBtn')?.addEventListener('click', rebalanceDraftAllocations);
   $('#savePicksBtn')?.addEventListener('click', sendPicks);
@@ -324,12 +339,17 @@ function renderConfidenceBlock(draftIds) {
       </div>
     `;
   }).join('') || '<p class="muted">Выберите участника — ему автоматически достанутся 100 очков.</p>';
+  const presets = draftIds.length === 1
+    ? '<div class="allocation-presets"><button class="chip active" type="button" data-allocation-preset="100">100</button></div>'
+    : draftIds.length === 2
+      ? '<div class="allocation-presets"><button class="chip" type="button" data-allocation-preset="50/50">50/50</button><button class="chip" type="button" data-allocation-preset="70/30">70/30</button><button class="chip" type="button" data-allocation-preset="30/70">30/70</button></div>'
+      : '';
   return `
     <div class="confidence">
-      <div class="row"><strong>Распределите 100 очков</strong><span class="allocation-total ${isValid ? 'valid' : 'invalid'}">${totalLabel}</span></div>
+      <div class="allocation-head"><strong>Распределите 100 очков</strong><span class="allocation-total ${isValid ? 'valid' : 'invalid'}">${totalLabel}</span></div>
       <p class="muted">Можно выбрать 1–2 участников. Сумма должна быть ровно 100.</p>
+      ${presets}
       <div class="allocation-list">${rows}</div>
-      ${draftIds.length > 1 ? '<button id="rebalanceAllocationsBtn" class="ghost wide" type="button">Распределить поровну</button>' : ''}
       <div class="bottom-bar">
         <button id="savePicksBtn" class="primary wide" ${isValid ? '' : 'disabled'}>Сохранить голос</button>
       </div>

@@ -141,9 +141,9 @@ Gold must be used sparingly. It marks what matters; it must not flood the UI.
 
 ## Typography
 
-Use the system sans stack for speed and Telegram-native feel. Typography should be bold enough for sports energy but not loud.
+Use a ceremonial serif stack (`Iowan Old Style`, `Noto Serif`, Georgia, serif) for the current A1 direction. Typography should feel local/ceremonial but stay readable in Telegram.
 
-- **H1:** Very bold, tight, used for the ceremonial product/event title.
+- **H1:** Very bold/tight serif, used for the ceremonial product/event title.
 - **H2:** Card titles and screen sections.
 - **Body:** Clear 16px reading text.
 - **Label:** Small uppercase metadata, badges, and eyebrow text.
@@ -188,7 +188,7 @@ Primary components:
 - **App hero:** SVG Yakut ornament strip, temporary photo preview, short title, and no user/debug copy.
 - **Event hero:** Event title, status, participant count, vote count, top support preview.
 - **Participant card:** Name, region, support stats, selected state, confidence allocation.
-- **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total.
+- **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total, number input, slider, and quick presets (`100`, `70/30`, `50/50`).
 - **Support progress:** Gold gradient bar over dark track.
 - **Leaderboard row:** Rank, user name, pick count, score badge.
 - **Participant detail:** Photo, bio, strengths, prior Dygyn note, result tables by year/event.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-07 — Allocation Presets and Dock Fix
+
+- Added quick allocation presets: `100`, `50/50`, `70/30`, `30/70`.
+- Kept number input plus slider; allocation still validates exact 100 total points.
+- Fixed lower dock to sit flush at the bottom instead of floating with awkward empty space.
+- Moved sticky save bar spacing to align above the dock.
+- Switched live UI font stack to a ceremonial serif style for a more local/Yakut-themed feel.
+- Updated DESIGN.md and vault design direction.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `design.md lint DESIGN.md`; `git diff --check`.
+
 ## 2026-05-07 — A1 Participant/Nav Polish
 
 - Cleaned participant voting cards with clearer rank, name/meta, progress, and right-side support/my-vote value.
