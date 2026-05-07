@@ -6,6 +6,7 @@
 - Restyled bottom tab bar as a compact floating dock with A1 dark/gold palette.
 - Moved sticky save bar above the new dock spacing.
 - Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`; markup/style smoke for participant card and dock classes.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; health OK; public JS/CSS contain new participant/dock classes.
 
 ## 2026-05-07 — A1 Main Frontend Redesign Pass
 
