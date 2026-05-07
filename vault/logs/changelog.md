@@ -6,6 +6,7 @@
 - Added optimized SVG logo and three SVG ornament assets under `web/assets/`; kept source SVGs in `data/`.
 - Uses SVG ornaments as CSS masks/background accents instead of raster ornament strips.
 - Verified: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; `git diff --check`.
+- Deployment follow-up: deployed to VPS; VPS `pytest` 9 passed; services active; A1/A2/A3 preview and SVG assets return 200.
 
 ## 2026-05-07 — Redesign Preview Skeletons
 
