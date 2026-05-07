@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-07 — Equal Three-Way Vote Split
+
+- Changed equal split for three selected participants from `34/33/33` to `33/33/33`.
+- Backend now accepts exact `100` totals or equal `33/33/33`; arbitrary 99-point totals still fail.
+- Startup migration converts old equal `34/33/33` vote rows to `33/33/33` and adjusts awarded `34` to `33`.
+- Rating award for a three-way equal vote now gives winner `33`; the 1-point remainder is not awarded.
+- Updated TMA copy, bot rule text, README, and vault/API/frontend/data-model docs.
+- Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; custom DB smoke for `33/33/33` award/migration passed; `design.md lint DESIGN.md`; `git diff --check`. Full local pytest still unavailable: `No module named pytest`.
+
 ## 2026-05-07 — Removed Old Voting Branding
 
 - Replaced old English sports-brand naming with `Игры Дыгына — голосование` across UI, docs, and design guide.

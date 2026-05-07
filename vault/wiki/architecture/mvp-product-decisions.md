@@ -15,10 +15,11 @@
 
 - One vote per user per event.
 - One vote can contain 1–3 selected participants.
-- Each user has exactly 100 virtual confidence points per event.
-- User distributes the 100 points across selected participants.
-- Valid examples: `100`, `70/30`, `50/30/20`, `34/33/33`.
-- Backend must validate: event is open, not past `closes_at`, user not blocked, participants belong to event, 1–3 participants, all points positive, sum is exactly 100.
+- Each user has a 100-point virtual confidence scale per event.
+- User distributes points across selected participants.
+- Valid examples: `100`, `70/30`, `50/30/20`, equal `33/33/33`.
+- Equal three-way split stores `33/33/33`; the 1-point remainder is not awarded to avoid an unfair `34`.
+- Backend must validate: event is open, not past `closes_at`, user not blocked, participants belong to event, 1–3 participants, all points positive, sum is exactly 100 or equal `33/33/33`.
 - User may change the vote only before `closes_at`.
 
 ## Support Stats

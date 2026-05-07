@@ -11,6 +11,7 @@ const publicAppUrl = () => `${window.location.origin}${appBasePath || ''}/`;
 
 const MAX_PICKS = 3;
 const TOTAL_CONFIDENCE_POINTS = 100;
+const EQUAL_THREE_POINTS = Math.floor(TOTAL_CONFIDENCE_POINTS / MAX_PICKS);
 
 const state = {
   me: null,
@@ -153,14 +154,21 @@ function topSupport(event, limit = 3) {
 
 function evenAllocation(playerIds) {
   if (!playerIds.length) return {};
-  const base = Math.floor(TOTAL_CONFIDENCE_POINTS / playerIds.length);
-  let remainder = TOTAL_CONFIDENCE_POINTS - base * playerIds.length;
+  const points = Math.floor(TOTAL_CONFIDENCE_POINTS / playerIds.length);
   const out = {};
-  for (const playerId of playerIds) {
-    out[playerId] = base + (remainder > 0 ? 1 : 0);
-    remainder -= 1;
-  }
+  for (const playerId of playerIds) out[playerId] = points;
   return out;
+}
+
+function isEqualThreeAllocation(playerIds, allocations) {
+  return playerIds.length === MAX_PICKS && playerIds.every(playerId => Number(allocations[playerId] || 0) === EQUAL_THREE_POINTS);
+}
+
+function isValidAllocation(event = state.selectedEvent) {
+  const playerIds = getDraftPlayerIds(event);
+  const allocations = getDraftAllocations(event);
+  const total = getAllocationTotal(event);
+  return playerIds.length > 0 && (total === TOTAL_CONFIDENCE_POINTS || isEqualThreeAllocation(playerIds, allocations));
 }
 
 function toggleDraftPick(playerId) {
@@ -300,7 +308,9 @@ function renderParticipantChoice(event, participant, index, draftIdSet, canPick)
 function renderConfidenceBlock(draftIds) {
   const allocations = getDraftAllocations();
   const total = getAllocationTotal();
-  const isValid = draftIds.length > 0 && total === TOTAL_CONFIDENCE_POINTS;
+  const isEqualThree = isEqualThreeAllocation(draftIds, allocations);
+  const isValid = draftIds.length > 0 && (total === TOTAL_CONFIDENCE_POINTS || isEqualThree);
+  const totalLabel = isEqualThree ? `${total}/${TOTAL_CONFIDENCE_POINTS} · поровну` : `${total}/${TOTAL_CONFIDENCE_POINTS}`;
   const rows = draftIds.map(playerId => {
     const participant = getParticipantById(playerId);
     const value = allocations[playerId] || 1;
@@ -313,8 +323,8 @@ function renderConfidenceBlock(draftIds) {
   }).join('') || '<p class="muted">Выберите участника — ему автоматически достанутся 100 очков.</p>';
   return `
     <div class="confidence">
-      <div class="row"><strong>Распределите 100 очков</strong><span class="allocation-total ${isValid ? 'valid' : 'invalid'}">${total}/${TOTAL_CONFIDENCE_POINTS}</span></div>
-      <p class="muted">Можно выбрать 1–3 участников. Сумма должна быть ровно 100.</p>
+      <div class="row"><strong>Распределите очки уверенности</strong><span class="allocation-total ${isValid ? 'valid' : 'invalid'}">${totalLabel}</span></div>
+      <p class="muted">Можно выбрать 1–3 участников. Обычно сумма 100; при трёх поровну сохраняем 33/33/33, остаток 1 очко не начисляется.</p>
       <div class="allocation-list">${rows}</div>
       ${draftIds.length > 1 ? '<button id="rebalanceAllocationsBtn" class="ghost wide" type="button">Распределить поровну</button>' : ''}
       <div class="bottom-bar">
@@ -368,8 +378,8 @@ async function sendPicks() {
     toast('Выберите хотя бы одного участника');
     return;
   }
-  if (getAllocationTotal() !== TOTAL_CONFIDENCE_POINTS) {
-    toast('Нужно распределить ровно 100 очков');
+  if (!isValidAllocation()) {
+    toast('Нужно 100 очков или 33/33/33 при трёх поровну');
     return;
   }
   const data = await api(`/api/events/${state.selectedEvent.id}/prediction`, {

@@ -86,7 +86,7 @@ Application rules:
 
 - one logical vote per user/event;
 - maximum three selected participants per user/event;
-- all selected rows for a user/event must sum to exactly 100 confidence points;
+- selected rows for a user/event must sum to exactly 100 confidence points, except equal three-way split `33/33/33` where the 1-point remainder is unawarded;
 - vote can change only before `closes_at`.
 
 ## `results`

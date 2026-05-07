@@ -28,7 +28,7 @@ Users need a lightweight way inside Telegram to:
 3. User opens the Mini App inside Telegram.
 4. Backend verifies raw Telegram `initData`.
 5. User selects an event and 1–3 participants.
-6. User distributes exactly 100 virtual confidence points across selected participants.
+6. User distributes virtual confidence points across selected participants on a 100-point scale.
 7. User can share text or download an Instagram Stories card for manual repost.
 8. App shows vote counts, confidence totals, percentages, player history, and leaderboard.
 8. Admin enters results after an event.
@@ -41,7 +41,7 @@ Users need a lightweight way inside Telegram to:
 - Server-side Telegram initData verification.
 - SQLite storage.
 - One vote per user/event with 1–3 participants inside it.
-- Exactly 100 virtual confidence points distributed per event vote.
+- 100-point virtual confidence scale per event vote; equal three-way split is `33/33/33` with 1 unawarded remainder.
 - Event locking after close time, start time, or admin status change.
 - Participant history and discipline-level stats with source URLs.
 - Admin APIs for players, history, events, and settlement.

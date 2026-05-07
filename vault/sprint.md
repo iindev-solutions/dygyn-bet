@@ -48,4 +48,4 @@ Turn the existing Dygyn Telegram Mini App into a reliable voting product with cl
 - Product can run locally with `ALLOW_DEV_LOGIN=true`.
 - Production config has `ALLOW_DEV_LOGIN=false`, real `BOT_TOKEN`, real `ADMIN_IDS`, and HTTPS `WEB_APP_URL`.
 - All real sports data has manually checked sources.
-- Prediction model enforces exactly 100 confidence points across 1–3 participants per user/event.
+- Voting model enforces a 100-point confidence scale across 1–3 participants; equal three-way split is `33/33/33` with 1 unawarded remainder.
