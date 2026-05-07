@@ -8,6 +8,7 @@
 - Rating award for a three-way equal vote now gives winner `33`; the 1-point remainder is not awarded.
 - Updated TMA copy, bot rule text, README, and vault/API/frontend/data-model docs.
 - Verified locally: `python -m py_compile app/*.py tests/*.py scripts/import_dygyn_data.py`; `node --check web/app.js`; custom DB smoke for `33/33/33` award/migration passed; `design.md lint DESIGN.md`; `git diff --check`. Full local pytest still unavailable: `No module named pytest`.
+- Deployment follow-up: VPS DB backed up; VPS `pytest` 10 passed; services active; public static JS contains `33/33/33`; old `34/33/33` groups migrated from 1 to 0.
 
 ## 2026-05-07 — Removed Old Voting Branding
 

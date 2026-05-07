@@ -26,7 +26,7 @@ Read this first. Read deep docs only when task needs them.
 - 100-point allocation voting works locally: one vote uses a 100-point scale; equal three-way split is `33/33/33` and the 1-point remainder is not awarded.
 - Story-card sharing works.
 - Игры Дыгына — голосование UI deployed.
-- Latest VPS deploy done: admin live-results flow deployed, DB backed up, services active, VPS tests passed.
+- Latest VPS deploy done: equal `33/33/33` voting fix deployed, DB backed up/migrated, services active, VPS tests passed.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
