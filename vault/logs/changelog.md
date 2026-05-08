@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-07 — Story Card Copy Refresh
+
+- Simplified Vue story PNG: top copy now says `В этом году я голосую за`; participant cards show photo, confidence points, name, and ulus/region without numbering.
+- Replaced repeated Dygyn/TMA footer text with CTA: `Заходи и голосуй за своего фаворита` and `@dygyn_games_bet_bot`.
+- Verified: `npm run format`; `npm run lint`; `npm run test:unit` (3 passed); `npm run build`; bundle budget 41.1KB gzip initial JS.
+
 ## 2026-05-07 — Vue TMA Cutover Branch
 
 - Created branch `vue-tma-cutover` for the full frontend migration.

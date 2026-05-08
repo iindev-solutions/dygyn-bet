@@ -100,7 +100,7 @@ async function shareStoryCard() {
   }
   storyBusy.value = true
   try {
-    const result = await createAndShareStoryCard(event, picks)
+    const result = await createAndShareStoryCard(picks)
     storyHelp.value = result.message
     toast.show(
       result.shared ? 'Выберите Instagram Stories в меню' : 'PNG скачан — открой Instagram Stories',

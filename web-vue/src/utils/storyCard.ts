@@ -1,4 +1,4 @@
-import type { EventDetail, Participant } from '@/api/types'
+import type { Participant } from '@/api/types'
 import { apiUrl } from '@/api/client'
 import { initials } from './display'
 
@@ -7,10 +7,7 @@ export interface StoryCardResult {
   message: string
 }
 
-export async function createAndShareStoryCard(
-  event: EventDetail,
-  picks: Participant[],
-): Promise<StoryCardResult> {
+export async function createAndShareStoryCard(picks: Participant[]): Promise<StoryCardResult> {
   const images = await Promise.all(
     picks.map((participant) => loadCanvasImage(apiUrl(`/participants/${participant.id}/avatar`))),
   )
@@ -37,25 +34,24 @@ export async function createAndShareStoryCard(
 
   ctx.fillStyle = '#10131a'
   ctx.font = '900 34px Arial'
-  ctx.fillText('ДЫГЫН ООННЬУУЛАРА', 90, 116)
+  ctx.fillText('ГОЛОС БОЛЕЛЬЩИКА', 90, 116)
   ctx.fillStyle = '#ffffff'
-  ctx.font = '900 78px Arial'
-  wrapCanvasText(ctx, 'Мой голос', 90, 220, 900, 88)
-  ctx.font = '700 42px Arial'
-  wrapCanvasText(ctx, event.title || 'Игры Дыгына', 90, 390, 900, 54)
+  ctx.font = '900 76px Arial'
+  wrapCanvasText(ctx, 'В этом году я голосую за', 90, 220, 900, 84)
 
   if (picks.length === 1) {
-    drawStoryPick(ctx, picks[0], images[0], 90, 520, 900, 760, 0)
+    drawStoryPick(ctx, picks[0], images[0], 90, 420, 900, 920)
   } else {
-    drawStoryPick(ctx, picks[0], images[0], 90, 505, 900, 500, 0)
-    drawStoryPick(ctx, picks[1], images[1], 90, 1045, 900, 500, 1)
+    drawStoryPick(ctx, picks[0], images[0], 90, 395, 900, 570)
+    drawStoryPick(ctx, picks[1], images[1], 90, 1015, 900, 570)
   }
 
   ctx.fillStyle = '#f8f1e4'
-  ctx.font = '800 42px Arial'
-  wrapCanvasText(ctx, 'Игры Дыгына — голосование', 90, 1660, 900, 54)
-  ctx.font = '600 34px Arial'
-  wrapCanvasText(ctx, 'Telegram Mini App', 90, 1760, 900, 46)
+  ctx.font = '800 48px Arial'
+  wrapCanvasText(ctx, 'Заходи и голосуй за своего фаворита', 90, 1665, 900, 58)
+  ctx.fillStyle = '#f2b84b'
+  ctx.font = '900 54px Arial'
+  wrapCanvasText(ctx, '@dygyn_games_bet_bot', 90, 1770, 900, 62)
 
   return shareOrDownloadStoryCard(canvas)
 }
@@ -125,7 +121,6 @@ function drawStoryPick(
   y: number,
   width: number,
   height: number,
-  index: number,
 ) {
   if (!participant) return
   ctx.save()
@@ -137,29 +132,29 @@ function drawStoryPick(
   ctx.stroke()
   ctx.restore()
 
-  const photoHeight = height - 190
+  const photoHeight = Math.round(height * 0.68)
   if (image) drawCoverImage(ctx, image, x + 22, y + 22, width - 44, photoHeight, 34)
   else drawStoryFallback(ctx, participant, x + 22, y + 22, width - 44, photoHeight, 34)
 
-  ctx.fillStyle = '#f2b84b'
-  ctx.font = '900 32px Arial'
-  ctx.fillText(
-    `${index + 1}. ${participant.confidence_points || 0} очков`,
-    x + 42,
-    y + height - 132,
-  )
+  ctx.fillStyle = 'rgba(242,184,75,.92)'
+  roundedCanvasPath(ctx, x + 44, y + photoHeight - 52, 190, 74, 28)
+  ctx.fill()
+  ctx.fillStyle = '#1b1204'
+  ctx.font = '900 34px Arial'
+  ctx.fillText(`${participant.confidence_points || 0} очков`, x + 70, y + photoHeight - 5)
+
   ctx.fillStyle = '#ffffff'
-  ctx.font = '900 52px Arial'
-  wrapCanvasText(ctx, participant.name, x + 42, y + height - 78, width - 84, 58)
-  ctx.fillStyle = '#b4a996'
-  ctx.font = '700 30px Arial'
+  ctx.font = '900 56px Arial'
+  wrapCanvasText(ctx, participant.name, x + 42, y + photoHeight + 108, width - 84, 62)
+  ctx.fillStyle = '#f2b84b'
+  ctx.font = '800 34px Arial'
   wrapCanvasText(
     ctx,
-    participant.region || 'регион не указан',
+    participant.region || 'улус не указан',
     x + 42,
-    y + height - 22,
+    y + height - 44,
     width - 84,
-    36,
+    40,
   )
 }
 

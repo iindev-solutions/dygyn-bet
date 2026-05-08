@@ -87,7 +87,7 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 - copy-to-clipboard share text;
 - generated PNG story card for manual Instagram Stories upload.
 
-Current story card includes selected participant photo(s), names, origin/region, and confidence points. Images are loaded through the same-origin known-participant avatar endpoint to avoid canvas/CORS export failures; initials are used as fallback. The card avoids showing the public duckdns URL; the frontend tries native file sharing for the PNG first, then falls back to download plus Instagram Stories instructions.
+Current Vue story card includes simple fan copy (`В этом году я голосую за`), selected participant photo(s), confidence points, name, origin/region/ulus, and CTA `Заходи и голосуй за своего фаворита` plus `@dygyn_games_bet_bot`. Images are loaded through the same-origin known-participant avatar endpoint to avoid canvas/CORS export failures; initials are used as fallback. The card avoids showing the public duckdns URL; the frontend tries native file sharing for the PNG first, then falls back to download plus Instagram Stories instructions.
 
 ## Vue Build and Bundle Check
 

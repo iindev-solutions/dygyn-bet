@@ -41,6 +41,7 @@ Read this first. Read deep docs only when task needs them.
 - Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
 - Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
 - Vue migration branch `vue-tma-cutover` now contains a full Vue 3 TMA cutover: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI default `FRONTEND_DIR=web-vue/dist` serving.
+- Vue story PNG now uses simple fan copy: `В этом году я голосую за`, photo/points/name/ulus cards, and CTA with `@dygyn_games_bet_bot`.
 
 ## Next Best Tasks
 
