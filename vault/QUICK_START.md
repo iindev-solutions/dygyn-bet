@@ -13,7 +13,7 @@ Read this first. Read deep docs only when task needs them.
 ## Stack
 
 - Backend: FastAPI, SQLite, aiogram.
-- Frontend: vanilla HTML/CSS/JS.
+- Frontend: Vue 3 TMA (`web-vue/`); legacy vanilla `web/` retained for rollback.
 - Tests: pytest.
 - Deploy: nginx prefix `/dygyn-bet/` → API `127.0.0.1:8010`.
 - VPS: SSH alias `iind-vps`.
@@ -23,10 +23,10 @@ Read this first. Read deep docs only when task needs them.
 
 ## Current State
 
-- 100-point allocation voting works locally: one vote uses a 100-point scale; votes are limited to top 2 participants and must total 100 points.
-- Story-card sharing works; generated Instagram story cards include selected participant photo(s).
+- 100-point allocation voting works in Vue frontend: one vote uses a 100-point scale; votes are limited to top 2 participants and must total 100 points.
+- Story-card sharing works; generated Instagram story cards include selected participant photo(s), points, name, ulus/region, and bot CTA.
 - A1-style redesign first pass deployed: ceremonial hero, SVG ornament strip, no visible login line/refresh/no-money notice in top screen.
-- Latest VPS deploy done: participant detail/table cleanup + story share flow cleanup + story cards with participant photos + quick launch hardening + photo-forward Players tab deployed, services active, VPS tests passed.
+- Latest VPS deploy done: Vue 3 TMA cutover + refreshed story PNG copy/cards deployed; services active; VPS tests passed; public health/assets ok.
 - README rewritten as short product-only description; no setup/admin/API noise.
 - `new_brief.md` is canonical MVP brief.
 - Product decisions recorded in `vault/wiki/architecture/mvp-product-decisions.md`.
@@ -40,15 +40,14 @@ Read this first. Read deep docs only when task needs them.
 - Hardening update deployed: prod demo seeding disabled by default, admin source URLs validated, index cache-busted/no-store, richer health checks, admin audit log table, hardened settle/finish, SQLite backup script.
 - Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
 - Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
-- Vue migration branch `vue-tma-cutover` now contains a full Vue 3 TMA cutover: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI default `FRONTEND_DIR=web-vue/dist` serving.
-- Vue story PNG now uses simple fan copy: `В этом году я голосую за`, photo/points/name/ulus cards, and CTA with `@dygyn_games_bet_bot`.
+- Vue 3 cutover is deployed from branch `vue-tma-cutover`: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI `FRONTEND_DIR=web-vue/dist` serving.
+- Legacy rollback remains available by setting `FRONTEND_DIR=web` and restarting `dygyn-bet.service`.
 
 ## Next Best Tasks
 
-1. On branch `vue-tma-cutover`, run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share, admin result forms.
-2. Build/deploy Vue on VPS with `cd web-vue && npm ci && npm run build`; keep legacy rollback via `FRONTEND_DIR=web`.
-3. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
-4. Add admin UI for imports/events/participants management.
+1. Run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share, admin result forms.
+2. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
+3. Add admin UI for imports/events/participants management.
 
 ## Read Deep Docs Only If Needed
 
