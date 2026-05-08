@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
+import secrets
 import shutil
 import time
 from collections import defaultdict, deque
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -24,7 +28,11 @@ from .db import (
     admin_settle_event,
     admin_upsert_discipline_result,
     admin_upsert_standing,
+    create_admin_web_session,
     db_health,
+    delete_admin_web_session,
+    get_admin_web_session,
+    get_admin_web_user_by_username,
     get_event,
     get_event_results,
     get_player,
@@ -35,6 +43,7 @@ from .db import (
     list_players,
     seed_demo,
     set_picks,
+    upsert_admin_web_user,
     upsert_user,
 )
 from .telegram_auth import TelegramAuthError, TelegramUser, telegram_user_from_init_data, validate_init_data
@@ -45,6 +54,10 @@ if not FRONTEND_DIR.is_absolute():
     FRONTEND_DIR = BASE_DIR / FRONTEND_DIR
 app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets", check_dir=False), name="assets")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "web", check_dir=False), name="static")
+
+ADMIN_WEB_COOKIE = "dygyn_admin_session"
+PASSWORD_HASH_ITERATIONS = 210_000
+WEB_ADMIN_TELEGRAM_ID_BASE = -900_000_000
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
 _bot_task: asyncio.Task[Any] | None = None
@@ -66,6 +79,51 @@ def log_admin_action(admin: dict[str, Any], action: str, entity_type: str, entit
     except Exception:
         # Audit logging must not turn a completed admin operation into a user-facing 500.
         pass
+
+
+def hash_password(password: str, salt: str | None = None) -> str:
+    clean_password = str(password or "")
+    if not clean_password:
+        raise ValueError("Admin password required")
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", clean_password.encode("utf-8"), salt.encode("utf-8"), PASSWORD_HASH_ITERATIONS)
+    return f"pbkdf2_sha256${PASSWORD_HASH_ITERATIONS}${salt}${digest.hex()}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    try:
+        scheme, iterations_text, salt, expected = stored_hash.split("$", 3)
+        if scheme != "pbkdf2_sha256":
+            return False
+        digest = hashlib.pbkdf2_hmac("sha256", str(password or "").encode("utf-8"), salt.encode("utf-8"), int(iterations_text))
+        return hmac.compare_digest(digest.hex(), expected)
+    except Exception:
+        return False
+
+
+def token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def seed_configured_admin_web_user() -> None:
+    if settings.admin_web_username and settings.admin_web_password:
+        upsert_admin_web_user(settings.db_path, settings.admin_web_username, hash_password(settings.admin_web_password))
+
+
+def web_admin_user_from_session(session: dict[str, Any]) -> dict[str, Any]:
+    telegram_id = WEB_ADMIN_TELEGRAM_ID_BASE - int(session["admin_user_id"])
+    user = upsert_user(
+        settings.db_path,
+        TelegramUser(
+            id=telegram_id,
+            first_name="Web",
+            last_name="Admin",
+            username=f"web_admin_{session['username']}",
+            language_code="ru",
+        ),
+    )
+    user["is_web_admin"] = True
+    return user
 
 
 def fetch_public_image(url: str) -> tuple[bytes, str]:
@@ -190,6 +248,11 @@ class FinishEventIn(BaseModel):
     winner_player_id: int | None = None
 
 
+class AdminWebLoginIn(BaseModel):
+    username: str
+    password: str
+
+
 @app.middleware("http")
 async def simple_rate_limit(request: Request, call_next):
     if request.url.path.startswith(("/static", "/assets")):
@@ -208,6 +271,7 @@ async def simple_rate_limit(request: Request, call_next):
 @app.on_event("startup")
 async def on_startup() -> None:
     init_db(settings.db_path)
+    seed_configured_admin_web_user()
     if settings.seed_demo:
         seed_demo(settings.db_path)
     global _bot_task
@@ -227,21 +291,33 @@ def _dev_user() -> TelegramUser:
     return TelegramUser(id=1000001, first_name="Dev", last_name="User", username="dev_user", language_code="ru")
 
 
-def current_user(x_telegram_init_data: str | None = Header(default=None)) -> dict[str, Any]:
-    if not x_telegram_init_data and settings.allow_dev_login:
+def current_user(request: Request, x_telegram_init_data: str | None = Header(default=None)) -> dict[str, Any]:
+    if x_telegram_init_data:
+        try:
+            parsed = validate_init_data(x_telegram_init_data, settings.bot_token, settings.auth_max_age_seconds)
+            tg_user = telegram_user_from_init_data(parsed)
+        except TelegramAuthError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+        user = upsert_user(settings.db_path, tg_user)
+        if user.get("is_blocked"):
+            raise HTTPException(status_code=403, detail="Пользователь заблокирован")
+        return user
+
+    session_token = request.cookies.get(ADMIN_WEB_COOKIE, "")
+    if session_token:
+        session = get_admin_web_session(settings.db_path, token_hash(session_token))
+        if session:
+            return web_admin_user_from_session(session)
+
+    if settings.allow_dev_login:
         return upsert_user(settings.db_path, _dev_user())
-    try:
-        parsed = validate_init_data(x_telegram_init_data or "", settings.bot_token, settings.auth_max_age_seconds)
-        tg_user = telegram_user_from_init_data(parsed)
-    except TelegramAuthError as exc:
-        raise HTTPException(status_code=401, detail=str(exc)) from exc
-    user = upsert_user(settings.db_path, tg_user)
-    if user.get("is_blocked"):
-        raise HTTPException(status_code=403, detail="Пользователь заблокирован")
-    return user
+
+    raise HTTPException(status_code=401, detail="Telegram initData отсутствует")
 
 
 def is_admin(user: dict[str, Any]) -> bool:
+    if user.get("is_web_admin"):
+        return True
     tg_id = int(user["telegram_id"])
     return tg_id in settings.admin_ids or (settings.allow_dev_login and tg_id == 1000001)
 
@@ -278,6 +354,37 @@ def me(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     data = dict(user)
     data["is_admin"] = is_admin(user)
     return {"user": data}
+
+
+@app.post("/api/admin/web-login")
+def admin_web_login(data: AdminWebLoginIn, request: Request, response: Response) -> dict[str, Any]:
+    admin = get_admin_web_user_by_username(settings.db_path, data.username)
+    if not admin or not verify_password(data.password, str(admin.get("password_hash", ""))):
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
+    raw_token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=max(settings.admin_web_session_hours, 1))).replace(microsecond=0).isoformat()
+    create_admin_web_session(settings.db_path, int(admin["id"]), token_hash(raw_token), expires_at)
+    response.set_cookie(
+        ADMIN_WEB_COOKIE,
+        raw_token,
+        httponly=True,
+        secure=not settings.allow_dev_login,
+        samesite="lax",
+        max_age=max(settings.admin_web_session_hours, 1) * 3600,
+        path="/",
+    )
+    user = web_admin_user_from_session({"admin_user_id": admin["id"], "username": admin["username"]})
+    user["is_admin"] = True
+    return {"ok": True, "user": user}
+
+
+@app.post("/api/admin/web-logout")
+def admin_web_logout(request: Request, response: Response) -> dict[str, bool]:
+    session_token = request.cookies.get(ADMIN_WEB_COOKIE, "")
+    if session_token:
+        delete_admin_web_session(settings.db_path, token_hash(session_token))
+    response.delete_cookie(ADMIN_WEB_COOKIE, path="/")
+    return {"ok": True}
 
 
 @app.get("/api/events")

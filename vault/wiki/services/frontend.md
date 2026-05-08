@@ -24,10 +24,12 @@
 - Games — event hero, event list, event detail, 1–2 participant choices, 100-point allocation controls, share actions.
 - Support — support statistics and leaderboard.
 - Players — photo-forward participant cards with origin/short description, plus detail view for profile fields, title/debut/history badges, sources, performance history, and discipline-result tables.
-- Admin — `ADMIN_IDS`-only live operations: Day 1/Day 2 discipline results, standings, finish event.
+- Admin — live operations: Day 1/Day 2 discipline results, standings, finish event. Access works via Telegram `ADMIN_IDS` or browser login at `/#/admin-login`.
 - Rules — product rules and no-money notice.
 
 ## Auth Behavior
+
+### Telegram auth
 
 `useTelegramInit()` polls for `window.Telegram?.WebApp` before the first API load. When found, it calls:
 
@@ -44,13 +46,31 @@ For API calls, `src/api/client.ts` waits for this guard, reads `webApp.initData`
 X-Telegram-Init-Data: <raw initData>
 ```
 
+### Browser admin auth
+
+Browser admin login lives at:
+
+```text
+https://iindiinda.duckdns.org/dygyn-bet/#/admin-login
+```
+
+Backend seeds/updates a hashed SQLite admin row from server env:
+
+```env
+ADMIN_WEB_USERNAME=<admin login>
+ADMIN_WEB_PASSWORD=<admin password>
+ADMIN_WEB_SESSION_HOURS=12
+```
+
+Login creates an HttpOnly `dygyn_admin_session` cookie. Admin APIs accept either Telegram initData from `ADMIN_IDS` or this session cookie. Logout clears the cookie.
+
 ## API Wrapper
 
 `api(path, options)`:
 
 - builds API base from `import.meta.env.BASE_URL` (`/dygyn-bet/` in production) or `VITE_API_BASE`;
 - sets `Content-Type: application/json` for JSON bodies;
-- waits for Telegram SDK init guard;
+- waits for Telegram SDK init guard unless a browser-admin endpoint opts out;
 - adds Telegram initData header if available;
 - parses JSON response;
 - throws normalized `ApiError` from `json.detail` when response is not OK.

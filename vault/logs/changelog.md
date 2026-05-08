@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-08 — Browser Admin Login
+
+- Added browser admin auth: username/password login at `/#/admin-login`, hashed admin credentials in SQLite, HttpOnly admin session cookie, and logout.
+- Backend now accepts either Telegram initData or a valid web-admin session cookie for admin APIs; legacy Telegram admin still works.
+- Added optional env seeding: `ADMIN_WEB_USERNAME`, `ADMIN_WEB_PASSWORD`, `ADMIN_WEB_SESSION_HOURS`.
+- Verified: `npm run format`; `npm run lint`; `npm run test:unit` (3 passed); `npm run build`; `python -m pytest` (18 passed); bundle budget 42.0KB gzip initial JS.
+
 ## 2026-05-07 — Story Card Copy Refresh
 
 - Simplified Vue story PNG: top copy now says `В этом году я голосую за`; participant cards show photo, confidence points, name, and ulus/region without numbering.

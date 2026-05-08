@@ -19,10 +19,10 @@ export const useUserStore = defineStore('user', () => {
     )
   })
 
-  async function load() {
+  async function load(options: { skipTelegramInit?: boolean } = {}) {
     loading.value = true
     try {
-      const data = await getMe()
+      const data = await getMe(options)
       user.value = data.user
       loaded.value = true
       return data.user
@@ -31,5 +31,15 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  return { user, loading, loaded, isAdmin, displayName, load }
+  function setUser(nextUser: ApiUser) {
+    user.value = nextUser
+    loaded.value = true
+  }
+
+  function clear() {
+    user.value = null
+    loaded.value = false
+  }
+
+  return { user, loading, loaded, isAdmin, displayName, load, setUser, clear }
 })

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
+import { adminWebLogout } from '@/api/adminAuth'
 import { useToast } from '@/composables/useToast'
 import { useAdminStore } from '@/stores/admin'
 import { useEventsStore } from '@/stores/events'
 import { useUserStore } from '@/stores/user'
 import { formatDate, numberOrNull } from '@/utils/display'
 
+const router = useRouter()
 const userStore = useUserStore()
 const eventsStore = useEventsStore()
 const adminStore = useAdminStore()
@@ -24,6 +27,12 @@ async function refreshAdmin() {
   if (!event.value) return
   await eventsStore.loadEvent(event.value.id)
   toast.show('Админка обновлена')
+}
+
+async function logout() {
+  await adminWebLogout()
+  userStore.clear()
+  await router.replace('/admin-login')
 }
 
 async function submitDisciplineResult(payload: Event) {
@@ -87,7 +96,10 @@ async function submitFinish(payload: Event) {
             <h2>Админ</h2>
             <p class="muted">{{ event.title }} · Day 1 / Day 2 / финал</p>
           </div>
-          <button type="button" class="ghost" @click="refreshAdmin">Обновить</button>
+          <div class="row">
+            <button type="button" class="ghost" @click="refreshAdmin">Обновить</button>
+            <button type="button" class="ghost" @click="logout">Выйти</button>
+          </div>
         </div>
       </article>
 

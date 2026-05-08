@@ -38,6 +38,11 @@ async function go(path: string) {
 }
 
 onMounted(async () => {
+  if (route.path === '/admin-login') {
+    booting.value = false
+    return
+  }
+
   try {
     const telegramReady = telegram.init({ timeoutMs: 2200 })
     await userStore.load()
@@ -45,7 +50,11 @@ onMounted(async () => {
     await eventsStore.loadEvents()
     if (window.location.hash === '#stats') await router.replace('/stats')
   } catch (err) {
-    bootError.value = err instanceof Error ? err.message : 'Не удалось открыть сервис'
+    if (route.meta.requiresAdmin) {
+      await router.replace('/admin-login')
+    } else {
+      bootError.value = err instanceof Error ? err.message : 'Не удалось открыть сервис'
+    }
   } finally {
     booting.value = false
   }

@@ -26,6 +26,22 @@ CREATE TABLE IF NOT EXISTS users (
     last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS admin_web_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS admin_web_sessions (
+    token_hash TEXT PRIMARY KEY,
+    admin_user_id INTEGER NOT NULL REFERENCES admin_web_users(id) ON DELETE CASCADE,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS sources (
     source_id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -211,6 +227,7 @@ CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
 CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created ON admin_audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_admin_web_sessions_expires ON admin_web_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_event_discipline_results_event ON event_discipline_results(event_id, day_number);
 CREATE INDEX IF NOT EXISTS idx_event_standings_event ON event_standings(event_id, day_number);
 """
@@ -394,6 +411,66 @@ def get_user_by_telegram_id(db_path: str, telegram_id: int) -> dict[str, Any] | 
     with connect(db_path) as conn:
         row = conn.execute("SELECT * FROM users WHERE telegram_id=?", (telegram_id,)).fetchone()
         return dict(row) if row else None
+
+
+def upsert_admin_web_user(db_path: str, username: str, password_hash: str) -> dict[str, Any]:
+    clean_username = username.strip().lower()
+    if not clean_username:
+        raise ValueError("Admin username required")
+    with connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO admin_web_users (username, password_hash, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(username) DO UPDATE SET
+                password_hash=excluded.password_hash,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (clean_username, password_hash),
+        )
+        row = conn.execute("SELECT * FROM admin_web_users WHERE username=?", (clean_username,)).fetchone()
+        return dict(row)
+
+
+def get_admin_web_user_by_username(db_path: str, username: str) -> dict[str, Any] | None:
+    with connect(db_path) as conn:
+        row = conn.execute(
+            "SELECT * FROM admin_web_users WHERE username=?",
+            (username.strip().lower(),),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def create_admin_web_session(db_path: str, admin_user_id: int, token_hash: str, expires_at: str) -> None:
+    with connect(db_path) as conn:
+        conn.execute("DELETE FROM admin_web_sessions WHERE expires_at <= ?", (utcnow_iso(),))
+        conn.execute(
+            """
+            INSERT INTO admin_web_sessions (token_hash, admin_user_id, expires_at)
+            VALUES (?, ?, ?)
+            """,
+            (token_hash, admin_user_id, expires_at),
+        )
+        conn.execute("UPDATE admin_web_users SET last_login_at=CURRENT_TIMESTAMP WHERE id=?", (admin_user_id,))
+
+
+def get_admin_web_session(db_path: str, token_hash: str) -> dict[str, Any] | None:
+    with connect(db_path) as conn:
+        row = conn.execute(
+            """
+            SELECT s.*, u.username
+            FROM admin_web_sessions s
+            JOIN admin_web_users u ON u.id=s.admin_user_id
+            WHERE s.token_hash=? AND s.expires_at > ?
+            """,
+            (token_hash, utcnow_iso()),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def delete_admin_web_session(db_path: str, token_hash: str) -> None:
+    with connect(db_path) as conn:
+        conn.execute("DELETE FROM admin_web_sessions WHERE token_hash=?", (token_hash,))
 
 
 def list_disciplines(db_path: str) -> list[dict[str, Any]]:

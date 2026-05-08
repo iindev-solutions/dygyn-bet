@@ -11,7 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-type ApiOptions = RequestInit & { skipJsonContentType?: boolean }
+type ApiOptions = RequestInit & { skipJsonContentType?: boolean; skipTelegramInit?: boolean }
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/$/, '')
@@ -27,9 +27,9 @@ export function apiUrl(path: string): string {
 }
 
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  await ensureTelegramInit({ timeoutMs: 1800 })
+  const { skipJsonContentType, skipTelegramInit, ...requestOptions } = options
+  if (!skipTelegramInit) await ensureTelegramInit({ timeoutMs: 1800 })
 
-  const { skipJsonContentType, ...requestOptions } = options
   const headers = new Headers(requestOptions.headers)
   const isFormData = requestOptions.body instanceof FormData
 

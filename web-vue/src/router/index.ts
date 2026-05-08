@@ -8,6 +8,7 @@ export const router = createRouter({
     { path: '/stats', component: () => import('@/views/StatsView.vue') },
     { path: '/players', component: () => import('@/views/PlayersView.vue') },
     { path: '/rules', component: () => import('@/views/RulesView.vue') },
+    { path: '/admin-login', component: () => import('@/views/AdminLoginView.vue') },
     {
       path: '/admin',
       component: () => import('@/views/AdminView.vue'),

@@ -30,9 +30,9 @@
 - `web-vue/src/main.ts` — app bootstrap, Pinia, router, admin route guard.
 - `web-vue/src/App.vue` — app shell, A1 hero, bottom tabs, boot/auth loading, toast.
 - `web-vue/src/composables/useTelegramInit.ts` — guarded Telegram SDK init; waits for late `window.Telegram.WebApp`, calls `ready()`/`expand()`, exposes initData.
-- `web-vue/src/api/` — typed fetch API client and endpoint modules; API base comes from `import.meta.env.BASE_URL`/`VITE_API_BASE`.
+- `web-vue/src/api/` — typed fetch API client and endpoint modules; API base comes from `import.meta.env.BASE_URL`/`VITE_API_BASE`; `adminAuth.ts` handles browser admin login/logout.
 - `web-vue/src/stores/` — Pinia stores for user, events/vote allocations, players, leaderboard, admin.
-- `web-vue/src/views/` — Games, Support, Players, Admin, Rules views.
+- `web-vue/src/views/` — Games, Support, Players, Admin, Admin Login, Rules views.
 - `web-vue/src/utils/storyCard.ts` — story PNG generation/share/download using same-origin participant avatar endpoint.
 - `web-vue/vite.config.ts` — Vite config with `/dygyn-bet/` production base, lazy chunks, visualizer, manifest.
 - `web-vue/scripts/check-bundle-budget.mjs` — enforces initial JS gzip budget <=150KB.
@@ -53,6 +53,7 @@
 - `tests/test_telegram_auth.py` — validates signed initData, rejects tampering and expired auth data.
 - `tests/test_db_flow.py` — exercises pick creation and event settlement flow in temporary SQLite DB.
 - `tests/test_hardening.py` — covers admin source URL validation and hardened settle/finish behavior.
+- `tests/test_admin_web_auth.py` — covers browser admin password hashing and session lifecycle.
 - `tests/test_import_data.py` — validates CSV pack and imports it into a temporary SQLite DB.
 - `web-vue/src/**/*.test.ts` — Vitest frontend unit tests, including allocation formatting and Telegram SDK delayed-init guard.
 
@@ -75,7 +76,8 @@
 2. API client reads raw `window.Telegram.WebApp.initData` and sends it as `X-Telegram-Init-Data`.
 3. Backend validates HMAC and `auth_date`.
 4. Backend upserts user by Telegram ID.
-5. `ALLOW_DEV_LOGIN=true` allows local browser access without Telegram header.
+5. Browser admin login at `/#/admin-login` posts username/password, creates an HttpOnly `dygyn_admin_session` cookie, and then admin APIs accept that cookie.
+6. `ALLOW_DEV_LOGIN=true` allows local browser access without Telegram header.
 
 ### Pick Flow
 

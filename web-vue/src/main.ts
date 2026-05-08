@@ -15,7 +15,7 @@ app.use(router)
 
 router.beforeEach((to) => {
   const user = useUserStore()
-  if (to.meta.requiresAdmin && user.loaded && !user.isAdmin) return '/events'
+  if (to.meta.requiresAdmin && user.loaded && !user.isAdmin) return '/admin-login'
   return true
 })
 

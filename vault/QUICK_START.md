@@ -33,7 +33,7 @@ Read this first. Read deep docs only when task needs them.
 - Product mechanic implemented locally: one event vote = distribute virtual confidence points across 1–2 participants; backend accepts at most two participants and exactly 100 total points.
 - Participant detail vision: minimal bot/TMA shows each athlete with tabular verified stats for all 7 Dygyn disciplines by year/event.
 - Dygyn Games are a two-day event; app now has live Day 1, Day 2, overall/final results model and public rendering.
-- Admin panel exists as `ADMIN_IDS`-only TMA tab for Day 1/Day 2 results, standings, and final finish; imports/events/participants management still planned. VPS `ADMIN_IDS` is configured.
+- Admin panel exists for Day 1/Day 2 results, standings, and final finish. It supports Telegram `ADMIN_IDS` and browser login at `/#/admin-login`; imports/events/participants management still planned.
 - Production DB now has imported Dygyn 2026 data: 16 active participants, 7 disciplines, 126 discipline result rows.
 - Backend and frontend expose participant detail with imported discipline-result tables.
 - Players tab is photo-forward: large athlete photo, origin, short description, and a single stats/detail button; detailed view holds full profile/stat/history info.
@@ -41,13 +41,15 @@ Read this first. Read deep docs only when task needs them.
 - Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
 - Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
 - Vue 3 cutover is deployed from branch `vue-tma-cutover`: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI `FRONTEND_DIR=web-vue/dist` serving.
+- Browser admin login is implemented at `https://iindiinda.duckdns.org/dygyn-bet/#/admin-login`; credentials are seeded by server env into hashed SQLite rows.
 - Legacy rollback remains available by setting `FRONTEND_DIR=web` and restarting `dygyn-bet.service`.
 
 ## Next Best Tasks
 
-1. Run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share, admin result forms.
-2. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
-3. Add admin UI for imports/events/participants management.
+1. Run real browser admin QA: login, result form, standings form, finish flow on safe/non-prod data first.
+2. Run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share.
+3. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
+4. Add admin UI for imports/events/participants management.
 
 ## Read Deep Docs Only If Needed
 

@@ -44,6 +44,9 @@ class Settings:
     enable_polling: bool = _bool("ENABLE_POLLING", False)
     seed_demo: bool = _bool("SEED_DEMO", False)
     auth_max_age_seconds: int = int(os.getenv("AUTH_MAX_AGE_SECONDS", "86400"))
+    admin_web_username: str = os.getenv("ADMIN_WEB_USERNAME", "")
+    admin_web_password: str = os.getenv("ADMIN_WEB_PASSWORD", "")
+    admin_web_session_hours: int = int(os.getenv("ADMIN_WEB_SESSION_HOURS", "12"))
     rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
     rate_limit_max_requests: int = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "90"))
 
