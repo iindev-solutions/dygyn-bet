@@ -41,12 +41,12 @@ Read this first. Read deep docs only when task needs them.
 - Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
 - Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
 - Vue 3 cutover is deployed from branch `vue-tma-cutover`: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI `FRONTEND_DIR=web-vue/dist` serving.
-- Browser admin login is implemented at `https://iindiinda.duckdns.org/dygyn-bet/#/admin-login`; credentials are seeded by server env into hashed SQLite rows.
+- Browser admin login is deployed at `https://iindiinda.duckdns.org/dygyn-bet/#/admin-login`; credentials are seeded by server env into hashed SQLite rows.
 - Legacy rollback remains available by setting `FRONTEND_DIR=web` and restarting `dygyn-bet.service`.
 
 ## Next Best Tasks
 
-1. Run real browser admin QA: login, result form, standings form, finish flow on safe/non-prod data first.
+1. Run real browser admin QA: result form, standings form, finish flow on safe/non-prod data first.
 2. Run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share.
 3. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
 4. Add admin UI for imports/events/participants management.
