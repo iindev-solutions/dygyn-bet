@@ -77,16 +77,19 @@ Run FastAPI locally on `127.0.0.1:8010`.
 
 Frontend static and API paths must be prefix-safe:
 
-- `web/index.html` uses relative `static/...` assets.
-- `web/app.js` derives base path from its script URL and prefixes API calls.
+- Vue production build uses `VITE_BASE_PATH=/dygyn-bet/`, exposed as `import.meta.env.BASE_URL`.
+- Vue API client defaults to `${BASE_URL}api`, so browser calls `/dygyn-bet/api/*`.
+- Nginx still strips `/dygyn-bet/` before proxying to FastAPI, so backend receives `/api/*`.
+- FastAPI serves Vue assets from `/assets/*` and excludes `/assets/*` from rate limiting.
 
-This allows both root deployment and `/dygyn-bet/` path deployment.
+Legacy rollback: set `FRONTEND_DIR=web` and restart the API service.
 
 ## Suggested Server Layout
 
 ```text
 /opt/dygyn-bet/              # git checkout or copied release
 /opt/dygyn-bet/.venv/        # Python venv
+/opt/dygyn-bet/web-vue/dist/ # built Vue frontend
 /opt/dygyn-bet/data/         # persistent SQLite data
 /etc/systemd/system/dygyn-bet.service
 ```
@@ -102,11 +105,24 @@ ENABLE_POLLING=false
 DB_PATH=/opt/dygyn-bet/data/dygyn.sqlite3
 AUTH_MAX_AGE_SECONDS=86400
 SEED_DEMO=false
+FRONTEND_DIR=/opt/dygyn-bet/web-vue/dist
 BACKUP_DIR=/opt/dygyn-bet/backups
 BACKUP_KEEP=48
 ```
 
 Current note: `ADMIN_IDS` still needs the real admin Telegram numeric ID.
+
+## Vue Frontend Build
+
+Before restarting the API after Vue migration:
+
+```bash
+cd /opt/dygyn-bet/web-vue
+npm ci
+npm run build
+```
+
+Build must pass typecheck and the initial JS gzip budget (`<=150KB`). Current branch build: 41.1KB gzip initial JS.
 
 ## Deployment Checks
 
@@ -119,7 +135,8 @@ Completed on 2026-05-06:
 - `nginx -t`: successful.
 - `curl https://iindiinda.duckdns.org/dygyn-bet/health`: returns `ok`, app version, DB counts, and disk free MB.
 - `curl https://iindiinda.duckdns.org/dygyn-bet/`: HTML served.
-- `curl -I https://iindiinda.duckdns.org/dygyn-bet/static/app.js`: 200.
+- Legacy check before Vue cutover: `curl -I https://iindiinda.duckdns.org/dygyn-bet/static/app.js`: 200.
+- Vue check after cutover: `curl -I https://iindiinda.duckdns.org/dygyn-bet/assets/<built-js-file>.js`: 200.
 - `curl https://iindiinda.duckdns.org/dygyn-bet/api/me` without Telegram auth: 401 expected.
 
 Still required:

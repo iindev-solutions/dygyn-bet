@@ -40,7 +40,11 @@ from .db import (
 from .telegram_auth import TelegramAuthError, TelegramUser, telegram_user_from_init_data, validate_init_data
 
 app = FastAPI(title="Игры Дыгына — голосование", version="0.1.0")
-app.mount("/static", StaticFiles(directory=BASE_DIR / "web"), name="static")
+FRONTEND_DIR = Path(settings.frontend_dir)
+if not FRONTEND_DIR.is_absolute():
+    FRONTEND_DIR = BASE_DIR / FRONTEND_DIR
+app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets", check_dir=False), name="assets")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "web", check_dir=False), name="static")
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
 _bot_task: asyncio.Task[Any] | None = None
@@ -188,7 +192,7 @@ class FinishEventIn(BaseModel):
 
 @app.middleware("http")
 async def simple_rate_limit(request: Request, call_next):
-    if request.url.path.startswith("/static"):
+    if request.url.path.startswith(("/static", "/assets")):
         return await call_next(request)
     key = request.headers.get("x-telegram-init-data") or (request.client.host if request.client else "unknown")
     now = time.time()
@@ -250,7 +254,10 @@ def admin_user(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 
 @app.get("/")
 def index() -> FileResponse:
-    return FileResponse(BASE_DIR / "web" / "index.html", headers={"Cache-Control": "no-store"})
+    index_path = FRONTEND_DIR / "index.html"
+    if not index_path.exists():
+        raise HTTPException(status_code=503, detail="Frontend build not found. Run `cd web-vue && npm run build`.")
+    return FileResponse(index_path, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/health")
@@ -261,6 +268,7 @@ def health() -> dict[str, Any]:
         "ok": bool(db.get("ok")),
         "version": app.version,
         "db": db,
+        "frontend": {"dir": str(FRONTEND_DIR), "index_exists": (FRONTEND_DIR / "index.html").exists()},
         "disk_free_mb": disk.free // 1024 // 1024,
     }
 

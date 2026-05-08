@@ -2,16 +2,22 @@
 
 ## Responsibilities
 
-- Provide Telegram Mini App user interface.
-- Initialize Telegram WebApp SDK.
+- Provide Telegram Mini App user interface through Vue 3.
+- Initialize Telegram WebApp SDK with a delayed-load guard.
 - Send raw Telegram initData to backend.
 - Render events, participants, picks, statistics, player history, discipline-result tables, rules, and leaderboard.
 
 ## Main Files
 
-- `web/index.html` — app shell and tabs.
-- `web/app.js` — client state, API calls, rendering, event handlers.
-- `web/styles.css` — UI styling using Telegram theme variables.
+- `web-vue/src/App.vue` — app shell, hero, bottom tabs, boot/error/toast UI.
+- `web-vue/src/views/EventsView.vue` — games tab, participant selection, 100-point allocation, share/story actions, live results.
+- `web-vue/src/views/StatsView.vue` — support stats and fan leaderboard.
+- `web-vue/src/views/PlayersView.vue` — photo-forward player list and detail discipline tables.
+- `web-vue/src/views/AdminView.vue` — admin result/standing/final forms.
+- `web-vue/src/composables/useTelegramInit.ts` — waits for late `window.Telegram.WebApp`, then calls `ready()`/`expand()`.
+- `web-vue/src/api/client.ts` — typed fetch wrapper; API base uses `import.meta.env.BASE_URL` or `VITE_API_BASE`.
+- `web-vue/src/assets/styles/main.css` — current A1 CSS ported from legacy `web/styles.css`.
+- `web/` — legacy vanilla frontend retained only for rollback via `FRONTEND_DIR=web`.
 
 ## Tabs
 
@@ -23,39 +29,35 @@
 
 ## Auth Behavior
 
-`web/app.js` reads:
+`useTelegramInit()` polls for `window.Telegram?.WebApp` before the first API load. When found, it calls:
 
-```js
-const tg = window.Telegram?.WebApp;
+```ts
+webApp.ready()
+webApp.expand()
 ```
 
-When present, it calls:
+This prevents real-device races where the Telegram SDK object appears after Vue mount.
 
-```js
-tg.ready();
-tg.expand();
-```
-
-Frontend can run at root (`/`) or behind a prefix such as `/dygyn-bet/`. It derives the base path from `static/app.js` and prefixes API calls.
-
-For API calls, it sends:
+For API calls, `src/api/client.ts` waits for this guard, reads `webApp.initData`, and sends:
 
 ```http
-X-Telegram-Init-Data: tg.initData
+X-Telegram-Init-Data: <raw initData>
 ```
 
 ## API Wrapper
 
 `api(path, options)`:
 
-- sets `Content-Type: application/json`;
+- builds API base from `import.meta.env.BASE_URL` (`/dygyn-bet/` in production) or `VITE_API_BASE`;
+- sets `Content-Type: application/json` for JSON bodies;
+- waits for Telegram SDK init guard;
 - adds Telegram initData header if available;
 - parses JSON response;
-- throws error from `json.detail` when response is not OK.
+- throws normalized `ApiError` from `json.detail` when response is not OK.
 
 ## UI Safety
 
-Dynamic text uses `escapeHtml()` before inserting into HTML templates.
+Dynamic text is rendered through Vue text bindings. `v-html` is disallowed by ESLint.
 
 ## Visual Direction
 
@@ -87,19 +89,31 @@ Direct Instagram Stories posting is not reliable from a Telegram Mini App web co
 
 Current story card includes selected participant photo(s), names, origin/region, and confidence points. Images are loaded through the same-origin known-participant avatar endpoint to avoid canvas/CORS export failures; initials are used as fallback. The card avoids showing the public duckdns URL; the frontend tries native file sharing for the PNG first, then falls back to download plus Instagram Stories instructions.
 
+## Vue Build and Bundle Check
+
+```bash
+cd web-vue
+npm ci
+npm run build        # production /dygyn-bet/ base
+npm run build:local  # local FastAPI root base
+```
+
+Build writes `dist/bundle-stats.html` via `rollup-plugin-visualizer` and enforces initial JS gzip budget <=150KB. Latest local build on 2026-05-07: 41.1KB gzip initial JS.
+
 ## Manual Smoke Check
 
-1. Open locally with `ALLOW_DEV_LOGIN=true`.
-2. Confirm user line loads.
-3. Confirm event hero card renders.
-4. Select event.
-5. Pick 1–2 participants.
-6. Distribute 100 confidence points.
-7. Save the vote through the sticky save action.
-8. Confirm toast and updated statistics.
-9. If admin, open Admin tab and test a provisional result/standing on a non-production DB first.
-10. Copy share text or download the story card.
-10. Open support tab.
-11. Open players tab.
-12. Open rules tab and verify no-money warning.
-13. Repeat inside Telegram with real HTTPS URL and bot button.
+1. For local FastAPI root, build Vue with `cd web-vue && npm run build:local`.
+2. Run backend with `ALLOW_DEV_LOGIN=true` and `FRONTEND_DIR=./web-vue/dist`.
+3. Confirm user line loads.
+4. Confirm event hero card renders.
+5. Select event.
+6. Pick 1–2 participants.
+7. Distribute 100 confidence points.
+8. Save the vote through the sticky save action.
+9. Confirm toast and updated statistics.
+10. If admin, open Admin tab and test a provisional result/standing on a non-production DB first.
+11. Copy share text or download the story card.
+12. Open support tab.
+13. Open players tab.
+14. Open rules tab and verify no-money warning.
+15. Repeat inside Telegram with real HTTPS URL and bot button; specifically watch Telegram SDK init/auth race.

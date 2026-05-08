@@ -38,6 +38,7 @@ class Settings:
     bot_token: str = os.getenv("BOT_TOKEN", "")
     web_app_url: str = os.getenv("WEB_APP_URL", "http://localhost:8000")
     db_path: str = os.getenv("DB_PATH", str(BASE_DIR / "data" / "dygyn.sqlite3"))
+    frontend_dir: str = os.getenv("FRONTEND_DIR", str(BASE_DIR / "web-vue" / "dist"))
     admin_ids: list[int] = None  # type: ignore[assignment]
     allow_dev_login: bool = _bool("ALLOW_DEV_LOGIN", True)
     enable_polling: bool = _bool("ENABLE_POLLING", False)

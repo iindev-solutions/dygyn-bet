@@ -1,0 +1,12 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+.env
+data/*.sqlite3
+data/*.sqlite3-*
+web-vue/node_modules
+web-vue/dist
+web-vue/coverage
+web-vue/playwright-report
+web-vue/test-results

@@ -5,3 +5,8 @@ __pycache__/
 data/*.sqlite3
 data/*.sqlite3-*
 *.pyc
+web-vue/node_modules/
+web-vue/dist/
+web-vue/coverage/
+web-vue/playwright-report/
+web-vue/test-results/

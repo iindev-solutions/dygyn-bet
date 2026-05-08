@@ -40,13 +40,14 @@ Read this first. Read deep docs only when task needs them.
 - Hardening update deployed: prod demo seeding disabled by default, admin source URLs validated, index cache-busted/no-store, richer health checks, admin audit log table, hardened settle/finish, SQLite backup script.
 - Story flow cleanup deployed: story PNG/share copy no longer shows public URL; story action uses native file share when available or download + Instagram instructions; imported technical notes are hidden from participant history UI.
 - Participant detail cleanup deployed: generic wins/top-3/tournaments counters removed; detail uses title/debut/history badges; discipline tables show overall rank/points summary and no longer duplicate place as raw result.
+- Vue migration branch `vue-tma-cutover` now contains a full Vue 3 TMA cutover: `web-vue/`, Vite/TS/Pinia/router, Telegram init guard, bundle budget check, and FastAPI default `FRONTEND_DIR=web-vue/dist` serving.
 
 ## Next Best Tasks
 
-1. QA in Telegram bot/Mini App on mobile: event, participant tables, 100-point vote, admin result forms.
-2. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
-3. Add admin UI for imports/events/participants management.
-4. Add public frontend screens: Home/Vote/Stats/Rating/Profile + athlete stat/result tables.
+1. On branch `vue-tma-cutover`, run real mobile Telegram QA for Vue: auth race, event, participant tables, 100-point vote, story PNG/share, admin result forms.
+2. Build/deploy Vue on VPS with `cd web-vue && npm ci && npm run build`; keep legacy rollback via `FRONTEND_DIR=web`.
+3. Implement minimal analytics for opens, vote saves, detail opens, and share actions.
+4. Add admin UI for imports/events/participants management.
 
 ## Read Deep Docs Only If Needed
 

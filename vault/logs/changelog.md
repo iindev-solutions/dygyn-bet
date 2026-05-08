@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-07 — Vue TMA Cutover Branch
+
+- Created branch `vue-tma-cutover` for the full frontend migration.
+- Added `web-vue/` Vue 3 + TypeScript + Vite app with Pinia stores, hash routing, 1:1 CSS port, event voting, stats, players, story card sharing, rules, and admin forms.
+- Added Telegram SDK race guard `useTelegramInit()`; API client waits for late `window.Telegram.WebApp` and uses `X-Telegram-Init-Data`.
+- Added Vite `rollup-plugin-visualizer` plus bundle budget script; verified initial JS is 41.1KB gzip, below 150KB target.
+- Switched FastAPI default frontend serving to `web-vue/dist` via `FRONTEND_DIR`; legacy rollback remains `FRONTEND_DIR=web`.
+- Updated Docker build to compile Vue assets and added frontend ignore rules.
+- Verified: `npm run format`; `npm run lint`; `npm run test:unit` (3 passed); `npm run build`; `npm run build:local`; `python -m py_compile app/*.py tests/*.py scripts/*.py`; `python -m pytest` (16 passed); local FastAPI smoke for Vue root/assets/health/dev auth/events.
+
+## 2026-05-07 — Vue Migration Plan Hardening
+
+- Reworked `vault/VUE_MIGRATION_PLAN.md` for smooth parallel migration: parity baseline, hash-router first cutover, 1:1 CSS port, typed fetch API layer, VPS preview, and rollback path.
+- Aligned plan with current `/dygyn-bet/` prefix deployment and FastAPI static serving constraints.
+- No code changes.
+
 ## 2026-05-07 — Participant Detail Signal Cleanup
 
 - Removed low-value `wins/top-3/tournaments` stat grid from participant detail.
@@ -451,3 +467,15 @@
 - Restarted `dygyn-bet.service` and `dygyn-bet-bot.service`; both are active.
 - Public health check passed at `/dygyn-bet/health`.
 - Server search confirms removed launch-phase wording has no remaining matches.
+
+
+## 2026-05-07 — Vue 3 Migration Plan Created
+
+- Created comprehensive Vue 3 migration plan at `vault/VUE_MIGRATION_PLAN.md`.
+- Documented architecture: Vue 3 Composition API, TypeScript, Vite, Pinia, Vue Router.
+- Defined 7 migration phases: setup, core components, secondary views, admin, story card, testing, deployment.
+- Included best practices for Vue 3, TypeScript, Pinia, component design, API layer, styling, performance, accessibility, testing.
+- Added implementation examples: Telegram integration composable, API client with interceptors, Pinia store pattern, router config, Vite config.
+- Documented risks/mitigations: Telegram integration, canvas CORS, bundle size, admin panel, CSS regression.
+- Defined success criteria and 12-18 day timeline estimate.
+- Next: review plan, approve architecture, start Phase 1.
