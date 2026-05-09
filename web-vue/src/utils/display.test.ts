@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   evenAllocation,
+  formatDisciplineOutcome,
   formatResultValue,
   isPlaceOnlyResult,
   TOTAL_CONFIDENCE_POINTS,
@@ -25,5 +26,26 @@ describe('display utils', () => {
         result_unit: null,
       }),
     ).toBe('не опубликован')
+  })
+
+  it('deduplicates equal place and points in discipline outcome', () => {
+    expect(
+      formatDisciplineOutcome({
+        year: 2026,
+        event_title: 'Игры',
+        discipline_id: 'run',
+        place: 2,
+        points: 2,
+      }),
+    ).toBe('2 место')
+    expect(
+      formatDisciplineOutcome({
+        year: 2026,
+        event_title: 'Игры',
+        discipline_id: 'run',
+        place: 2,
+        points: 12,
+      }),
+    ).toBe('2 место · 12 очков')
   })
 })

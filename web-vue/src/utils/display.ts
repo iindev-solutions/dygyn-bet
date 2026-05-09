@@ -76,6 +76,13 @@ export function playerOrigin(player: Participant | PlayerDetail): string {
   return region || place || 'регион не указан'
 }
 
+export function playerSocialUrl(player: Participant | PlayerDetail): string {
+  if (player.social_url) return player.social_url
+  const firstLink = player.social_links?.[0]
+  if (typeof firstLink === 'string') return firstLink
+  return firstLink?.url || ''
+}
+
 export function visibleHistoryNote(item: PlayerHistoryItem): string {
   const note = String(item.notes || '').trim()
   return note.startsWith('[import:') ? '' : note
@@ -144,6 +151,17 @@ export function formatResultValue(row: DisciplineResult): string {
     return `${row.result_value} ${row.result_unit || ''}`.trim()
   }
   return 'не опубликован'
+}
+
+export function formatDisciplineOutcome(row: DisciplineResult): string {
+  const place = row.place ?? null
+  const points = row.points ?? null
+  if (place === null && points === null) return '—'
+  if (place !== null && points !== null && Number(place) !== Number(points)) {
+    return `${place} место · ${points} очков`
+  }
+  if (place !== null) return `${place} место`
+  return `${points} очков`
 }
 
 export function overallResultSummary(rows: DisciplineResult[]): string {

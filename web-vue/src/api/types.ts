@@ -26,6 +26,8 @@ export interface Participant {
   strengths?: string
   previous_dygyn_note?: string
   source_url?: string
+  social_url?: string
+  social_links?: Array<string | { url?: string }>
   pick_count?: number
   confidence_sum?: number
   confidence_points?: number
@@ -170,4 +172,44 @@ export interface StandingPayload {
   is_winner: boolean
   status: string
   notes: string
+}
+
+export interface AnalyticsEventPayload {
+  event_name:
+    | 'app_open'
+    | 'rating_open'
+    | 'rules_open'
+    | 'participant_detail_open'
+    | 'vote_save'
+    | 'png_share'
+  anonymous_id: string
+  path: string
+  metadata?: Record<string, string | number | boolean | null>
+}
+
+export interface AnalyticsDailyRow {
+  day: string
+  count: number
+  unique_count: number
+  events: Record<string, number>
+}
+
+export interface AnalyticsEventTotal {
+  event_name: string
+  count: number
+  unique_count: number
+}
+
+export interface AnalyticsTopPath {
+  path: string
+  count: number
+}
+
+export interface AnalyticsSummary {
+  days: number
+  since: string
+  generated_at: string
+  daily: AnalyticsDailyRow[]
+  events: AnalyticsEventTotal[]
+  top_paths: AnalyticsTopPath[]
 }

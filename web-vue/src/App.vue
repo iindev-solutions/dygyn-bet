@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, shallowRef } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
-
-import heroImage from '@/assets/images/dygyn-logo.jpeg'
+import { useAnalytics } from '@/composables/useAnalytics'
 import { useTelegramInit } from '@/composables/useTelegramInit'
 import { useToast } from '@/composables/useToast'
 import { useEventsStore } from '@/stores/events'
@@ -12,22 +11,20 @@ const route = useRoute()
 const router = useRouter()
 const telegram = useTelegramInit()
 const toast = useToast()
+const analytics = useAnalytics()
 const userStore = useUserStore()
 const eventsStore = useEventsStore()
 
-const booting = ref(true)
-const bootError = ref('')
+const booting = shallowRef(true)
+const bootError = shallowRef('')
 
-const tabs = computed(() => {
-  const baseTabs = [
-    { path: '/events', label: 'Игры' },
-    { path: '/stats', label: 'Поддержка' },
-    { path: '/players', label: 'Участники' },
-  ]
-  if (userStore.isAdmin) baseTabs.push({ path: '/admin', label: 'Админ' })
-  baseTabs.push({ path: '/rules', label: 'Правила' })
-  return baseTabs
-})
+const tabs = computed(() => [
+  { path: '/events', label: 'Главная' },
+  { path: '/stats', label: 'Рейтинг' },
+  { path: '/players', label: 'Атлеты' },
+  { path: '/rules', label: 'Правила' },
+])
+const isAdminShell = computed(() => route.path.startsWith('/admin'))
 
 function isActive(path: string): boolean {
   return route.path === path || route.path.startsWith(`${path}/`)
@@ -37,8 +34,25 @@ async function go(path: string) {
   await router.push(path)
 }
 
+function isAdminEntry(): boolean {
+  return route.path.startsWith('/admin') || window.location.hash.startsWith('#/admin')
+}
+
+function trackAppOpenOnce() {
+  try {
+    if (sessionStorage.getItem('dygyn_app_open_tracked')) return
+    sessionStorage.setItem('dygyn_app_open_tracked', '1')
+  } catch {
+    // Session storage can be unavailable in strict browser modes; tracking still stays best-effort.
+  }
+  analytics.track('app_open', {
+    event_id: eventsStore.selectedEvent?.id || null,
+    has_saved_vote: Boolean(eventsStore.selectedEvent?.my_picks?.length),
+  })
+}
+
 onMounted(async () => {
-  if (route.path === '/admin-login') {
+  if (isAdminEntry()) {
     booting.value = false
     return
   }
@@ -48,6 +62,7 @@ onMounted(async () => {
     await userStore.load()
     await telegramReady
     await eventsStore.loadEvents()
+    trackAppOpenOnce()
     if (window.location.hash === '#stats') await router.replace('/stats')
   } catch (err) {
     if (route.meta.requiresAdmin) {
@@ -63,20 +78,9 @@ onMounted(async () => {
 
 <template>
   <main class="app">
-    <header class="app-hero">
-      <div class="hero-ornament" aria-hidden="true"></div>
-      <div class="hero-photo">
-        <img :src="heroImage" alt="Дыгын Оонньуулара" />
-      </div>
-      <div class="hero-copy">
-        <p class="eyebrow">Дыгын Оонньуулара</p>
-        <h1>Игры Дыгына</h1>
-        <p class="hero-subtitle">Выберите топ-2 участников и распределите 100 очков.</p>
-      </div>
-      <p class="sr-only">Пользователь: {{ userStore.displayName }}</p>
-    </header>
+    <p class="sr-only">Пользователь: {{ userStore.displayName }}</p>
 
-    <nav class="tabs" aria-label="Разделы">
+    <nav v-if="!isAdminShell" class="tabs" aria-label="Разделы">
       <button
         v-for="tab in tabs"
         :key="tab.path"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sqlite3
@@ -223,6 +224,16 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_name TEXT NOT NULL,
+    anonymous_id_hash TEXT DEFAULT '',
+    path TEXT DEFAULT '',
+    metadata_json TEXT DEFAULT '',
+    user_agent_hash TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_picks_event ON picks(event_id);
 CREATE INDEX IF NOT EXISTS idx_picks_user ON picks(user_id);
 CREATE INDEX IF NOT EXISTS idx_history_player ON player_history(player_id);
@@ -230,6 +241,9 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created ON admin_audit_logs(crea
 CREATE INDEX IF NOT EXISTS idx_admin_web_sessions_expires ON admin_web_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_event_discipline_results_event ON event_discipline_results(event_id, day_number);
 CREATE INDEX IF NOT EXISTS idx_event_standings_event ON event_standings(event_id, day_number);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_created ON analytics_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_name_created ON analytics_events(event_name, created_at);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_anon_created ON analytics_events(anonymous_id_hash, created_at);
 """
 
 
@@ -290,6 +304,158 @@ def admin_log_action(
             """,
             (admin_user_id, action.strip(), entity_type.strip(), entity_id, payload_json),
         )
+
+
+ANALYTICS_EVENT_NAMES = {
+    "app_open",
+    "rating_open",
+    "rules_open",
+    "participant_detail_open",
+    "vote_save",
+    "png_share",
+}
+ANALYTICS_METADATA_KEYS = {
+    "event_id",
+    "participant_id",
+    "picks",
+    "shared",
+    "has_saved_vote",
+}
+
+
+def analytics_hash(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    return hashlib.sha256(f"dygyn-analytics:{text}".encode("utf-8")).hexdigest()
+
+
+def sanitize_analytics_metadata(metadata: dict[str, Any] | None) -> dict[str, Any]:
+    clean: dict[str, Any] = {}
+    for key, value in (metadata or {}).items():
+        if key not in ANALYTICS_METADATA_KEYS:
+            continue
+        if isinstance(value, bool) or value is None:
+            clean[key] = value
+        elif isinstance(value, (int, float)):
+            clean[key] = value
+        else:
+            clean[key] = str(value)[:80]
+    return clean
+
+
+def record_analytics_event(
+    db_path: str,
+    event_name: str,
+    anonymous_id: str = "",
+    path: str = "",
+    metadata: dict[str, Any] | None = None,
+    user_agent: str = "",
+) -> None:
+    clean_event_name = str(event_name or "").strip().lower()
+    if clean_event_name not in ANALYTICS_EVENT_NAMES:
+        raise ValueError("Unknown analytics event")
+    clean_path = str(path or "").strip()[:120]
+    if "?" in clean_path:
+        clean_path = clean_path.split("?", 1)[0]
+    payload_json = json.dumps(sanitize_analytics_metadata(metadata), ensure_ascii=False, sort_keys=True, default=str)
+    with connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO analytics_events (event_name, anonymous_id_hash, path, metadata_json, user_agent_hash)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                clean_event_name,
+                analytics_hash(anonymous_id),
+                clean_path,
+                payload_json,
+                analytics_hash(user_agent),
+            ),
+        )
+
+
+def analytics_summary(db_path: str, days: int = 14) -> dict[str, Any]:
+    safe_days = max(1, min(int(days or 14), 90))
+    today = datetime.now(timezone.utc).date()
+    start = today - timedelta(days=safe_days - 1)
+    labels = [(start + timedelta(days=offset)).isoformat() for offset in range(safe_days)]
+    with connect(db_path) as conn:
+        daily_total_rows = rows_to_dicts(
+            conn.execute(
+                """
+                SELECT date(created_at) AS day,
+                       COUNT(*) AS count,
+                       COUNT(DISTINCT CASE WHEN anonymous_id_hash != '' THEN anonymous_id_hash END) AS unique_count
+                FROM analytics_events
+                WHERE date(created_at) >= ?
+                GROUP BY day
+                ORDER BY day
+                """,
+                (start.isoformat(),),
+            ).fetchall()
+        )
+        daily_event_rows = rows_to_dicts(
+            conn.execute(
+                """
+                SELECT date(created_at) AS day,
+                       event_name,
+                       COUNT(*) AS count
+                FROM analytics_events
+                WHERE date(created_at) >= ?
+                GROUP BY day, event_name
+                ORDER BY day, event_name
+                """,
+                (start.isoformat(),),
+            ).fetchall()
+        )
+        event_rows = rows_to_dicts(
+            conn.execute(
+                """
+                SELECT event_name,
+                       COUNT(*) AS count,
+                       COUNT(DISTINCT CASE WHEN anonymous_id_hash != '' THEN anonymous_id_hash END) AS unique_count
+                FROM analytics_events
+                WHERE date(created_at) >= ?
+                GROUP BY event_name
+                ORDER BY count DESC, event_name
+                """,
+                (start.isoformat(),),
+            ).fetchall()
+        )
+        top_paths = rows_to_dicts(
+            conn.execute(
+                """
+                SELECT path, COUNT(*) AS count
+                FROM analytics_events
+                WHERE date(created_at) >= ? AND path != ''
+                GROUP BY path
+                ORDER BY count DESC, path
+                LIMIT 10
+                """,
+                (start.isoformat(),),
+            ).fetchall()
+        )
+    daily_map: dict[str, dict[str, Any]] = {day: {"day": day, "count": 0, "unique_count": 0, "events": {}} for day in labels}
+    for row in daily_total_rows:
+        day = str(row["day"])
+        if day not in daily_map:
+            continue
+        daily_map[day]["count"] = int(row["count"] or 0)
+        daily_map[day]["unique_count"] = int(row["unique_count"] or 0)
+    for row in daily_event_rows:
+        day = str(row["day"])
+        if day not in daily_map:
+            continue
+        daily_map[day]["events"][str(row["event_name"])] = int(row["count"] or 0)
+    return {
+        "days": safe_days,
+        "since": start.isoformat(),
+        "generated_at": utcnow_iso(),
+        "daily": list(daily_map.values()),
+        "events": event_rows,
+        "top_paths": top_paths,
+    }
 
 
 MAX_PICKS_PER_EVENT = 2

@@ -113,7 +113,7 @@ BACKUP_DIR=/opt/dygyn-bet/backups
 BACKUP_KEEP=48
 ```
 
-Current note: `ADMIN_IDS` still needs the real admin Telegram numeric ID.
+Current note: browser admin login is primary. Set `ADMIN_IDS` only if Telegram-admin access is needed.
 
 ## Vue Frontend Build
 
@@ -146,4 +146,4 @@ Still required:
 
 - Explicitly confirm Telegram bot `/start` opens the Mini App button.
 - Full mobile Telegram Mini App QA.
-- Add real `ADMIN_IDS`.
+- Add/confirm `ADMIN_IDS` only if Telegram-admin access is needed.

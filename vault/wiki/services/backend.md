@@ -3,7 +3,7 @@
 ## Responsibilities
 
 - Serve FastAPI API.
-- Serve static Mini App files from `web/`.
+- Serve static Mini App files from `web-vue/dist`.
 - Validate Telegram Mini App auth.
 - Manage SQLite schema and data access.
 - Seed demo data only when explicitly enabled for local/dev.
@@ -28,7 +28,9 @@ From `.env.example`:
 - `WEB_APP_URL` — public HTTPS Mini App URL.
 - `ADMIN_IDS` — comma-separated Telegram numeric IDs.
 - `ALLOW_DEV_LOGIN` — local browser dev login; must be `false` in production.
-- `ENABLE_POLLING` — run aiogram polling inside FastAPI process. For VPS deployment, keep this `false` and run `app.bot_runner` as a separate service.
+- `ENABLE_POLLING` — run aiogram polling inside FastAPI process. For VPS deployment, keep this `false` and run `app.bot_runner` as separate service.
+- `FRONTEND_DIR` — frontend build path; production uses `/opt/dygyn-bet/web-vue/dist`.
+- `ADMIN_WEB_USERNAME`, `ADMIN_WEB_PASSWORD`, `ADMIN_WEB_SESSION_HOURS` — browser admin login/session config.
 - `SEED_DEMO` — local/dev demo seed flag; production must keep this `false`.
 - `DB_PATH` — SQLite DB path.
 - `BACKUP_DIR`, `BACKUP_KEEP` — defaults for `scripts/backup_sqlite.py`.
@@ -61,10 +63,10 @@ docker compose up --build
 - Use HTTPS.
 - Set `ALLOW_DEV_LOGIN=false`.
 - Set real `BOT_TOKEN`.
-- Set real `ADMIN_IDS`.
+- Set real `ADMIN_IDS` if Telegram admin access is needed; browser admin also works through `/#/admin-login`.
 - Decide whether polling is acceptable or switch to webhook.
 - Ensure `data/` is persistent and backed up; use `python scripts/backup_sqlite.py --db <db> --out-dir <dir>` from cron/systemd timer.
-- Keep `SEED_DEMO=false`; replace demo data before launch.
+- Keep `SEED_DEMO=false`; use imported Dygyn data.
 - Consider PostgreSQL when usage or ops requirements grow.
 
 ## Tests
@@ -75,4 +77,4 @@ Run:
 pytest
 ```
 
-Current tests cover Telegram initData validation, DB pick/settle flow, import validation, source URL validation, and hardened settle behavior.
+Current tests cover Telegram initData validation, DB pick/settle flow, import validation, source URL validation, browser admin auth, analytics, and hardened settle behavior.

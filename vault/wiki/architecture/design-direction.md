@@ -1,179 +1,74 @@
-# Design Direction — Игры Дыгына — голосование
+# Design Direction — Dygyn Fan Vote
 
 ## Source Reference
 
-Root file `ref.md` contains the working visual/product reference in Russian. This document is the canonical English summary for the vault.
+Root `DESIGN.md` is canonical for current frontend visual identity.
 
-## Positioning
+## Current Direction
 
-The product must feel like a sports voting app, not a bookmaker.
+Style name: `Northern Arena`.
 
-Target style name:
+Goal: photo-first Telegram Mini App that feels premium, local, and sports-focused. Users should understand the product on the first screen: choose 1–2 athletes, distribute 100 confidence points, follow support and results.
 
-```text
-Игры Дыгына — голосование
-```
+## Core Rules
 
-Character:
-
-- dark;
-- fast;
-- ceremonial A1 poster direction;
-- sports-oriented;
-- Telegram-native;
-- no casino/betting vibe;
-- Yakut SVG ornament accents through warm gold, used sparingly.
-
-## Design Principles
-
-Do:
-
-- use a ceremonial app hero with SVG ornament strip and temporary photo preview;
-- use event cards;
-- show large support percentages;
-- show participant cards with progress bars;
-- make the main action obvious;
-- keep copy short;
-- show support and leaderboard clearly;
-- keep no-money positioning in rules/legal copy, not noisy top-screen copy.
-
-Do not use:
-
-- odds;
-- balances;
-- deposits;
-- withdrawals;
-- bookmaker terminology;
-- red/green win/loss betting patterns;
-- complex charts before the product needs them.
-
-## Preferred Terms
-
-Use:
-
-- vote;
-- voting;
-- confidence points;
-- support;
-- leaderboard;
-- performance history.
-
-Avoid:
-
-- bet;
-- odds;
-- win/winnings;
-- bank;
-- withdrawal;
-- deposit;
-- payout.
-
-## Visual System
-
-Core palette:
-
-```css
---bg: #07090d;
---card: #111419;
---card-2: #1b2029;
---text: #f8f1e4;
---muted: #b4a996;
---accent: #d9a441;
---brown: #7a4b00;
---accent-2: #5eb6ff;
---success: #40c979;
---danger: #ff5c6c;
---border: rgba(255,224,161,.16);
-```
-
-Gold is for main actions, badges, and highlights only. Do not flood the interface with gold. Current live direction uses a ceremonial serif stack for a stronger local feel.
+- One strong hero only on the main screen.
+- Do not repeat the event banner on every tab.
+- Keep copy short and functional.
+- Use athlete photos as primary visual material.
+- Use Yakut ornament as sparse SVG accent only.
+- Use warm gold only for highlights and primary actions.
+- Keep product clearly non-betting: no odds, balance, deposits, withdrawals, payouts, or money-prize language.
+- Do not mention restricted social network names in UI copy; show neutral social icon links only when athlete social URLs exist.
 
 ## Screen Model
 
-### Main Screen
+### Main
 
-Purpose: user instantly understands what to do.
+- Photo collage from participant avatars plus fallback logo/photo.
+- Eyebrow says `Дыгын Оонньуулара`; headline says `Голосуй за фаворита`.
+- Short bot description.
+- Countdown to event start from `starts_at`.
+- CTA scrolls to voting.
+- No duplicate hero stats above the CTA.
 
-Content:
+### Vote
 
-- SVG Yakut ornament strip;
-- temporary photo preview area;
-- product title;
-- active event card;
-- event status;
-- participant count;
-- vote count;
-- top support preview;
-- open/select action;
-- no visible user-login line or refresh button in the hero.
+- Participant support list before save.
+- Select up to 2 athletes.
+- Allocate exactly 100 confidence points.
+- Sticky save action appears only after a participant is selected.
+- After saved vote, hide voting controls and show saved choice plus only `PNG для сторис`.
+- No active-event summary card when there is only one event.
 
-### Event Screen
+### Athletes
 
-Purpose: choose up to two participants.
+- Two-column photo grid.
+- Each tile shows portrait, name, origin, stats button, optional neutral social icon.
+- Detail view holds bio/history/discipline tables/source/social link.
 
-Content:
+### Rating
 
-- event title/status;
-- participant cards;
-- support percentage and progress bar;
-- confidence points controls with number input, slider, and quick presets;
-- sticky/obvious save button above the bottom dock;
-- share card actions after selection.
+- Support ranking and fan leaderboard only.
+- No decorative hero.
 
-### Support Stats
+### Rules
 
-Purpose: show who users support.
+- Short product/legal rules.
+- No betting/money mechanics.
 
-Content:
+### Admin
 
-- ranked participant list;
-- support percentage;
-- vote count;
-- confidence point total;
-- progress bars.
+- Browser-only operational cards and forms at `/#/admin-login`.
+- No TMA bottom-nav admin tab; `/#/admin*` redirects away inside Telegram when initData exists.
+- No decorative hero.
 
-### Players Tab Card
+## Implemented Notes
 
-Purpose: quick athlete recognition and entry to detail.
-
-Content:
-
-- large athlete photo;
-- name;
-- region/ulus and city/village when known;
-- short description;
-- one `Open statistics` action.
-
-Do not show a summary stat grid in the list card. Put full stats, history, source URLs, and discipline tables in the detail view.
-
-### Leaderboard
-
-Purpose: gamification.
-
-Content:
-
-- rank;
-- user name;
-- score;
-- pick count;
-- correct pick count.
-
-## Current Implementation Notes
-
-Implemented first visual pass:
-
-- dark sports UI;
-- bottom navigation;
-- event hero card;
-- participant support cards;
-- progress bars;
-- confidence chips;
-- sticky save action;
-- story-card sharing retained.
-
-## Next Design Tasks
-
-- Add admin-only TMA tab after `ADMIN_IDS` is configured.
-- Expand participant stats model for discipline-level historical data.
-- Add participant detail view or expanded cards.
-- Test final look in Telegram dark and light themes on iOS/Android.
+- Global App hero removed from secondary screens.
+- Main hero moved into Events view as `HomeHero`.
+- Countdown composable added.
+- Athletes list changed to photo grid via `PlayerGridCard`.
+- Generic social icon support added for future `social_url` / `social_links` data.
+- Share copy no longer names restricted social networks.
+- Duplicate hero stats, active-event summary card, share/copy buttons, and TMA admin tab removed.

@@ -28,6 +28,7 @@ from .db import (
     admin_settle_event,
     admin_upsert_discipline_result,
     admin_upsert_standing,
+    analytics_summary,
     create_admin_web_session,
     db_health,
     delete_admin_web_session,
@@ -41,6 +42,7 @@ from .db import (
     list_disciplines,
     list_events,
     list_players,
+    record_analytics_event,
     seed_demo,
     set_picks,
     upsert_admin_web_user,
@@ -251,6 +253,13 @@ class FinishEventIn(BaseModel):
 class AdminWebLoginIn(BaseModel):
     username: str
     password: str
+
+
+class AnalyticsEventIn(BaseModel):
+    event_name: str = Field(min_length=2, max_length=64)
+    anonymous_id: str = Field(default="", max_length=160)
+    path: str = Field(default="", max_length=160)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @app.middleware("http")
@@ -476,6 +485,27 @@ def participant_avatar(player_id: int) -> Response:
 @app.get("/api/leaderboard")
 def api_leaderboard(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {"leaderboard": leaderboard(settings.db_path)}
+
+
+@app.post("/api/analytics")
+def api_analytics(data: AnalyticsEventIn, request: Request, user: dict[str, Any] = Depends(current_user)) -> dict[str, bool]:
+    try:
+        record_analytics_event(
+            settings.db_path,
+            event_name=data.event_name,
+            anonymous_id=data.anonymous_id,
+            path=data.path,
+            metadata=data.metadata,
+            user_agent=request.headers.get("user-agent", ""),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"ok": True}
+
+
+@app.get("/api/admin/analytics")
+def api_admin_analytics(days: int = 14, admin: dict[str, Any] = Depends(admin_user)) -> dict[str, Any]:
+    return {"analytics": analytics_summary(settings.db_path, days=days)}
 
 
 @app.post("/api/admin/players")

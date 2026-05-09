@@ -2,30 +2,43 @@
 
 ## Responsibilities
 
-- Provide Telegram Mini App user interface through Vue 3.
-- Initialize Telegram WebApp SDK with a delayed-load guard.
-- Send raw Telegram initData to backend.
-- Render events, participants, picks, statistics, player history, discipline-result tables, rules, and leaderboard.
+- Provide Telegram Mini App UI through Vue 3.
+- Initialize Telegram WebApp SDK with delayed-load guard.
+- Send raw Telegram initData to backend for user APIs.
+- Render main voting flow, support stats, leaderboard, athlete grid/detail, rules/privacy copy, and browser-only admin tools.
+- Emit first-party analytics events without storing Telegram identity in analytics rows.
 
 ## Main Files
 
-- `web-vue/src/App.vue` — app shell, hero, bottom tabs, boot/error/toast UI.
-- `web-vue/src/views/EventsView.vue` — games tab, participant selection, 100-point allocation, share/story actions, live results.
-- `web-vue/src/views/StatsView.vue` — support stats and fan leaderboard.
-- `web-vue/src/views/PlayersView.vue` — photo-forward player list and detail discipline tables.
-- `web-vue/src/views/AdminView.vue` — admin result/standing/final forms.
+- `web-vue/src/App.vue` — app shell, bottom user tabs, boot/error/toast UI; no global hero.
+- `web-vue/src/views/EventsView.vue` — home hero, participant selection, 100-point allocation, saved vote state, PNG story card, live results.
+- `web-vue/src/components/events/HomeHero.vue` — photo hero, `Дыгын Оонньуулара` eyebrow, countdown, CTA hidden after saved vote.
+- `web-vue/src/views/StatsView.vue` — support stats and fan leaderboard (`Топ-100`).
+- `web-vue/src/views/PlayersView.vue` — two-column athlete photo grid and detail discipline tables.
+- `web-vue/src/views/AdminView.vue` — browser-only admin result/standing/final forms plus analytics panel.
+- `web-vue/src/components/admin/AdminAnalyticsPanel.vue` — no-library analytics KPI/cards/bar chart.
 - `web-vue/src/composables/useTelegramInit.ts` — waits for late `window.Telegram.WebApp`, then calls `ready()`/`expand()`.
+- `web-vue/src/composables/useAnalytics.ts` — generates random client ID and sends allowlisted analytics events.
 - `web-vue/src/api/client.ts` — typed fetch wrapper; API base uses `import.meta.env.BASE_URL` or `VITE_API_BASE`.
-- `web-vue/src/assets/styles/main.css` — current A1 CSS ported from legacy `web/styles.css`.
+- `web-vue/src/assets/styles/main.css` — global tokens, shell, cards, forms, nav, tables.
 - `web/` — legacy vanilla frontend retained only for rollback via `FRONTEND_DIR=web`.
 
 ## Tabs
 
-- Games — event hero, event list, event detail, 1–2 participant choices, 100-point allocation controls, share actions.
-- Support — support statistics and leaderboard.
-- Players — photo-forward participant cards with origin/short description, plus detail view for profile fields, title/debut/history badges, sources, performance history, and discipline-result tables.
-- Admin — live operations: Day 1/Day 2 discipline results, standings, finish event. Access works via Telegram `ADMIN_IDS` or browser login at `/#/admin-login`.
-- Rules — product rules and no-money notice.
+User TMA tabs:
+
+- Главная — photo hero, countdown, vote flow, saved vote state, PNG story card.
+- Рейтинг — support statistics and top-100 fan leaderboard.
+- Атлеты — photo grid and athlete detail stats.
+- Правила — rules, privacy note, iindev link.
+
+Admin is not a TMA tab. Browser admin opens only at:
+
+```text
+https://iindiinda.duckdns.org/dygyn-bet/#/admin-login
+```
+
+Inside Telegram, `/#/admin*` redirects back to user flow when Telegram initData exists.
 
 ## Auth Behavior
 
@@ -38,21 +51,13 @@ webApp.ready()
 webApp.expand()
 ```
 
-This prevents real-device races where the Telegram SDK object appears after Vue mount.
-
-For API calls, `src/api/client.ts` waits for this guard, reads `webApp.initData`, and sends:
+For user API calls, `src/api/client.ts` waits for this guard, reads `webApp.initData`, and sends:
 
 ```http
 X-Telegram-Init-Data: <raw initData>
 ```
 
 ### Browser admin auth
-
-Browser admin login lives at:
-
-```text
-https://iindiinda.duckdns.org/dygyn-bet/#/admin-login
-```
 
 Backend seeds/updates a hashed SQLite admin row from server env:
 
@@ -62,18 +67,28 @@ ADMIN_WEB_PASSWORD=<admin password>
 ADMIN_WEB_SESSION_HOURS=12
 ```
 
-Login creates an HttpOnly `dygyn_admin_session` cookie. Admin APIs accept either Telegram initData from `ADMIN_IDS` or this session cookie. Logout clears the cookie.
+Login creates an HttpOnly `dygyn_admin_session` cookie. Admin APIs accept this session cookie. Telegram admin support exists server-side, but TMA navigation hides admin UI.
 
-## API Wrapper
+## Analytics
 
-`api(path, options)`:
+Current first-party events:
 
-- builds API base from `import.meta.env.BASE_URL` (`/dygyn-bet/` in production) or `VITE_API_BASE`;
-- sets `Content-Type: application/json` for JSON bodies;
-- waits for Telegram SDK init guard unless a browser-admin endpoint opts out;
-- adds Telegram initData header if available;
-- parses JSON response;
-- throws normalized `ApiError` from `json.detail` when response is not OK.
+- `app_open`
+- `rating_open`
+- `rules_open`
+- `participant_detail_open`
+- `vote_save`
+- `png_share`
+
+Frontend sends:
+
+- random client ID from localStorage;
+- route path;
+- allowlisted metadata (`event_id`, `participant_id`, `picks`, `shared`, `has_saved_vote`).
+
+Backend stores only hashed client ID, hashed user-agent, sanitized path/metadata, and timestamp. It does not store raw Telegram ID, username, raw initData, IP, participant names, or vote text in analytics rows.
+
+Admin analytics panel uses `/api/admin/analytics?days=14` and renders KPI cards, a daily bar chart, event totals, and top paths without external scripts.
 
 ## UI Safety
 
@@ -81,33 +96,30 @@ Dynamic text is rendered through Vue text bindings. `v-html` is disallowed by ES
 
 ## Visual Direction
 
-Current style follows `vault/wiki/architecture/design-direction.md`:
+Current style follows `vault/wiki/architecture/design-direction.md` and root `DESIGN.md`:
 
-- dark sports UI;
+- dark photo-first sports UI;
 - warm gold accent;
 - card-first layout;
-- progress bars for support statistics;
-- strong sticky save action;
+- support progress bars;
+- sticky save action only after a participant is selected;
 - no casino/bookmaker visual language.
 
 ## Product Copy Rule
 
-Frontend must keep no-money language visible. Current notice:
+Frontend must keep no-money language visible in rules/privacy areas. Avoid betting, deposit, withdrawal, odds, payout, or prize wording without legal approval.
 
-- no monetary bets;
-- only votes and virtual confidence points.
+## PNG Story Card Sharing
 
-Avoid adding betting, deposit, withdrawal, odds, payout, or prize wording without legal approval.
+Direct social app posting is not reliable from a Telegram Mini App web context. Current product exposes one visible action after saved vote: `PNG для сторис`.
 
-## Instagram Stories Sharing
+Under the hood:
 
-Direct Instagram Stories posting is not reliable from a Telegram Mini App web context. The product provides:
+- native file share when available;
+- download fallback;
+- no restricted social network names in UI copy.
 
-- native Web Share when available;
-- copy-to-clipboard share text;
-- generated PNG story card for manual Instagram Stories upload.
-
-Current Vue story card includes simple fan copy (`В этом году я голосую за`), selected participant photo(s), confidence points, name, origin/region/ulus, and CTA `Заходи и голосуй за своего фаворита` plus `@dygyn_games_bet_bot`. Images are loaded through the same-origin known-participant avatar endpoint to avoid canvas/CORS export failures; initials are used as fallback. The card avoids showing the public duckdns URL; the frontend tries native file sharing for the PNG first, then falls back to download plus Instagram Stories instructions.
+PNG card includes selected participant photo(s), confidence points, name, origin/region/ulus, and CTA `Заходи и голосуй за своего фаворита` plus `@dygyn_games_bet_bot`.
 
 ## Vue Build and Bundle Check
 
@@ -118,22 +130,17 @@ npm run build        # production /dygyn-bet/ base
 npm run build:local  # local FastAPI root base
 ```
 
-Build writes `dist/bundle-stats.html` via `rollup-plugin-visualizer` and enforces initial JS gzip budget <=150KB. Latest local build on 2026-05-07: 41.1KB gzip initial JS.
+Build writes `dist/bundle-stats.html` via `rollup-plugin-visualizer` and enforces initial JS gzip budget <=150KB. Current build stays near 42KB gzip initial JS.
 
 ## Manual Smoke Check
 
-1. For local FastAPI root, build Vue with `cd web-vue && npm run build:local`.
-2. Run backend with `ALLOW_DEV_LOGIN=true` and `FRONTEND_DIR=./web-vue/dist`.
-3. Confirm user line loads.
-4. Confirm event hero card renders.
-5. Select event.
-6. Pick 1–2 participants.
-7. Distribute 100 confidence points.
-8. Save the vote through the sticky save action.
-9. Confirm toast and updated statistics.
-10. If admin, open Admin tab and test a provisional result/standing on a non-production DB first.
-11. Copy share text or download the story card.
-12. Open support tab.
-13. Open players tab.
-14. Open rules tab and verify no-money warning.
-15. Repeat inside Telegram with real HTTPS URL and bot button; specifically watch Telegram SDK init/auth race.
+1. Open TMA from Telegram bot button.
+2. Confirm hero, countdown, and no admin tab.
+3. Pick 1–2 participants.
+4. Distribute exactly 100 points.
+5. Save vote; confirm voting controls hide and PNG action remains.
+6. Generate/download/share PNG card.
+7. Open Rating; confirm support stats and top-100 leaderboard.
+8. Open Athletes; open a detail card and confirm discipline table uses `Итог` column.
+9. Open Rules; verify privacy note and iindev link.
+10. In browser, open `/#/admin-login`; log in and confirm analytics panel plus admin forms.

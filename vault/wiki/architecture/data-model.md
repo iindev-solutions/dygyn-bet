@@ -133,6 +133,26 @@ Fields:
 - `payload_json` — compact request payload snapshot.
 - `created_at`.
 
+## `analytics_events`
+
+First-party product analytics, stored in SQLite.
+
+Fields:
+
+- `event_name` — allowlisted event such as `app_open`, `vote_save`, `participant_detail_open`, `png_share`.
+- `anonymous_id_hash` — hash of random client ID; no Telegram ID or username.
+- `path` — UI route path with query removed.
+- `metadata_json` — allowlisted compact metadata only (`event_id`, `participant_id`, `picks`, `shared`, `has_saved_vote`).
+- `user_agent_hash` — hash, not raw user-agent string.
+- `created_at`.
+
+Rules:
+
+- no raw IP storage;
+- no raw Telegram initData;
+- no vote text or participant names in analytics metadata;
+- admin dashboard reads aggregate counts only.
+
 ## `disciplines`
 
 Seven Dygyn disciplines.

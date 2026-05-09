@@ -29,10 +29,10 @@ Users need a lightweight way inside Telegram to:
 4. Backend verifies raw Telegram `initData`.
 5. User selects an event and 1–2 participants.
 6. User distributes virtual confidence points across selected participants on a 100-point scale.
-7. User can share text or download an Instagram Stories card for manual repost.
+7. User can generate/share/download a PNG story card.
 8. App shows vote counts, confidence totals, percentages, player history, and leaderboard.
-8. Admin enters results after an event.
-9. Correct picks receive rating points.
+9. Browser admin enters live/final results.
+10. Correct picks receive rating points.
 
 ## In Scope
 
@@ -44,7 +44,7 @@ Users need a lightweight way inside Telegram to:
 - 100-point virtual confidence scale per event vote.
 - Event locking after close time, start time, or admin status change.
 - Participant history and discipline-level stats with source URLs.
-- Admin APIs for players, history, events, and settlement.
+- Browser admin login, admin APIs, live result entry, standings, final finish, analytics.
 
 ## Out of Scope
 
@@ -56,7 +56,6 @@ Users need a lightweight way inside Telegram to:
 - Bookmaker mechanics.
 - KYC or age verification.
 - Automatic official-result scraping.
-- Complex admin panel.
 
 ## Non-Negotiable Product Boundary
 

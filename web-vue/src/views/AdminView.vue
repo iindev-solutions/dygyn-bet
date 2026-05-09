@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminWebLogout } from '@/api/adminAuth'
+import AdminAnalyticsPanel from '@/components/admin/AdminAnalyticsPanel.vue'
 import { useToast } from '@/composables/useToast'
 import { useAdminStore } from '@/stores/admin'
 import { useEventsStore } from '@/stores/events'
@@ -18,8 +19,19 @@ const toast = useToast()
 const event = computed(() => eventsStore.selectedEvent)
 
 onMounted(async () => {
-  if (!userStore.isAdmin) return
-  await adminStore.loadDisciplines()
+  if (!userStore.loaded) {
+    try {
+      await userStore.load({ skipTelegramInit: true })
+    } catch {
+      await router.replace('/admin-login')
+      return
+    }
+  }
+  if (!userStore.isAdmin) {
+    await router.replace('/admin-login')
+    return
+  }
+  await Promise.all([adminStore.loadDisciplines(), adminStore.loadAnalytics()])
   if (!event.value) await eventsStore.loadEvents()
 })
 
@@ -86,7 +98,8 @@ async function submitFinish(payload: Event) {
 
 <template>
   <div class="stack">
-    <article v-if="!userStore.isAdmin" class="card empty">Нужны права администратора.</article>
+    <article v-if="userStore.loading" class="card empty">Загрузка...</article>
+    <article v-else-if="!userStore.isAdmin" class="card empty">Нужны права администратора.</article>
     <article v-else-if="!event" class="card empty">Сначала создайте событие.</article>
 
     <template v-else>
@@ -102,6 +115,8 @@ async function submitFinish(payload: Event) {
           </div>
         </div>
       </article>
+
+      <AdminAnalyticsPanel :analytics="adminStore.analytics" />
 
       <article class="card">
         <h2>Результат дисциплины</h2>

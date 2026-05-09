@@ -1,31 +1,45 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 
+import PlayerGridCard from '@/components/players/PlayerGridCard.vue'
+import SocialIconLink from '@/components/players/SocialIconLink.vue'
+import { useAnalytics } from '@/composables/useAnalytics'
 import { useBackButton } from '@/composables/useBackButton'
 import { usePlayersStore } from '@/stores/players'
 import {
+  formatDisciplineOutcome,
   formatResultValue,
   groupDisciplineResults,
   initials,
   overallResultSummary,
   playerBadges,
   playerOrigin,
+  playerSocialUrl,
   visibleHistoryNote,
 } from '@/utils/display'
 
 const playersStore = usePlayersStore()
+const analytics = useAnalytics()
 const selectedPlayer = computed(() => playersStore.selectedPlayer)
 const hasSelectedPlayer = computed(() => Boolean(selectedPlayer.value))
 const disciplineGroups = computed(() =>
   selectedPlayer.value ? groupDisciplineResults(selectedPlayer.value.discipline_results || []) : [],
 )
 const badges = computed(() => (selectedPlayer.value ? playerBadges(selectedPlayer.value) : []))
+const selectedSocialUrl = computed(() =>
+  selectedPlayer.value ? playerSocialUrl(selectedPlayer.value) : '',
+)
 
 onMounted(() => {
   playersStore.loadPlayers()
 })
 
 useBackButton(hasSelectedPlayer, () => playersStore.clearSelectedPlayer())
+
+async function openPlayer(playerId: number) {
+  analytics.track('participant_detail_open', { participant_id: playerId })
+  await playersStore.loadPlayer(playerId)
+}
 </script>
 
 <template>
@@ -50,8 +64,13 @@ useBackButton(hasSelectedPlayer, () => playersStore.clearSelectedPlayer())
           </div>
         </div>
 
-        <div v-if="badges.length" class="profile-badges">
-          <span v-for="badge in badges" :key="badge" class="badge profile-badge">{{ badge }}</span>
+        <div v-if="badges.length || selectedSocialUrl" class="profile-actions">
+          <div v-if="badges.length" class="profile-badges">
+            <span v-for="badge in badges" :key="badge" class="badge profile-badge">{{
+              badge
+            }}</span>
+          </div>
+          <SocialIconLink v-if="selectedSocialUrl" :href="selectedSocialUrl" />
         </div>
 
         <p v-if="selectedPlayer.short_description">{{ selectedPlayer.short_description }}</p>
@@ -116,8 +135,7 @@ useBackButton(hasSelectedPlayer, () => playersStore.clearSelectedPlayer())
               <tr>
                 <th>Вид</th>
                 <th>Результат</th>
-                <th>Место в виде</th>
-                <th>Очки вида</th>
+                <th>Итог</th>
               </tr>
             </thead>
             <tbody>
@@ -127,8 +145,7 @@ useBackButton(hasSelectedPlayer, () => playersStore.clearSelectedPlayer())
                   ><br /><small>{{ row.name_yakut || '' }}</small>
                 </td>
                 <td>{{ formatResultValue(row) }}</td>
-                <td>{{ row.place || '—' }}</td>
-                <td>{{ row.points ?? '—' }}</td>
+                <td>{{ formatDisciplineOutcome(row) }}</td>
               </tr>
             </tbody>
           </table>
@@ -145,30 +162,19 @@ useBackButton(hasSelectedPlayer, () => playersStore.clearSelectedPlayer())
         Участники пока не загружены.
       </article>
       <template v-else>
-        <article v-for="player in playersStore.players" :key="player.id" class="card player-card">
-          <img
-            v-if="player.avatar_url"
-            class="player-photo"
-            :src="player.avatar_url"
-            :alt="player.name"
-            loading="lazy"
-          />
-          <span v-else class="player-photo player-photo-fallback">{{ initials(player.name) }}</span>
-          <div class="player-card-copy">
-            <h2>{{ player.name }}</h2>
-            <p class="muted">{{ playerOrigin(player) }}</p>
-            <p v-if="player.short_description || player.bio">
-              {{ player.short_description || player.bio }}
-            </p>
-          </div>
-          <button
-            type="button"
-            class="ghost wide details-btn"
-            @click="playersStore.loadPlayer(player.id)"
-          >
-            Открыть статистику
-          </button>
+        <article class="card screen-head">
+          <p class="eyebrow">Атлеты</p>
+          <h2>Выберите участника</h2>
+          <p class="muted">Фото, регион и подробная статистика по дисциплинам.</p>
         </article>
+        <section class="players-grid" aria-label="Участники">
+          <PlayerGridCard
+            v-for="player in playersStore.players"
+            :key="player.id"
+            :player="player"
+            @open="openPlayer"
+          />
+        </section>
       </template>
     </template>
   </div>

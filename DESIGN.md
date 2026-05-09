@@ -1,219 +1,162 @@
 ---
-version: alpha
-name: Игры Дыгына — голосование
-description: Dark sports voting visual identity for the Dygyn Games Telegram Mini App.
+version: beta
+name: Dygyn Fan Vote
+summary: Photo-first Telegram Mini App for fan confidence voting around the Dygyn Games.
 colors:
-  primary: "#0F1115"
-  secondary: "#171A21"
-  tertiary: "#F2B84B"
-  neutral: "#F4F6FB"
-  bg-raised: "#121621"
-  card-elevated: "#1F2430"
-  text-muted: "#9AA3B2"
-  gold-soft: "#FFD989"
-  blue: "#2EA6FF"
-  success: "#40C979"
-  danger: "#FF5C6C"
-  line: "#2A2E38"
-  ink: "#10131A"
+  bg: "#07090D"
+  bg-2: "#0F1218"
+  card: "#12151B"
+  card-2: "#1B2028"
+  text: "#FFF6E8"
+  muted: "#B8AD9B"
+  accent: "#E2B152"
+  accent-soft: "#FFD98B"
+  accent-text: "#201405"
+  info: "#69BFFF"
+  success: "#41CE7A"
+  danger: "#FF6575"
+  line: "rgba(255,224,161,.16)"
+  line-strong: "rgba(255,224,161,.28)"
 typography:
-  h1:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, Arial, sans-serif"
-    fontSize: 40px
-    fontWeight: 900
-    lineHeight: 0.96
-    letterSpacing: -0.055em
-  h2:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, Arial, sans-serif"
-    fontSize: 21px
-    fontWeight: 900
-    lineHeight: 1.15
-    letterSpacing: -0.02em
-  body:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, Arial, sans-serif"
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 1.45
-  label:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, Arial, sans-serif"
-    fontSize: 12px
-    fontWeight: 900
-    lineHeight: 1.2
-    letterSpacing: 0.12em
-rounded:
-  sm: 14px
-  md: 18px
-  lg: 24px
-  xl: 26px
-  full: 999px
-spacing:
-  xs: 8px
-  sm: 10px
-  md: 14px
-  lg: 18px
-  xl: 24px
-components:
-  app-shell:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.neutral}"
-    width: 520px
-    padding: 14px
-  bottom-nav:
-    backgroundColor: "{colors.bg-raised}"
-    textColor: "{colors.neutral}"
-    rounded: "{rounded.lg}"
-    height: 66px
-  card:
-    backgroundColor: "{colors.secondary}"
-    textColor: "{colors.neutral}"
-    rounded: "{rounded.lg}"
-    padding: 16px
-  event-card:
-    backgroundColor: "{colors.card-elevated}"
-    textColor: "{colors.neutral}"
-    rounded: "{rounded.lg}"
-    padding: 18px
-  button-primary:
-    backgroundColor: "{colors.tertiary}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    height: 52px
-  button-secondary:
-    backgroundColor: "{colors.card-elevated}"
-    textColor: "{colors.neutral}"
-    rounded: "{rounded.full}"
-    height: 42px
-  badge:
-    backgroundColor: "{colors.card-elevated}"
-    textColor: "{colors.tertiary}"
-    rounded: "{rounded.full}"
-    padding: 10px
-  info-badge:
-    backgroundColor: "{colors.blue}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    padding: 10px
-  progress:
-    backgroundColor: "{colors.line}"
-    textColor: "{colors.gold-soft}"
-    rounded: "{rounded.full}"
-    height: 9px
-  valid-total:
-    backgroundColor: "{colors.success}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    padding: 8px
-  invalid-total:
-    backgroundColor: "{colors.danger}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    padding: 8px
-  muted-copy:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.body}"
+  display: "Iowan Old Style, Noto Serif, Georgia, Times New Roman, serif"
+  body: "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, Roboto, Arial, sans-serif"
+layout:
+  max-width: 520px
+  bottom-nav: fixed
+  card-radius: 24px
+  hero-radius: 34px
 ---
 
-## Overview
+# Design System — Dygyn Fan Vote
 
-Игры Дыгына — голосование is a dark, premium sports interface for users following the Dygyn Games. It must feel like a Telegram-native voting app for support, voting, athlete stats, and live results — never like a casino or bookmaker.
+## Product Feel
 
-Current direction: A1 ceremonial poster. The mood is compact, confident, and ceremonial: dark cards, one hero photo area, SVG Yakut ornament accents, warm gold, clear progress bars, and readable result tables. Local identity should come from restrained SVG ornaments and the bootur helmet mark, not decoration overload.
+A premium sports fan app inside Telegram. The first screen must feel like a finished launch product: dark arena mood, athlete photos, warm gold accent, concise promise, and a countdown to the start.
 
-## Colors
+It is not a bookmaker. No casino styling, odds, balances, deposits, payouts, or money-prize language.
 
-The palette is dark-first with one main accent.
+## Core Rule
 
-- **Primary (`primary`, #0F1115):** App foundation. Use for page background and bottom navigation.
-- **Raised background (`bg-raised`, #121621):** Subtle depth behind fixed controls.
-- **Secondary (`secondary`, #171A21):** Default surface for content blocks.
-- **Elevated card (`card-elevated`, #1F2430):** Hero cards, selected states, secondary controls.
-- **Neutral (`neutral`, #F4F6FB):** Primary readable text.
-- **Muted text (`text-muted`, #9AA3B2):** Metadata, captions, helper copy.
-- **Tertiary (`tertiary`, #F2B84B):** Primary actions, key badges, selected state, progress highlights.
-- **Gold soft (`gold-soft`, #FFD989):** Progress gradients and small highlights only.
-- **Blue (`blue`, #2EA6FF):** Secondary informational accent, used rarely.
-- **Success (`success`, #40C979):** Valid states and completed actions.
-- **Danger (`danger`, #FF5C6C):** Invalid totals, destructive warnings, errors.
-- **Line (`line`, #2A2E38):** Borders and track backgrounds.
+One strong hero only on the main screen. No repeated event banner across every tab.
 
-Gold must be used sparingly. It marks what matters; it must not flood the UI.
+Each screen must answer one job:
 
-## Typography
+- Main: explain bot, show photos, countdown, CTA to vote.
+- Vote: choose 1–2 athletes, distribute 100 confidence points, save, then show only saved choice + PNG.
+- Rating: show support and fan leaderboard.
+- Athletes: browse photo grid, open stats.
+- Rules: short legal/product rules.
+- Admin: browser-only operational forms, no TMA bottom dock.
 
-Use a ceremonial serif stack (`Iowan Old Style`, `Noto Serif`, Georgia, serif) for the current A1 direction. Typography should feel local/ceremonial but stay readable in Telegram.
+## Visual Direction
 
-- **H1:** Very bold/tight serif, used for the ceremonial product/event title.
-- **H2:** Card titles and screen sections.
-- **Body:** Clear 16px reading text.
-- **Label:** Small uppercase metadata, badges, and eyebrow text.
+Style name: `Northern Arena`.
 
-Avoid decorative fonts unless a future brand package explicitly supplies them.
+Character:
 
-## Layout
+- dark, cinematic, photo-first;
+- gold as rare highlight, never flood;
+- Yakut ornament only as sparse SVG mask/accent;
+- large rounded photo cards;
+- crisp sans body, ceremonial serif display headings;
+- glassy cards with subtle borders and shadows;
+- bottom Telegram-native dock.
 
-Mobile-first. Main width is capped at 520px and centered. The top starts with a ceremonial A1 hero: SVG ornament strip, photo/preview area, short title, and one clear voting promise. Screens are built from stacked cards with 13–14px gaps and a fixed bottom navigation.
+## Copy Rules
 
-Core layout rules:
+Keep copy short and direct.
 
-- Cards first, tables second, charts only when needed.
-- Main CTA must be obvious and reachable near the bottom.
-- Admin forms should remain simple: labeled fields, two-column groups on wide phones, one column on narrow screens.
-- Result tables may scroll horizontally, but primary athlete/event cards should not.
-- Keep copy short. Dense sports data is okay; decorative text is not.
+Use:
 
-## Elevation & Depth
+- vote;
+- fan choice;
+- confidence points;
+- support;
+- leaderboard;
+- athlete stats;
+- live results.
 
-Use soft depth, not glossy effects.
+Avoid repeated product title. Use it only where context is required. Do not place the same event banner on secondary screens.
 
-- Cards use subtle borders and low dark shadows.
-- Hero cards can use a faint radial gold glow and SVG ornament masks.
-- Sticky save/admin actions use blur and a dark translucent background.
-- Avoid neon casino glow, spinning effects, flashing gradients, or red/green betting patterns.
+Do not mention restricted social network names in UI copy. If athlete social URLs exist, show only a neutral social icon link.
 
-## Shapes
+## Main Screen
 
-The system is rounded and card-based.
+Required content:
 
-- Default card radius: 24px.
-- Input/button radius: 14–18px.
-- Pills/badges: 999px.
-- Photos: rounded rectangles, not hard circles, except small initials avatars.
-- Progress bars: fully rounded.
+- photo collage from active participants plus fallback logo/photo;
+- one-line context: `Дыгын Оонньуулара`;
+- headline: short fan voting promise;
+- one compact description of what bot does;
+- countdown to event start from `starts_at`;
+- primary CTA: choose participants.
 
-## Components
+No user/debug login line. No refresh button. No legal notice in hero.
 
-Primary components:
+## Athlete Browsing
 
-- **App hero:** SVG Yakut ornament strip, temporary photo preview, short title, and no user/debug copy.
-- **Event hero:** Event title, status, participant count, vote count, top support preview.
-- **Voting participant card:** Name, region, support stats, selected state, confidence allocation.
-- **Players tab card:** Large athlete photo, origin, short description, and one `Открыть статистику` action; no summary stat grid in the list card.
-- **Confidence allocator:** 1–2 selected participants, 100-point scale, visible valid/invalid total, number input, slider, and quick presets (`100`, `70/30`, `50/50`).
-- **Support progress:** Gold gradient bar over dark track.
-- **Leaderboard row:** Rank, user name, pick count, score badge.
-- **Participant detail:** Photo, bio, title/debut/history badges, strengths, prior Dygyn note, overall rank/points summary, result tables by year/event.
-- **Story card:** 1080×1920 PNG for manual Instagram Stories upload with selected participant photo(s), name, origin, confidence points, and app URL.
-- **Live results block:** Day 1, Day 2, overall standings, provisional/official state, last updated time.
-- **Admin form:** Plain operational UI for entering discipline results, standings, and final winner.
+Athlete list is a two-column photo grid.
 
-Components should use existing tokens before adding new styles.
+Each tile:
 
-## Do's and Don'ts
+- large portrait;
+- name;
+- region/origin;
+- compact stats button;
+- optional neutral social icon if social URL exists.
+
+No long bio in list. Full profile, history, discipline tables, source links, and social icon live in detail view.
+
+## Voting
+
+Voting remains utilitarian and obvious:
+
+- select up to two athletes;
+- show support percent/progress;
+- show selected points as `мой голос`;
+- allocation must total exactly 100;
+- presets stay visible for 1 or 2 selections;
+- save button appears only after at least one athlete is selected and stays sticky above bottom nav;
+- after a saved vote, hide voting controls and show saved choice plus PNG action only.
+
+## Sharing
+
+Share flow must be generic:
+
+- single visible action: `PNG для сторис`;
+- no separate copy/share buttons;
+- native file share or download fallback may happen under the hood;
+- no restricted social network names in UI copy.
+
+Story/PNG image should show selected athlete photo, name, origin, confidence points, and bot CTA.
+
+## Component Guidance
+
+Use Vue 3 Composition API with focused components:
+
+- `HomeHero`: main hero, photo collage, countdown, CTA.
+- `useCountdown`: timer state and derived countdown parts.
+- `PlayerGridCard`: one athlete tile.
+- `SocialIconLink`: neutral social icon link.
+
+Global CSS holds tokens, app shell, cards, forms, nav, tables. Feature components own scoped layout details.
+
+## Do / Don't
 
 Do:
 
-- Use support, vote, confidence points, rating points, leaderboard.
-- Keep the no-money boundary in rules/legal copy, not as noisy top-screen copy.
-- Show athlete stats and live results in clear tables.
-- Make selected states unmistakable.
-- Prefer simple controls over clever interactions.
-- Preserve Telegram Mini App performance and small-screen readability.
+- make photos dominant;
+- use short labels;
+- keep gold meaningful;
+- keep secondary screens calm;
+- preserve Telegram small-screen readability;
+- keep admin plain and reliable.
 
 Don't:
 
-- Use bet, odds, payout, deposit, withdrawal, balance, jackpot, casino, win money, or bookmaker language.
-- Add red/green betting psychology or odds boards.
-- Hide the allocation total from the voting screen.
-- Make admin operations ambiguous; finishing an event must require confirmation.
-- Overuse gold, glow, animations, or ornamental patterns; ornaments must stay as sparse SVG accents.
+- repeat the event banner everywhere;
+- write long promotional paragraphs;
+- use betting/casino language;
+- mention restricted social network names in UI;
+- hide the 100-point total;
+- add animation that hurts TMA performance.

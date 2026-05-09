@@ -1,11 +1,23 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import { finishEvent, listDisciplines, saveDisciplineResult, saveStanding } from '@/api/admin'
-import type { Discipline, DisciplineResultPayload, StandingPayload } from '@/api/types'
+import {
+  finishEvent,
+  listDisciplines,
+  loadAdminAnalytics,
+  saveDisciplineResult,
+  saveStanding,
+} from '@/api/admin'
+import type {
+  AnalyticsSummary,
+  Discipline,
+  DisciplineResultPayload,
+  StandingPayload,
+} from '@/api/types'
 
 export const useAdminStore = defineStore('admin', () => {
   const disciplines = ref<Discipline[]>([])
+  const analytics = ref<AnalyticsSummary | null>(null)
   const loading = ref(false)
 
   async function loadDisciplines() {
@@ -32,5 +44,20 @@ export const useAdminStore = defineStore('admin', () => {
     return finishEvent(eventId, winnerParticipantId)
   }
 
-  return { disciplines, loading, loadDisciplines, upsertDisciplineResult, upsertStanding, finish }
+  async function loadAnalytics(days = 14) {
+    const data = await loadAdminAnalytics(days)
+    analytics.value = data.analytics
+    return data.analytics
+  }
+
+  return {
+    disciplines,
+    analytics,
+    loading,
+    loadDisciplines,
+    loadAnalytics,
+    upsertDisciplineResult,
+    upsertStanding,
+    finish,
+  }
 })

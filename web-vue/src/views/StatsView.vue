@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+import { useAnalytics } from '@/composables/useAnalytics'
 import { useEventsStore } from '@/stores/events'
 import { useLeaderboardStore } from '@/stores/leaderboard'
 import { supportPercent, topSupport } from '@/utils/display'
 
 const eventsStore = useEventsStore()
 const leaderboardStore = useLeaderboardStore()
+const analytics = useAnalytics()
 
 onMounted(() => {
+  analytics.track('rating_open', { event_id: eventsStore.selectedEvent?.id || null })
   leaderboardStore.loadLeaderboard()
 })
 
@@ -59,7 +62,10 @@ function leaderName(user: {
     </article>
 
     <article class="card">
-      <h2>Рейтинг болельщиков</h2>
+      <div class="row">
+        <h2>Рейтинг болельщиков</h2>
+        <span class="badge">Топ-100</span>
+      </div>
       <div v-if="leaderboardStore.loading" class="empty">Загрузка рейтинга...</div>
       <div v-else class="history">
         <template v-if="leaderboardStore.leaderboard.length">

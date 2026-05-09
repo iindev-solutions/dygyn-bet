@@ -9,7 +9,9 @@
 5. Event statuses: `draft`, `open`, `locked`, `settled`.
 5. In-memory rate limit in FastAPI middleware.
 6. Manual user block field: `users.is_blocked`.
-7. Admin APIs require Telegram ID from `ADMIN_IDS`, except local dev admin under `ALLOW_DEV_LOGIN=true`.
+7. Admin APIs require browser admin session cookie, Telegram ID from `ADMIN_IDS`, or local dev admin under `ALLOW_DEV_LOGIN=true`.
+8. Admin mutations are written to `admin_audit_logs`.
+9. Analytics stores no raw Telegram ID, username, IP, raw initData, vote text, or participant names.
 
 ## Current Rate Limit
 
@@ -31,7 +33,7 @@ Limit is in memory and resets on process restart. It is not multi-instance safe.
 Add or decide:
 
 - Redis-backed rate limit if running more than one process/instance.
-- Admin audit log: who created players/events/history/results.
+- Analytics retention cleanup for raw `analytics_events` rows.
 - Suspicious activity logs: many new accounts, rapid pick changes, request bursts.
 - Optional rule: prevent pick changes N minutes before start.
 - Optional Telegram channel/chat membership check if access should be restricted to a community.

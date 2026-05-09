@@ -1,5 +1,12 @@
+import { getAdminAnalytics } from './analytics'
 import { api } from './client'
-import type { Discipline, DisciplineResultPayload, EventDetail, StandingPayload } from './types'
+import type {
+  AnalyticsSummary,
+  Discipline,
+  DisciplineResultPayload,
+  EventDetail,
+  StandingPayload,
+} from './types'
 
 export function listDisciplines() {
   return api<{ disciplines: Discipline[] }>('/disciplines')
@@ -24,4 +31,8 @@ export function finishEvent(eventId: number, winnerParticipantId: number) {
     method: 'POST',
     body: JSON.stringify({ winner_participant_id: winnerParticipantId }),
   })
+}
+
+export function loadAdminAnalytics(days = 14): Promise<{ analytics: AnalyticsSummary }> {
+  return getAdminAnalytics(days)
 }

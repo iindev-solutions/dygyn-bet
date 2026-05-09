@@ -71,18 +71,16 @@ async function shareOrDownloadStoryCard(canvas: HTMLCanvasElement): Promise<Stor
   const file = new File([blob], 'dygyn-story-card.png', { type: 'image/png' })
   if (navigator.canShare?.({ files: [file] }) && navigator.share) {
     try {
-      await navigator.share({ files: [file], title: 'Игры Дыгына', text: 'Моя сторис-карточка' })
+      await navigator.share({ files: [file], title: 'Голосование', text: 'Моя PNG-карточка' })
       return {
         shared: true,
-        message:
-          'Если Instagram не выбран: сохраните PNG и откройте Instagram → Stories → Галерея.',
+        message: 'Если нужного приложения нет в меню: сохраните PNG и откройте галерею.',
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         return {
           shared: false,
-          message:
-            'Отмена. Можно нажать «Сторис PNG» ещё раз и выбрать Instagram или сохранить файл.',
+          message: 'Отмена. Можно нажать «PNG-карточка» ещё раз или сохранить файл.',
         }
       }
     }
@@ -91,7 +89,7 @@ async function shareOrDownloadStoryCard(canvas: HTMLCanvasElement): Promise<Stor
   downloadBlob(blob, 'dygyn-story-card.png')
   return {
     shared: false,
-    message: 'PNG скачан. Дальше: Instagram → Stories → Галерея/Загрузки → выбрать карточку.',
+    message: 'PNG скачан. Дальше: откройте галерею/загрузки и выберите карточку.',
   }
 }
 

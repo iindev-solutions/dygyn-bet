@@ -118,9 +118,59 @@ Returns seven Dygyn disciplines with display metadata.
 
 Returns top 100 users ordered by rating score, correct picks, and pick count.
 
+### `POST /api/analytics`
+
+Records an allowlisted product analytics event. Requires normal user auth but stores no Telegram ID, username, IP, or raw user identity in the analytics row.
+
+Allowed `event_name` values:
+
+- `app_open`
+- `rating_open`
+- `rules_open`
+- `participant_detail_open`
+- `vote_save`
+- `png_share`
+
+Request:
+
+```json
+{
+  "event_name": "vote_save",
+  "anonymous_id": "client-random-id",
+  "path": "/events",
+  "metadata": {"event_id": 1, "picks": 2}
+}
+```
+
+Stored fields are sanitized: hashed anonymous ID, path without query, allowlisted metadata only, hashed user agent.
+
 ## Admin Endpoints
 
-Admin means current Telegram ID is listed in `ADMIN_IDS`, or local dev admin is active. Admin mutations are written to `admin_audit_logs`. Admin `source_url` fields accept only empty, `http://`, or `https://` values.
+Admin means browser admin session cookie, current Telegram ID in `ADMIN_IDS`, or local dev admin. TMA hides admin navigation and redirects `/#/admin*` away when Telegram initData exists; browser admin login remains at `/#/admin-login`. Admin mutations are written to `admin_audit_logs`. Admin `source_url` fields accept only empty, `http://`, or `https://` values.
+
+### `GET /api/admin/analytics`
+
+Returns aggregate analytics for admin dashboard.
+
+Query:
+
+```http
+/api/admin/analytics?days=14
+```
+
+Response shape:
+
+```json
+{
+  "analytics": {
+    "days": 14,
+    "since": "2026-05-01",
+    "daily": [{"day": "2026-05-09", "count": 12, "unique_count": 5, "events": {"app_open": 5}}],
+    "events": [{"event_name": "app_open", "count": 5, "unique_count": 5}],
+    "top_paths": [{"path": "/events", "count": 7}]
+  }
+}
+```
 
 ### `POST /api/admin/players`
 
@@ -225,7 +275,7 @@ Imported data:
 
 ## Admin Panel
 
-Admin panel lives inside the Telegram Mini App behind `ADMIN_IDS` access.
+Admin panel UI is browser-first at `/#/admin-login`. Admin API accepts a browser admin session cookie or Telegram initData from a user in `ADMIN_IDS`.
 
 Current admin actions:
 
